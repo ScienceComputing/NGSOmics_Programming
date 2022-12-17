@@ -1,0 +1,1 @@
+To search for patients with non-small-cell lung cancer who are most likely to respond to immunotherapy, the authors develop a multi-modal risk prediction model using deep learning techniques and incorporating the annotated CT scan images, digitized PD-1 and PD-L1 immunohistochemistry slides and genomic sequencing data, and outcomes of immune checkpoint inhibitor therapy
