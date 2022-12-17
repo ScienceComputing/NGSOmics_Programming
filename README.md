@@ -13,6 +13,6 @@ This repository shows my coding practice based on cutting-edge bioinformatics wo
 
 > Multimodal data integration improves immunotherapy response prediction. Nat Cancer 3, 1149–1150 (2022). https://doi.org/10.1038/s43018-022-00417-7
 
-**Deep learning architecture Enformer
+**Deep learning architecture Enformer**
 
 > Effective gene expression prediction from sequence by integrating long-range interactions. Nat Methods 18, 1196–1203 (2021). https://doi.org/10.1038/s41592-021-01252-x
