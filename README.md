@@ -7,4 +7,6 @@ This repository shows my coding practice based on cutting-edge bioinformatics wo
 
 **Analyze single cell RNA-Seq data**
 
+
 ## Learning note
+**Multimodal data integration**
