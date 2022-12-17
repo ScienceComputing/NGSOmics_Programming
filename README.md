@@ -1,3 +1,5 @@
 # Learn Bioinformatics
 
-This repository contains coding practice I learn from cutting-edge bioinformatics workshop, reference, and other resources outside my school classes.
+This repository shows my coding practice I learn from cutting-edge bioinformatics workshop, reference, and other resources outside my school classes.
+
+**Build auto-encoder to analyze somatic mutations**
