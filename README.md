@@ -10,3 +10,4 @@ This repository shows my coding practice based on cutting-edge bioinformatics wo
 
 ## Learning note
 **Multimodal data integration**
+Multimodal data integration improves immunotherapy response prediction. Nat Cancer 3, 1149–1150 (2022). https://doi.org/10.1038/s43018-022-00417-7
