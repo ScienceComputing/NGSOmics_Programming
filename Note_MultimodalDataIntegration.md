@@ -1,1 +1,7 @@
-- To search for patients with non-small-cell lung cancer who are most likely to respond to immunotherapy, the authors develop a multi-modal risk prediction model using deep learning techniques and incorporating the annotated CT scan images, digitized PD-1 and PD-L1 immunohistochemistry slides and genomic sequencing data, and outcomes of immune checkpoint inhibitor therapy.
+- To search for patients with non-small-cell lung cancer who are most likely to respond to immunotherapy, authors develop a multi-modal risk prediction model using deep learning techniques which incorporate the annotated *CT scan images*, digitized PD-1 and PD-L1 *immunohistochemistry slides* and *genomic sequencing data*, and outcomes of immune checkpoint inhibitor therapy.
+  - **Data**  
+    - To characterize the spatial distributions of CT signal intensities for each tumor, authors extract the quantitative image features from the segmented areas.
+    - To characterize the spatial organization of PD-L1 immunoreactivity within the tumor, PD-L1 immunohistochemistry slides are used.
+  - **Model**
+    - The author's deep learning model stems from an article of **attention-based deep multiple instance learning**. 
+    - The strength of this model:: it considers the modalities for each patient with **different weights**, maximizating the predictive capacity of each type of data.
