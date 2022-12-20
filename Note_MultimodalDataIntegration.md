@@ -11,9 +11,9 @@ To search for patients with non-small-cell lung cancer who are most likely to re
 
 ## Terminology
 - Dynamic attention with masking (DyAM)
-- Permutation-tested area under the curve
-- Repeated subsampling-tested area under the curve
+- Permutation-tested area under the curve (AUC)
+- Repeated subsampling-tested AUC
 - Autocorrelation feature
 - All gray level co-occurrence matrix (GLCM) features
-- Multiple instance logistic regression
-- Tumor proportion score
+- Multiple instance logistic regression (MILR)
+- Tumor proportion score (TPS)
