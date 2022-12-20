@@ -7,7 +7,12 @@ To search for patients with non-small-cell lung cancer who are most likely to re
   - **Model**
     - The author's deep learning model stems from an article of **attention-based deep multiple instance learning**. 
     - The strength of this model: 1. it does not restrict the number of data types, enabling the model to be extended to other data modalities and to be applied to other cancers and diseases. 2. it considers the modalities for each patient with **different weights**, maximizating the predictive capacity of each type of data and thus improving the accuracy in predicting the response to immunotherapy (vs single biomarker). 3. even a patient has missing values in the CT scan or genomic sequence, the model can mask the missing data modality and compute a risk prediction. 4. the model can classify patients as immunotherapy responders or non-responders early after treatment.
-    - **Performance**: multimodal model's AUC = 0.80 (95%CI: 0.74-0.86) vs 
+    - **Performance**: 
+    | Model         | AUC           | 95% CI        |
+    | ------------- | ------------- | ------------- |
+    | Multimodal    | 0.80          | 0.74-0.86     |
+    | Tumor mutational burden  |
+    |  (unimodal)              | Content Cell  | Content Cell  |
 
 
 ## Terminology
