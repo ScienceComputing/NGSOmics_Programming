@@ -24,4 +24,4 @@ To search for patients with non-small-cell lung cancer who are most likely to re
 - Autocorrelation feature
 - All gray level co-occurrence matrix (GLCM) features
 - Multiple instance logistic regression (MILR)
-- Tumor proportion score (TPS): this measurement is defined as the percent of partial or complete membranous staining among viable tumor cells. A negative score refers to the staining in <1% of tumor cells or the absence of staining in tumor cells. Authors exclude the PD-L1 IHC slides that did not meet the minimum number of tumor cells for PD-L1 TPS assessment (<100 tumor cells).
+- **Tumor proportion score (TPS)**: this measurement is defined as the percent of partial or complete membranous staining among viable tumor cells. A negative score refers to the staining in <1% of tumor cells or the absence of staining in tumor cells. Authors exclude the PD-L1 IHC slides that did not meet the minimum number of tumor cells for PD-L1 TPS assessment (<100 tumor cells).
