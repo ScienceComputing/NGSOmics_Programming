@@ -11,7 +11,7 @@ This repository contains my coding practice using the materials from cutting-edg
 ## Learning note
 **[Multimodal data integration](Note_MultimodalDataIntegration.md)**
 
-> Multimodal data integration improves immunotherapy response prediction. Nat Cancer 3, 1149–1150 (2022). https://doi.org/10.1038/s43018-022-00417-7
+> Multimodal integration of radiology, pathology and genomics for prediction of response to PD-(L)1 blockade in patients with non-small cell lung cancer. Nat Cancer 3, 1151–1164 (2022). https://doi.org/10.1038/s43018-022-00416-8
 
 **Deep learning architecture Enformer**
 
