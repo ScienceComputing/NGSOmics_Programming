@@ -19,7 +19,8 @@ To search for patients with non-small-cell lung cancer who are most likely to re
 
 
 ## Terminology
-- Permutation-tested area under the curve (AUC)
+- **Area under the curve (AUC)**: This quantity is used as a measure of performance of a biomarker on predicting response versus nonresponse
+- Permutation-tested AUC
 - Repeated subsampling-tested AUC
 - Autocorrelation feature
 - **Gray level co-occurrence matrix (GLCM) features**: GLCM is defined over an image to be the distribution of co-occurring pixel values (grayscale values, or colors) at a given offset. Authors exploit GLCMs, commonly used in image processing to quantify the similarity of neighboring pixels, to characterize PD-L1 expression.
