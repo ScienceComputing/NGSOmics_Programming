@@ -19,7 +19,7 @@ To search for patients with non-small-cell lung cancer who are most likely to re
 
 
 ## Terminology
-- **Area under the curve (AUC)**: This quantity is used as a measure of performance of a biomarker on predicting response versus nonresponse
+- **Area under the curve (AUC)**: This quantity is used to measure the performance of a biomarker on distinguishing response versus nonresponse. In general, AUC or Receiver operating characteristic (ROC) curve compares and evaluates the performance of a binary classification model. It can be expressed in a plot of **sensitivity/true positive rate** (Y-axis) versus **1-specificity/false positive rate** (X-axis) at different probability cutoffs. The higher AUC suggests the better performance of the classifier. The diagonal line represents the random classification model, where all points along the diagonal line suggest the same true positive and false positive rate.
 - Permutation-tested AUC
 - Repeated subsampling-tested AUC
 - Autocorrelation feature
