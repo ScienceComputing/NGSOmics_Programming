@@ -21,19 +21,19 @@ To search for patients with non-small-cell lung cancer who are most likely to re
 ## Terminology
 - **Area under the curve (AUC)**: This quantity is used to measure the performance of a biomarker on distinguishing response versus nonresponse. In general, AUC or Receiver operating characteristic (ROC) curve compares and evaluates the performance of a binary classification model. The curve can be expressed in a plot of **sensitivity/true positive rate** (Y-axis) versus **1-specificity/false positive rate** (X-axis) at different probability cutoffs. The higher AUC suggests the better performance of the classifier. The diagonal line represents the random classification model, where all points along the diagonal line suggest the same true positive and false positive rate.
 
-| Cut-off	                | Sensitivity               | Specificity               | 1 - Specificity           |
-|-------------------------|---------------------------|---------------------------|---------------------------|
-| 0                       | 1                         | 0                         | 1                         |
-| 0.01                    | 0.979                     | 0.081                     | 0.919                     |
-| 0.02                    | 0.938                     | 0.158                     | 0.842                     |  
-| ...                     | ...                       | ...                       | ...                       |
-| 0.99                    | 0.02                      | 0.996                     | 0.004                     |
-| 1                       | 0                         | 1                         | 0                         |
+    | Cut-off	                | Sensitivity               | Specificity               | 1 - Specificity           |
+    |-------------------------|---------------------------|---------------------------|---------------------------|
+    | 0                       | 1                         | 0                         | 1                         |
+    | 0.01                    | 0.979                     | 0.081                     | 0.919                     |
+    | 0.02                    | 0.938                     | 0.158                     | 0.842                     |  
+    | ...                     | ...                       | ...                       | ...                       |
+    | 0.99                    | 0.02                      | 0.996                     | 0.004                     |
+    | 1                       | 0                         | 1                         | 0                         |
 
 - **Permutation-tested AUC**: 
-  - Context: Assume two classifiers using the same dataset are created and each one has its own distinct ROC curve and AUC value. The classifier M shows a higher AUC value than the classifer N. 
-  - Question: Is this difference in the AUC values systematic, or random? 
-  - Statistical translation: What is the probability of observing this difference or more extreme difference under the null hypothesis? 
+  - Context: assume two classifiers using the same dataset are created and each one has its own distinct ROC curve and AUC value. The classifier M shows a higher AUC value than the classifer N. 
+  - Question: is this difference in the AUC values systematic, or random? 
+  - Statistical translation: what is the probability of observing this difference or more extreme difference under the null hypothesis? 
   - Computational algorithm: 
   
 - Repeated subsampling-tested AUC
