@@ -42,7 +42,7 @@ To search for patients with non-small-cell lung cancer who are most likely to re
       - Z_i = a random pairwise mix between M and N
       - D_i = AUC of Z_i - AUC of N
       - if D_i >= AUC of M - AUC of N
-      -   then count = count + 1
+        - then count = count + 1
      - p = count/n
      - If p <= threshold (e.g., 0.05), we may conclude the difference in the AUC values of two classifiers is statistically significant.
   
