@@ -18,7 +18,7 @@ To search for patients with non-small-cell lung cancer who are most likely to re
         | PD-L1 immunohistochemistry score (unimodal) | 0.73          | 0.65-0.81     |
 
 
-## Terminology
+## Technical details
 - **Area under the curve (AUC)**: This quantity is used to measure the performance of a biomarker on distinguishing response versus nonresponse. In general, AUC or Receiver operating characteristic (ROC) curve compares and evaluates the performance of a binary classification model. The curve can be expressed in a plot of **sensitivity/true positive rate** (Y-axis) versus **1-specificity/false positive rate** (X-axis) at different probability cutoffs. The higher AUC suggests the better performance of the classifier. The diagonal line represents the random classification model, where all points along the diagonal line suggest the same true positive and false positive rate.
 
     | Cut-off	                | Sensitivity               | Specificity               | 1 - Specificity           |
@@ -34,7 +34,7 @@ To search for patients with non-small-cell lung cancer who are most likely to re
   - Context: assume two classifiers using the same test dataset are created and each one has its own distinct ROC curve and AUC value. The classifier M shows a higher AUC value than the classifer N. 
   - Question: is this difference in the AUC values systematic, or random? 
   - Statistical translation: what is the probability of observing this difference or more extreme difference under the null hypothesis? 
-  - Computational algorithm: 
+  - Computational algorithm using the randomized permuation: 
     - for i = 0, ..., n - 1
       - for cutoff = 0, ..., 1
         - M = (1 - specificity, sensitivity)_cutoff + M
@@ -46,7 +46,7 @@ To search for patients with non-small-cell lung cancer who are most likely to re
      - p = count/n
      - If p <= threshold (e.g., 0.05), we may conclude the difference in the AUC values of two classifiers is statistically significant.
   
-- Repeated subsampling-tested AUC
+- Repeated subsampling-tested AUC: AUC calculated using the test data from the repeated subsampling. Random subsampling, also known as Monte Carlo crossvalidation, refers to randomly splitting the data into subsets repeatedly, where the users define the size of the subsets. In contrast to a traditional cross-validation procedure, its advantage is resulting in more pessimistic predictions of the test data compared with cross-validation. The predictions give a realistic estimation of the predictions of external validation data.
 - Autocorrelation feature
 - **Gray level co-occurrence matrix (GLCM) features**: GLCM is defined over an image to be the distribution of co-occurring pixel values (grayscale values, or colors) at a given offset. Authors exploit GLCMs, commonly used in image processing to quantify the similarity of neighboring pixels, to characterize PD-L1 expression.
 - **Multiple instance logistic regression (MILR)**：MILR is a machine learning approach where sets of training data (bags) share a common label. Authors decorates MILR with the attention-based pooling, a strategy that assigns attention-based weights to each instance. These weights are a function of the instance features and are optimized for the outcome prediction. They are dynamically determined. The attention-based pooling is applicable for the fixed number of features while the unfixed number of input instances. The final output score is a weighted sum of the same logistic regression model for each instance. MILR treats each instance equally as the single set of parameters are shared across all instances. This machine learning technique has some **limitations**. First of all, it typically handles a single bag of homogenous instances, so heterogenous instances are not suitable for this technique. Second, the single set of parameters shared across all instances may not capture the possible difference in the relationship between the lesions of the same shape in different sites and the predictor.
