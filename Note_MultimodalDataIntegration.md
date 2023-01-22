@@ -31,7 +31,7 @@ To search for patients with non-small-cell lung cancer who are most likely to re
     | 1                       | 0                         | 1                         | 0                         |
 
 - **Permutation-tested AUC**: 
-  - Context: assume two classifiers using the same dataset are created and each one has its own distinct ROC curve and AUC value. The classifier M shows a higher AUC value than the classifer N. 
+  - Context: assume two classifiers using the same test dataset are created and each one has its own distinct ROC curve and AUC value. The classifier M shows a higher AUC value than the classifer N. 
   - Question: is this difference in the AUC values systematic, or random? 
   - Statistical translation: what is the probability of observing this difference or more extreme difference under the null hypothesis? 
   - Computational algorithm: 
