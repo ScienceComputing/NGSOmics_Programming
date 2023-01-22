@@ -19,7 +19,7 @@ To search for patients with non-small-cell lung cancer who are most likely to re
 
 
 ## Terminology
-- **Area under the curve (AUC)**: This quantity is used to measure the performance of a biomarker on distinguishing response versus nonresponse. In general, AUC or Receiver operating characteristic (ROC) curve compares and evaluates the performance of a binary classification model. It can be expressed in a plot of **sensitivity/true positive rate** (Y-axis) versus **1-specificity/false positive rate** (X-axis) at different probability cutoffs. The higher AUC suggests the better performance of the classifier. The diagonal line represents the random classification model, where all points along the diagonal line suggest the same true positive and false positive rate.
+- **Area under the curve (AUC)**: This quantity is used to measure the performance of a biomarker on distinguishing response versus nonresponse. In general, AUC or Receiver operating characteristic (ROC) curve compares and evaluates the performance of a binary classification model. The curve can be expressed in a plot of **sensitivity/true positive rate** (Y-axis) versus **1-specificity/false positive rate** (X-axis) at different probability cutoffs. The higher AUC suggests the better performance of the classifier. The diagonal line represents the random classification model, where all points along the diagonal line suggest the same true positive and false positive rate.
 
 | Cut-off	                | Sensitivity               | Specificity               | 1 - Specificity           |
 |-------------------------|---------------------------|---------------------------|---------------------------|
@@ -30,8 +30,12 @@ To search for patients with non-small-cell lung cancer who are most likely to re
 | 0.99                    | 0.02                      | 0.996                     | 0.004                     |
 | 1                       | 0                         | 1                         | 0                         |
 
-
-- Permutation-tested AUC
+- **Permutation-tested AUC**: 
+  - Context: Assume two classifiers using the same dataset are created and each one has its own distinct ROC curve and AUC value. The classifier M shows a higher AUC value than the classifer N. 
+  - Question: Is this difference in the AUC values systematic, or random? 
+  - Statistical translation: What is the probability of observing this difference or more extreme difference under the null hypothesis? 
+  - Computational algorithm: 
+  
 - Repeated subsampling-tested AUC
 - Autocorrelation feature
 - **Gray level co-occurrence matrix (GLCM) features**: GLCM is defined over an image to be the distribution of co-occurring pixel values (grayscale values, or colors) at a given offset. Authors exploit GLCMs, commonly used in image processing to quantify the similarity of neighboring pixels, to characterize PD-L1 expression.
