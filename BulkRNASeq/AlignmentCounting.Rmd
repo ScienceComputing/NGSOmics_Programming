@@ -1,0 +1,256 @@
+---
+title: "RNAseq_AlignCount"
+author: "Anni Liu"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: 
+  html_document:
+    code_folding: show
+---
+
+```{r, shorcut, include=FALSE}
+## RStudio keyboard shortcut
+# Clear all the code from your console: Ctrl+L
+# Create a pipe operator %>%: Ctrl+Shift+M (Windows) or Cmd+Shift+M (Mac)
+# Knit a document (knitr): Ctrl+Shift+K (Windows) or Cmd+Shift+K (Mac)
+# Comment/uncomment current line/selection: Ctrl+Shift+C (Windows) or Cmd+Shift+C (Mac)
+```
+
+# Load and save images
+
+```{r}
+load("2023Jan26RNAseq_AlignCount_ALiu.RData")
+```
+
+```{r}
+image.date <- format(Sys.Date(), "%Y%b%d")
+save.image(file = paste0(image.date, "RNAseq_AlignCount_ALiu.RData"))
+```
+
+[Manual](https://rockefelleruniversity.github.io/RU_RNAseq/)
+
+[Vignettes](https://www.bioconductor.org/packages/release/bioc/vignettes/Rfastp/inst/doc/Rfastp.html#a-normal-qc-run-for-single-end-fastq-file.)
+
+[Video](https://www.youtube.com/watch?v=FHDhsQIHPKc)
+
+# Wrangle with raw RNAseq FASTQ data
+```{r}
+# Install and attach libraries
+# BiocManager::install("Rfastp")
+library(Rfastp)
+```
+
+```{r}
+# Download the sample FASTQ data
+if(!file.exists("./ENCFF332KDA.fastq.gz")){
+   download.file(url = "https://www.encodeproject.org/files/ENCFF332KDA/@@download/ENCFF332KDA.fastq.gz",
+                 destfile = "./r_course/data/ENCFF332KDA_sampled.fastq.gz")
+}
+```
+
+## Generate FASTQ report
+```{r}
+json_report <- rfastp(read1 = "./r_course/data/ENCFF332KDA_sampled.fastq.gz", outputFastq = "ENCFF332KD_rfastq") 
+# outputFastq: string of /path/prefix for output fastq
+```
+
+## Plot specific QC aspects
+```{r}
+curvePlot(json_report)
+curvePlot(json_report, curves = "content_curves")
+```
+
+# Align RNAseq data - find the exact position of a read
+## Build the reference genome
+```{r}
+# BiocManager::install("BSgenome")
+# BiocManager::install("BSgenome.Mmusculus.UCSC.mm10")
+library(BSgenome)
+# See what genomes are currently installed
+installed.genomes()
+# See what genomes are available
+available.genomes()
+# BiocManager::install("BSgenome.Mmusculus.UCSC.mm10")
+library(BSgenome.Mmusculus.UCSC.mm10)
+BSgenome.Mmusculus.UCSC.mm10
+BSgenome.Mmusculus.UCSC.mm10[["chr1"]] # Extract the entire sequence of chromosome 1
+```
+
+```{r}
+mainChromosomes <- paste0("chr", c(1:9, "X", "Y", "M"))
+# mainChrSeq <- parallel::mclapply(1:length(mainChromosomes),
+#                                  function(i)
+#                BSgenome.Mmusculus.UCSC.mm10[[mainChromosomes[i]]],
+#                                   mc.cores = 4L)
+
+mainChrSeq <- parallel::mclapply(mainChromosomes,
+                                 function(i)
+                                   BSgenome.Mmusculus.UCSC.mm10[[i]],
+                                 mc.cores = 4L)
+names(mainChrSeq) <- mainChromosomes
+mainChrSeqSet <- DNAStringSet(mainChrSeq)
+mainChrSeqSet
+```
+
+```{r}
+# Create a FASTA file for the reference genome
+writeXStringSet(mainChrSeqSet, "BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa")
+```
+
+
+## Build an Rsubread index
+```{r}
+library(Rsubread)
+buildindex("mm10_mainchrs", "BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa", memory = 8000, indexSplit = T)
+```
+
+
+## Construct the alignment
+```{r}
+# Create a SAF file to capture non-canonical splice sites
+# BiocManager::install("TxDb.Mmusculus.UCSC.mm10.knownGene")
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+myExons <- exons(TxDb.Mmusculus.UCSC.mm10.knownGene,
+                 columns = c("tx_id", "gene_id"))
+myExons <- myExons[lengths(myExons$gene_id) == 1]
+myExons
+dfExons <- as.data.frame(myExons)
+SAF <- dfExons[, c("gene_id", "seqnames", "start", "end", "strand")]
+names(SAF) <- c("GeneID", "Chr", "Start", "End", "Strand")
+
+# The following cods crash
+# SAF <- data.frame(
+#   GeneID = dfExons$gene_id,
+#   Chr = dfExons$seqnames,
+#   Start = dfExons$start,
+#   End = dfExons$end,
+#   Strand = dfExons$strand)
+
+# Run the alignment (slow in personal computer)
+myMapped <- subjunc(index = "mm10_mainchrs", 
+                    readfile1 = "ENCFF332KD_rfastq_R1.fastq.gz", # Filtered FASTQ file
+                    output_format = "BAM",
+                    output_file = "Treg_1.bam",
+                    useAnnotation = T,
+                    annot.ext = SAF,
+                    isGTF = F,
+                    nthreads = 4)
+
+# Sort and index reads
+library(Rsamtools)
+sortBam("Treg_1.bam", "Sorted_Treg_1")
+indexBam("Sorted_Treg_1.bam")
+```
+
+# Quantify the aligned RNAseq data 
+## Use gene model
+```{r}
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+geneExons <- exonsBy(TxDb.Mmusculus.UCSC.mm10.knownGene, by = "gene")
+class(geneExons)
+
+# Extract the first two gene information
+geneExons[1:2]
+
+library(GenomicAlignments)
+myBam <- BamFile("Sorted_Treg_1.bam", yieldSize = 10000)
+tregGeneCounts <- summarizeOverlabs(geneExons, myBam, ignore.strand = T)
+tregGeneCounts
+```
+
+```{r}
+save(tregGeneCounts, file = "tregGeneCounts.RData")
+load("tregGeneCounts.RData")
+class(tregGeneCounts) # RangedSummarizedExperiment
+```
+
+
+## Use exon model
+```{r}
+library(GenomicFeatures)
+nonOverlappingExons <- disjointExons(TxDb.Mmusculus.UCSC.mm10.knownGene)
+names(nonOverlappingExons) <- paste(mcols(nonOverlappingExons)$gene_id,
+      mcols(nonOverlappingExons)$exonic_part,
+                                    sep = "_")
+# Extract the first three exons information
+nonOverlappingExons[1:3, ]
+
+tregExonCounts <- summarizeOverlaps(nonOverlappingExons,
+                                    myBam,
+                                    ignore.strand = T,
+                                    inter.feature = F)
+class(tregExonCounts) # RangedSummarizedExperiment
+```
+
+```{r}
+save(tregExonCounts, file = "tregExonCounts.RData")
+load("tregExonCounts.RData")
+```
+
+
+## Extract the count matrix in gene/exon model
+```{r}
+geneCounts <- assay(tregGeneCounts)
+exonCounts <- assay(tregExonCounts)
+head(geneCounts)
+head(exonCounts)
+```
+
+
+# Use k-mer counting to quantify the RNA-seq data - Salmon tool
+```{r}
+# Advantage: speed up the counting process; disadvantage: no position information for a single read so we cannot visually check the read in the IGV
+
+# BiocManager::install(version = "3.16")
+# BiocManager::install("Herper")
+library(Herper)
+salmon_paths <- install_CondaTools(tools = "salmon", env = "RNAseq")
+salmon_paths
+# $pathToConda
+# [1] "/Users/anniliu/Library/r-miniconda/bin/conda"
+# 
+# $environment
+# [1] "RNAseq"
+# 
+# $pathToEnvBin
+# [1] "/Users/anniliu/Library/r-miniconda/envs/RNAseq/bin"
+```
+
+
+## Build the reference for transcript
+```{r}
+library(GenomicFeatures)
+allTxSeq <- extractTranscriptSeqs(x = BSgenome.Mmusculus.UCSC.mm10,
+                                  transcripts = TxDb.Mmusculus.UCSC.mm10.knownGene,
+                                  use.names = T)
+allTxSeq
+class(allTxSeq) # DNAStringSet
+writeXStringSet(allTxSeq, "mm10Trans.fa")
+```
+
+
+## Build the reference with decoy sequences
+Allow salmon to consider similar sequences outside of transcriptomic regions and down-weight them when mapping.
+
+```{r}
+mainChromosomes <- paste0("chr", c(1:19, "X", "Y", "M"))
+mainChrSeq <- parallel::mclapply(mainChromosomes,
+                                 function(i)
+                                   BSgenome.Mmusculus.UCSC.mm10[[i]],
+                                 mc.cores = 4L)
+names(mainChrSeq) <- mainChromosomes
+mainChrSeqSet <- DNAStringSet(mainChrSeq)
+gentrome <- c(allTxSeq, mainChrSeqSet) # Combination of the transcript sets and the entire chromosome sets 
+
+writeXStringSet(gentrome, "mm10Gentrome.fa")
+
+# Write a config file containing the names of sequences to be used for decoys
+write.table(x = as.data.frame(mainChromosomes), 
+            file = "decoy.txt",
+            row.names = F,
+            col.names = F,
+            quote = F)
+```
+
+
+## Build the Salmon index
+
