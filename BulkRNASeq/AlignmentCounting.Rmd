@@ -26,12 +26,6 @@ image.date <- format(Sys.Date(), "%Y%b%d")
 save.image(file = paste0(image.date, "RNAseq_AlignCount_ALiu.RData"))
 ```
 
-[Manual](https://rockefelleruniversity.github.io/RU_RNAseq/)
-
-[Vignettes](https://www.bioconductor.org/packages/release/bioc/vignettes/Rfastp/inst/doc/Rfastp.html#a-normal-qc-run-for-single-end-fastq-file.)
-
-[Video](https://www.youtube.com/watch?v=FHDhsQIHPKc)
-
 # Wrangle with raw RNAseq FASTQ data
 ```{r}
 # Install and attach libraries
