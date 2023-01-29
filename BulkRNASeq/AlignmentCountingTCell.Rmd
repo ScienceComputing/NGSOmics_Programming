@@ -1,5 +1,5 @@
 ---
-title: "RNAseq_AlignCount"
+title: "Alignment and Counting Using T-regulatory Cell RNA-Seq Data"
 author: "Anni Liu"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: 
