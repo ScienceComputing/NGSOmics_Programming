@@ -9,16 +9,19 @@ output:
 
 ```{r, shorcut, include=FALSE}
 ## RStudio keyboard shortcut
+# Cursor at the beginning of a command line: Ctrl+A
+# Cursor at the end of a command line: Ctrl+E
 # Clear all the code from your console: Ctrl+L
 # Create a pipe operator %>%: Ctrl+Shift+M (Windows) or Cmd+Shift+M (Mac)
+# Create an assignment operator <-: Alt+- (Windows) or Option+-(Mac) 
 # Knit a document (knitr): Ctrl+Shift+K (Windows) or Cmd+Shift+K (Mac)
-# Comment/uncomment current line/selection: Ctrl+Shift+C (Windows) or Cmd+Shift+C (Mac)
+# Comment or uncomment current selection: Ctrl+Shift+C (Windows) or Cmd+Shift+C (Mac)
 ```
 
-# Load and save images
 
+# Load and save images
 ```{r}
-load("2023Jan26RNAseq_AlignCount_ALiu.RData")
+load("2023Jan27RNAseq_AlignCount_ALiu.RData")
 ```
 
 ```{r}
@@ -26,6 +29,8 @@ image.date <- format(Sys.Date(), "%Y%b%d")
 save.image(file = paste0(image.date, "RNAseq_AlignCount_ALiu.RData"))
 ```
 
+
+# Tutorial
 # Wrangle with raw RNAseq FASTQ data
 ```{r}
 # Install and attach libraries
@@ -34,24 +39,27 @@ library(Rfastp)
 ```
 
 ```{r}
-# Download the sample FASTQ data
+# Download the sample FASTQ data for T-regulatory cell
 if(!file.exists("./ENCFF332KDA.fastq.gz")){
    download.file(url = "https://www.encodeproject.org/files/ENCFF332KDA/@@download/ENCFF332KDA.fastq.gz",
-                 destfile = "./r_course/data/ENCFF332KDA_sampled.fastq.gz")
+                 destfile = "./ENCFF332KDA_sampled.fastq.gz")
 }
 ```
 
+
 ## Generate FASTQ report
 ```{r}
-json_report <- rfastp(read1 = "./r_course/data/ENCFF332KDA_sampled.fastq.gz", outputFastq = "ENCFF332KD_rfastq") 
+json_report <- rfastp(read1 = "./ENCFF332KDA_sampled.fastq.gz", outputFastq = "ENCFF332KD_rfastq") 
 # outputFastq: string of /path/prefix for output fastq
 ```
+
 
 ## Plot specific QC aspects
 ```{r}
 curvePlot(json_report)
 curvePlot(json_report, curves = "content_curves")
 ```
+
 
 # Align RNAseq data - find the exact position of a read
 ## Build the reference genome
@@ -83,9 +91,7 @@ mainChrSeq <- parallel::mclapply(mainChromosomes,
 names(mainChrSeq) <- mainChromosomes
 mainChrSeqSet <- DNAStringSet(mainChrSeq)
 mainChrSeqSet
-```
 
-```{r}
 # Create a FASTA file for the reference genome
 writeXStringSet(mainChrSeqSet, "BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa")
 ```
@@ -93,8 +99,12 @@ writeXStringSet(mainChrSeqSet, "BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa")
 
 ## Build an Rsubread index
 ```{r}
+# Once you build the index, no need to repeat this step in the future
 library(Rsubread)
-buildindex("mm10_mainchrs", "BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa", memory = 8000, indexSplit = T)
+buildindex(basename = "mm10_mainchrs",
+           reference = "BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa", # a character string giving the name of a FASTA or gzipped FASTA file containing the sequences of all chromosomes and contigs.
+           memory = 8000, 
+           indexSplit = T)
 ```
 
 
@@ -105,7 +115,8 @@ buildindex("mm10_mainchrs", "BSgenome.Mmusculus.UCSC.mm10.mainChrs.fa", memory =
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
 myExons <- exons(TxDb.Mmusculus.UCSC.mm10.knownGene,
                  columns = c("tx_id", "gene_id"))
-myExons <- myExons[lengths(myExons$gene_id) == 1]
+lengths(myExons$gene_id) |> range()
+myExons <- myExons[lengths(myExons$gene_id) == 1] # Select exons which are annotated to exactly one gene
 myExons
 dfExons <- as.data.frame(myExons)
 SAF <- dfExons[, c("gene_id", "seqnames", "start", "end", "strand")]
@@ -134,6 +145,7 @@ library(Rsamtools)
 sortBam("Treg_1.bam", "Sorted_Treg_1")
 indexBam("Sorted_Treg_1.bam")
 ```
+
 
 # Quantify the aligned RNAseq data 
 ## Use gene model
@@ -247,4 +259,157 @@ write.table(x = as.data.frame(mainChromosomes),
 
 
 ## Build the Salmon index
+```{r}
+##------Build the Salmon index without the decoy file------
+# https://salmon.readthedocs.io/en/latest/salmon.html#using-salmon
+indexName <- "mm10Trans" # Index name -> -i
+fastaTx <- "mm10Trans.fa" # Transcript FASTA file -> -t
+
+with_CondaEnv(new = "RNAseq", # The name of conda environment
+              code = system2(command = "salmon", 
+                             args = c("index", "-i", indexName, "-t", fastaTx),
+                             stdout = T) 
+              )
+# system2 invokes the OS command specified by command -> command line: salmon index -i mm10Trans -t mm10Trans.fa
+# code: execute the code in the RNAseq environment
+# stdout: give error message
+# fastaTx: salmon directly uses the FASTA file in the directory that stores this rmd file
+
+# Output
+#  [1] "Threads = 2"                                                                                                
+#  [2] "Vertex length = 31"                                                                                         
+#  [3] "Hash functions = 5"                                                                                         
+#  [4] "Filter size = 2147483648"                                                                                   
+#  [5] "Capacity = 2"                                                                                               
+#  [6] "Files: "                                                                                                    
+#  [7] "mm10Trans/ref_k31_fixed.fa"                                                                                 
+#  [8] "--------------------------------------------------------------------------------"                           
+#  [9] "Round 0, 0:2147483648"                                                                                      
+# [10] "Pass\tFilling\tFiltering"                                                                                   
+# [11] "1\t19\t64\t"                                                                                                
+# [12] "2\t4\t1"                                                                                                    
+# [13] "True junctions count = 546079"                                                                              
+# [14] "False junctions count = 1324439"                                                                            
+# [15] "Hash table size = 1870518"                                                                                  
+# [16] "Candidate marks count = 6938280"                                                                            
+# [17] "--------------------------------------------------------------------------------"                           
+# [18] "Reallocating bifurcations time: 0"                                                                          
+# [19] "True marks count: 4148656"                                                                                  
+# [20] "Edges construction time: 5"                                                                                 
+# [21] "--------------------------------------------------------------------------------"                           
+# [22] "Distinct junctions = 546079"                                                                                
+# [23] ""                                                                                                           
+# [24] "for info, total work write each  : 2.331    total work inram from level 3 : 4.322  total work raw : 25.000 "
+# [25] "Bitarray       632080832  bits (100.00 %)   (array + ranks )"                                               
+# [26] "final hash             0  bits (0.00 %) (nb in final hash 0)"  
+
+
+
+##------Build the Salmon index with the decoy file------
+indexName <- "mm10Gentrome" 
+fastaTx <- "mm10Gentrome.fa" 
+decoy <- "decoy.txt"
+with_CondaEnv(new = "RNAseq",
+              code = system2(command = "salmon", 
+                             args = c("index", "-i", indexName, "-t", fastaTx, "-d", decoy, "-p 4"),
+                             stdout = T) 
+              )
+```
+
+
+## Quantify the transcript abundance
+```{r}
+# Command line: salmon quant -i mm10Gentrome -r ~/ENCFF332KD_rfastq_R1.fastq.gz -o TReg_1_Quant -l A
+# -r: single-end reads
+# -l: library type; -l A: allow Salmon to automatically infer the library type
+
+fq <- "ENCFF332KD_rfastq_R1.fastq.gz"
+outDir <- "Treg_1_Quant"
+
+with_CondaEnv(new = "RNAseq",
+              code = system2(command = "salmon",
+                             args = c("quant", 
+                                      "-i", indexName,
+                                      "-o", outDir,
+                                      "-l A",
+                                      "-r", fq,
+                                      "-p 4")))
+```
+
+```{r}
+# View the Salmon output
+Quant <- read.delim("TReg_1_Quant/quant.sf")
+Quant[1:3, ] # Show the transcripts per kilobase million (TPM) and the actual count (NumReads)
+```
+
+# Exercise
+## Run Rfastp
+```{r}
+if(!file.exists("./ENCFF070QMF.fastq.gz")){
+   download.file(url = "https://www.encodeproject.org/files/ENCFF070QMF/@@download/ENCFF070QMF.fastq",
+                 destfile = "./ENCFF070QMF.fastq")
+}
+
+library(Rfastp)
+json.report <- rfastp(read1 = "./ENCFF070QMF.fastq", outputFastq = "ENCFF070QMF_rfastq") 
+```
+
+
+## Check Rfastp QC plots
+```{r}
+qcSummary(json.report)
+curvePlot(json = json.report, curves = "quality_curves")
+curvePlot(json = json.report, curves = "content_curves")
+```
+
+
+## Alignment
+Align the filtered reads to the chromosome 10 of mm10 genome. Sort and index the resulting BAM file.
+```{r}
+library(BSgenome.Mmusculus.UCSC.mm10)
+mainChromosomes <- "chr10"
+mainChrSeq <- list(BSgenome.Mmusculus.UCSC.mm10[[mainChromosomes]])
+names(mainChrSeq) <- mainChromosomes
+mainChrSeqSet <- DNAStringSet(mainChrSeq)
+writeXStringSet(mainChrSeqSet, "mm10Chr10.fa")
+```
+
+```{r}
+library(Rsubread)
+buildindex(basename = "mm10Chr10", 
+           reference = "mm10Chr10.fa", 
+           memory = 8000, 
+           indexSplit = T)
+```
+
+```{r}
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+myExons <- exons(TxDb.Mmusculus.UCSC.mm10.knownGene,
+                 columns = c("tx_id", "gene_id"))
+myExons <- myExons[lengths(myExons$gene_id) == 1]
+dfExons <- as.data.frame(myExons)
+SAF <- dfExons[, c("gene_id", "seqnames", "start", "end", "strand")]
+names(SAF) <- c("GeneID", "Chr", "Start", "End", "Strand")
+```
+
+```{r}
+library(Rsubread)
+myMapped <- subjunc(index = "mm10Chr10", 
+                    readfile1 = "ENCFF070QMF_rfastq_R1.fastq.gz",
+                    output_format = "BAM",
+                    output_file = "Treg_2.bam",
+                    useAnnotation = T,
+                    annot.ext = SAF,
+                    isGTF = F,
+                    nthreads = 4)
+```
+
+```{r}
+library(Rsamtools)
+sortBam("Treg_2.bam", "Sorted_Treg_2")
+indexBam("Sorted_Treg_2.bam")
+```
+
+
+Count the reads in the newly aligned and indexed BAM file mapping within genes. Plot a density plot of log 10 of reads counts across genes on chromosome 10 (**NOTE**: add 1 read to all counts to avoid log of zero).
 
