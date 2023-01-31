@@ -1,5 +1,5 @@
 ---
-title: "Alignment and Counting Using T-regulatory Cell RNA-Seq Data"
+title: "Alignment and Counting Using T-Regulatory Cell RNA-Seq Data"
 author: "Anni Liu"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: 
@@ -413,7 +413,7 @@ indexBam("Sorted_Treg_2.bam")
 ```
 
 
-## Quantify the genes
+## Quantify the genes using summarizeOverlabs
 Count the reads in the newly aligned and indexed BAM file mapping within genes. Plot a density plot of log 10 of reads counts across genes on chromosome 10 (**NOTE**: add 1 to all counts to eschew log of zero).
 ```{r}
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
@@ -464,7 +464,6 @@ with_CondaEnv(new = "RNAseq",
 
 fq <- "ENCFF070QMF_rfastq_R1.fastq.gz"
 outDir <- "Treg_2_Quant"
-
 with_CondaEnv(new = "RNAseq",
               code = system2(command = "salmon",
                              args = c("quant", 
