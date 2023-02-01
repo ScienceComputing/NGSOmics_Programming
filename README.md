@@ -1,9 +1,11 @@
 # Learn Bioinformatics
 
-This repository contains my coding practice using the materials from cutting-edge bioinformatics workshop, technical manuals, books, and other resources outside my school classes. It also presents my learning notes about popular bioinformatics concepts mainly from academic articles, blog posts, and podcasts.
+This repository contains my coding practice using the materials from fundamental and cutting-edge bioinformatics workshop, technical manuals, books, and other resources. It also contains my learning notes about recently developed bioinformatics concepts from academic articles, blog posts, and podcasts.
 
 ## Coding practice
 **Build auto-encoder for somatic mutations**
+
+**Analyze bulk RNA-Seq data**
 
 **Analyze single cell RNA-Seq data**
 
