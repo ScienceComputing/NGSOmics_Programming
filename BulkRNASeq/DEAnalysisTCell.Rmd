@@ -6,3 +6,223 @@ output:
   html_document:
     code_folding: show
 ---
+
+```{r, shorcut, include=FALSE}
+## RStudio keyboard shortcut
+# Cursor at the beginning of a command line: Ctrl+A
+# Cursor at the end of a command line: Ctrl+E
+# Clear all the code from your console: Ctrl+L
+# Create a pipe operator %>%: Ctrl+Shift+M (Windows) or Cmd+Shift+M (Mac)
+# Create an assignment operator <-: Alt+- (Windows) or Option+-(Mac) 
+# Knit a document (knitr): Ctrl+Shift+K (Windows) or Cmd+Shift+K (Mac)
+# Comment or uncomment current selection: Ctrl+Shift+C (Windows) or Cmd+Shift+C (Mac)
+```
+
+
+# Load and save images
+```{r}
+load("2023Feb02RNAseq_DEAnalysis_ALiu.RData")
+```
+
+```{r}
+image.date <- format(Sys.Date(), "%Y%b%d")
+save.image(file = paste0(image.date, "RNAseq_DEAnalysis_ALiu.RData"))
+```
+
+[Manual](https://rockefelleruniversity.github.io/RU_RNAseq/)
+
+[Video](https://www.youtube.com/watch?v=SgqDsgaIkLU)
+
+
+# Tutorial
+# Count multiple raw RNAseq FASTQ data
+## Use summarizeOverlaps
+```{r}
+library(Rsamtools)
+bamFilesToCount <- c("Sorted_Treg_1.bam", "Sorted_Treg_2.bam",
+                     "Sorted_Treg_act_1.bam", "Sorted_Treg_act_2.bam", "Sorted_Treg_act_3.bam")
+names(bamFilesToCount) <- c("Sorted_Treg_1","Sorted_Treg_2",
+                            "Sorted_Treg_act_1","Sorted_Treg_act_2", "Sorted_Treg_act_3")
+myBams <- BamFileList(bamFilesToCount, yieldSize = 10000)
+
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+library(GenomicAlignments)
+geneExons <- exonsBy(TxDb.Mmusculus.UCSC.mm10.knownGene, by = "gene")
+geneCounts <- summarizeOverlaps(geneExons,  myBams, ignore.strand = T)
+geneCounts
+```
+
+
+## Parallel counting on the same machine or high performance computing
+```{r}
+library(BiocParallel)
+paramMulti <- MulticoreParam(workers = 4) # Use four cores
+# paramSerial <- SerialParam() # No parallelization
+register(paramMulti)
+```
+
+
+## Load counts
+```{r}
+library(SummarizedExperiment)
+load("./data/GeneCounts.RData")
+class(geneCounts) # RangedSummarizedExperiment
+assay(geneCounts)[1:2, ] # The row is Entrez gene ID; the column is sample name
+```
+
+
+## Extract the gene position
+```{r} 
+rowRanges(geneCounts)[1:2, ] # Take a peek at the position information of the first two genes: 497097 and 19888
+```
+
+
+# Differential expression analysis
+```{r}
+metaData <- data.frame(Group = c("Naive", "Naive", "Act", "Act", "Act"),
+                       row.names = colnames(geneCounts)) # Sample names
+metaData
+```
+
+
+## Create a DESeq2 object
+### Use DESeqDataSetFromMatrix
+```{r}
+library(DESeq2)
+countMatrix <- assay(geneCounts)
+countGRanges <- rowRanges(geneCounts) # Assign ranges to the Entrez gene ID
+dds <- DESeqDataSetFromMatrix(countMatrix, 
+                              colData = metaData, 
+                              design = ~Group, # Compare naive and activated
+                              rowRanges = countGRanges)
+dds
+```
+
+
+### Use DESeqDataSet
+```{r}
+colData(geneCounts)$Group <- metaData$Group
+geneCounts
+dds <- DESeqDataSet(geneCounts, design = ~Group)
+dds
+```
+
+
+## Normalization
+`DEseq()` normalizes the data by estimating the median expression of genes across all samples to produce a per sample normalization factor (library size). Normalized counts are counts divided by the library scaling factor, accounting for the sequencing depth.
+
+
+### Retrieve normalized and unnormalized values
+```{r}
+dds <- DESeq(dds)
+# estimating size factors
+# estimating dispersions
+# gene-wise dispersion estimates
+# mean-dispersion relationship
+# final dispersion estimates
+# fitting model and testing
+normCounts <- counts(dds, normalized = T)
+normCounts[1:2, ]
+
+oriCounts <- counts(dds, normalized = F)
+oriCounts[1:2, ]
+```
+
+
+## Estimate variance
+`DEseq()` shrinks the gene expression variance depending on the mean to increase the likelihood of detecting the significant differentially expressed genes with the low biological replicate number.
+```{r}
+plotDispEsts(dds)
+# Black dots: (mean of normalized estimates of gene counts, variance)
+# Blue line: adjusted dispersions, which are shrunk to be more similar to each other; the outliers are not shrunk, indicating there may exist the real high dispersion/variance 
+```
+
+
+## Extract the countrast of interest - pairwise comparison
+```{r}
+myRes <- results(dds, contrast = c("Group", "Act", "Naive")) # Log-fold change will consider the order - Act and Naive; typically put the mutant/treatment as the first and the wildtype/control as the second 
+myRes
+myRes.ordered <- myRes[order(myRes$pvalue), ]
+myRes.ordered[1:3, ]
+
+# baseMean: average normalized gene counts across all sample replicates; give an idea if this gene is highly expressed or lowly expressed
+# log2FoldChange: log2 of fold change between groups being compared
+# pvalue: significance of changes between groups
+# padj: p-value corrected for false discovery rate
+```
+
+
+## Global view of differential expression changes
+```{r}
+summary(myRes.ordered)
+# summary(myRes) # equivalent
+```
+
+
+## Visulize the relationship between fold-changes and expression levels
+```{r}
+plotMA(myRes.ordered) # Blue dots are significant differentially expressed genes; lower counts are hard to call significance, although the variance of lower counts have been shrunk
+```
+
+
+## Downweight genes with high-fold changes but low significance
+This allows us to use the `log2 fold-change` as a **measure of significance** of change in our ranking for analysis and in programs such as `GSEA`. 
+```{r}
+resultsNames(dds) # Extract the coefficient name: "Group_Naive_vs_Act"
+myRes.lfc <- lfcShrink(dds, coef = "Group_Naive_vs_Act")
+plotMA(myRes.lfc)
+```
+
+
+## Convert DESeqResults objects into a data frame
+```{r}
+class(myRes.ordered) # DESeqResults
+myRes.ordered.DF <- as.data.frame(myRes.ordered)
+myRes.ordered.DF[1:2, ]
+```
+
+
+## Low expressed genes and NA in padj
+By default, in the multiple testing correction, DESeq2 filters out low expressed genes (as we can see `baseMean`) and assign the adjusted p values as `NA` values in the padj column. In fact, `NA` means the adjusted p-value is 1. DESeq2 removes these genes to increase the statistical power so that we can detect more significant differentially expressed genes in the setting of multiple testing correction. 
+```{r}
+table(is.na(myRes.ordered.DF$padj))
+# Half of the padjs are NAs. 
+
+myRes.DF <- as.data.frame(myRes)
+myRes.DF$newPadj <- p.adjust(myRes.DF$pvalue)
+myRes.DF[1:3, ]
+```
+
+
+Typically genes with NA values in padj should be filtered out from the table for later evaluation adn functional testing.
+```{r}
+myRes.DF.new <- myRes.DF[!is.na(myRes.DF$padj), ]
+myRes.DF.new.ordered <- myRes.DF.new[order(myRes.DF.new$pvalue), ]
+myRes.DF.new.ordered[1:3, ]
+```
+
+
+## Link transcript quantification by Salmon to DESeq2
+### Load sf data
+```{r}
+library(tximport)
+temp <- read.delim("./data/TReg_2_Quant/quant.sf")
+temp[1:3, ] # Data is shown at the transcript level, not the gene level
+```
+
+
+### Map the transcript ID to the gene ID
+```{r}
+library(TxDb.Mmusculus.UCSC.mm10.knownGene) # Load the annotation database
+keytypes(TxDb.Mmusculus.UCSC.mm10.knownGene)
+# [1] "CDSID"    "CDSNAME"  "EXONID"   "EXONNAME"
+# [5] "GENEID"   "TXID"     "TXNAME"  
+Tx2Gene <- AnnotationDbi::select(x = TxDb.Mmusculus.UCSC.mm10.knownGene, 
+                  keys = temp["Name"] |> unlist(), 
+                  keytype = "TXNAME",
+                  columns = c("GENEID", "TXNAME"))
+Tx2Gene <- Tx2Gene[!is.na(Tx2Gene$GENEID), ]
+Tx2Gene[1:10, ]
+```
+
+
