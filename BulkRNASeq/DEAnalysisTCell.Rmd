@@ -182,23 +182,10 @@ myRes.ordered.DF[1:2, ]
 ```
 
 
-## Low expressed genes and NA in padj
-By default, in the multiple testing correction, DESeq2 filters out low expressed genes (as we can see `baseMean`) and assign the adjusted p values as `NA` values in the padj column. In fact, `NA` means the adjusted p-value is 1. DESeq2 removes these genes to increase the statistical power so that we can detect more significant differentially expressed genes in the setting of multiple testing correction. 
+## Show the results of `padj < 0.05` and `log2FoldChange > 2`
 ```{r}
-table(is.na(myRes.ordered.DF$padj))
-# Half of the padjs are NAs. 
-
-myRes.DF <- as.data.frame(myRes)
-myRes.DF$newPadj <- p.adjust(myRes.DF$pvalue)
-myRes.DF[1:3, ]
-```
-
-
-Typically genes with NA values in padj should be filtered out from the table for later evaluation adn functional testing.
-```{r}
-myRes.DF.new <- myRes.DF[!is.na(myRes.DF$padj), ]
-myRes.DF.new.ordered <- myRes.DF.new[order(myRes.DF.new$pvalue), ]
-myRes.DF.new.ordered[1:3, ]
+myRes.DF.s <- with(myRes.DF.new, myRes.DF.new[padj < 0.05 & !is.na(padj) & log2FoldChange > 2, ])
+myRes.DF.s[1:3, ]
 ```
 
 
@@ -225,4 +212,67 @@ Tx2Gene <- Tx2Gene[!is.na(Tx2Gene$GENEID), ]
 Tx2Gene[1:10, ]
 ```
 
+
+```{r}
+sf.path <- dir(path = "data/", recursive = T, pattern = "quant.sf", full.names = T) # recursive: look for the target file inside the folder inside the data folder; full.names = T provides the full path name
+sf.path
+
+salmonCounts <- tximport(files = sf.path, type = "salmon", tx2gene = Tx2Gene)
+
+salmonCounts$abundance[1:2, ] # Show the number of transcripts per million transcripts (TPM); TPM accounts for sequencing depth and gene length
+salmonCounts$counts[1:2, ] # Show the estimated counts; used for DESeq2
+```
+
+
+### Build DESeq2 object from Tximport
+```{r}
+ddsSalmon <- DESeqDataSetFromTximport(txi = salmonCounts, colData = metaData, design = ~Group)
+```
+
+
+### Run DeSeq
+```{r}
+ddsSalmon <- DESeq(ddsSalmon)
+# Extract the countrast of interest - pairwise comparison
+myRes.Salmon <- results(ddsSalmon, contrast = c("Group", "Act", "Naive"))
+myRes.Salmon.ordered <- myRes.Salmon[order(myRes.Salmon$pvalue), ]
+myRes.Salmon.ordered[1:3, ]
+```
+
+
+### Show the results of `padj < 0.05` and `log2FoldChange > 2`
+```{r}
+myRes.Salmon.s <- with(myRes.Salmon, myRes.Salmon[padj < 0.05 & !is.na(padj) & log2FoldChange > 2, ])
+myRes.Salmon.s[1:3, ]
+```
+
+
+### Test the consistency between DEGs detected by `summarizeOverlaps` and `Salmon`
+```{r}
+library(ggvenn)
+ggvenn(data = list(summarizeOverlaps = rownames(myRes.DF.s), 
+                   Salmon = rownames(myRes.Salmon.s)))
+```
+
+
+## Add gene names or symbols
+```{r}
+library(org.Mm.eg.db) # Load mouse organism annotation database; it contains GO term and ENTREZ IDs
+eToSym <- select(org.Mm.eg.db,
+                 keys = rownames(myRes.DF.s),
+                 keytype = "ENTREZID",
+                 columns = "SYMBOL")
+eToSym[1:6, ]
+```
+
+
+```{r}
+myRes.annotated <- merge(x = eToSym, 
+                         y = myRes.DF.s,
+                         by.x = 1, # We are interested in the first column of eToSym
+                         by.y = 0, # We are interested in the rownames of myRes.DF.s
+                         all.x = F, # Non-matching cases in eToSym will not appear in the merged dataset
+                         all.y = T) # Non-matching cases in myRes.DF.s will appear in the merged dataset
+myRes.annotated[1:3, ]
+```
 
