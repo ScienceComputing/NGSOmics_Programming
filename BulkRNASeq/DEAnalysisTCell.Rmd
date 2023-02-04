@@ -276,3 +276,80 @@ myRes.annotated <- merge(x = eToSym,
 myRes.annotated[1:3, ]
 ```
 
+
+# Exercise - work with RNAseq data of adult mouse liver and heart tissues
+## Get counts into DESeq2
+```{r}
+library(tximport)
+# sf.path <- dir(path = "data/Salmon_Tissue/", recursive = T, pattern = "quant.sf", full.names = T)
+# salmonCounts <- tximport(files = sf.path, type = "salmon", tx2gene = Tx2Gene)
+
+# Load the DESeqDataSet
+load("data/geneCounts_Tissue.RData")
+colData(geneCounts_Tissue)$Tissue <- factor(c("Heart","Heart","Liver","Liver"))
+dds <- DESeqDataSet(geneCounts_Tissue, design = ~Tissue)
+```
+
+
+Add 0.25 to every count and plot a boxplot of the log2 of these updated counts across 4 sample replicates.
+```{r}
+library(RColorBrewer)
+boxplot(log2(counts(dds, normalized = F) + 0.25),
+        names = c("Heart1","Heart2","Liver1","Liver2"), col = brewer.pal(n = 4, name = "Paired"))
+```
+
+
+## Normalize counts
+Run the DEseq workflow function and retrieve normalized counts. Add 0.25 to every normalized count and plot a boxplot of the log2 of these updated counts.
+```{r}
+dds.tissue <- DESeq(dds)
+boxplot(log2(counts(dds.tissue, normalized = T) + 0.25),
+        names = c("Heart1","Heart2","Liver1","Liver2"), col = brewer.pal(n = 4, name = "Accent"))
+```
+
+
+## Dispersion
+Plot the dispersion fit and estimate the variance for our DEseq2 object.
+```{r}
+plotDispEsts(dds.tissue)
+```
+
+
+## Multiple testing
+Add a new `padj` value for all genes. Make a barplot of the number of significantly (`padj` < 0.05) up and down regulated genes by the original `padj` values and our new `padj` values.
+```{r}
+library(ggplot2)
+myRes.DF <- results(dds.tissue, contrast = c("Tissue", "Heart", "Liver")) |> as.data.frame()
+myRes.DF$newPadj <- p.adjust(myRes.DF$pvalue, method = "BH")
+myRes.DF[1:6, ]
+myRes.DF <- within(myRes.DF, {
+  newPadj <- ifelse(newPadj < 0.05 & log2FoldChange > 0, "HeartUp",
+                       ifelse(newPadj < 0.05 & log2FoldChange < 0, "HeartDown", "NoChange"))
+  oriPadj <- ifelse(padj < 0.05 & log2FoldChange > 0, "HeartUp",
+                    ifelse(padj < 0.05 & log2FoldChange < 0, "HeartDown", "NoChange"))
+  })
+
+data.frame(Method = rep(c("All", "Filtered"), each = nrow(myRes.DF)), padj = c(myRes.DF$newPadj, myRes.DF$oriPadj)) |>
+  ggplot(mapping = aes(x = padj, fill = Method)) + 
+  geom_bar(position = "dodge") + 
+  scale_x_discrete(limits = c("NoChange", "HeartDown", "HeartUp", NA)) + 
+  theme_bw()
+```
+
+
+## MA plots
+Produce an MA plot before and after logFC shrinkage.
+```{r}
+myRes <- results(dds.tissue, contrast = c("Tissue", "Heart", "Liver"))
+plotMA(myRes) 
+```
+
+
+```{r}
+resultsNames(dds.tissue) 
+myRes.lfc <- lfcShrink(dds.tissue, coef = "Tissue_Liver_vs_Heart")
+plotMA(myRes.lfc)
+```
+
+
+
