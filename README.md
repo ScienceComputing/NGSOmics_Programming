@@ -3,14 +3,14 @@
 This repository contains my coding practice using the materials from both the fundamental and cutting-edge bioinformatics workshops, technical manuals, books, and other resources. It also contains my learning notes about recently developed bioinformatics concepts from academic articles, blog posts, and podcasts.
 
 ## Coding practice
-**Build auto-encoder for somatic mutations**
-
 **Analyze bulk RNA-Seq data**
 
   - [Align and count the reads](BulkRNASeq/AlignmentCountingTCell.Rmd)
   - [Differentially gene expression analysis](DEAnalysisTCell.Rmd)
 
 **Analyze single cell RNA-Seq data**
+
+**Build auto-encoder for somatic mutations**
 
 
 ## Learning note
