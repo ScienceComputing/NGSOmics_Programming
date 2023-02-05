@@ -7,6 +7,9 @@ This repository contains my coding practice using the materials from both the fu
 
 **Analyze bulk RNA-Seq data**
 
+  - [Align and count the reads](BulkRNASeq/AlignmentCountingTCell.Rmd)
+  - [Differentially gene expression analysis](DEAnalysisTCell.Rmd)
+
 **Analyze single cell RNA-Seq data**
 
 
