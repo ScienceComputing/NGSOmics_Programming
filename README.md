@@ -1,4 +1,4 @@
-# Learn Bioinformatics
+# Quantitative biology
 
 This repository contains my coding practice using the materials from both the fundamental and cutting-edge computational biology/bioinformatics coursework, workshops, technical manuals, books, and other resources. My learning notes about recently developed computational biology/bioinformatics concepts from academic articles, blog posts, and podcasts are presented here, as well.
 
