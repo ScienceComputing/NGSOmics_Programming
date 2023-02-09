@@ -1,6 +1,6 @@
 # Learn Bioinformatics
 
-This repository contains my coding practice using the materials from both the fundamental and cutting-edge bioinformatics workshops, technical manuals, books, and other resources. It also contains my learning notes about recently developed bioinformatics concepts from academic articles, blog posts, and podcasts.
+This repository contains my coding practice using the materials from both the fundamental and cutting-edge computational biology/bioinformatics coursework, workshops, technical manuals, books, and other resources. My learning notes about recently developed computational biology/bioinformatics concepts from academic articles, blog posts, and podcasts are presented here, as well.
 
 ## Coding practice
 **Analyze bulk RNA-Seq data**
