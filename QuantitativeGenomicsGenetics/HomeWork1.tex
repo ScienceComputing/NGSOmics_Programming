@@ -1,0 +1,170 @@
+\documentclass[letterpaper, 11pt]{article}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\usepackage{setspace}
+\usepackage{paralist}
+\usepackage{amsmath}
+\usepackage{epsfig,psfrag}
+\usepackage{color}
+
+
+\renewcommand{\labelenumi}{(\theenumi)}
+
+\pdfpagewidth 8.5in
+\pdfpageheight 11in
+
+\setlength\topmargin{0in}
+\setlength\leftmargin{0in}
+\setlength\headheight{0in}
+\setlength\headsep{0in}
+\setlength\textheight{9in}
+\setlength\textwidth{6.5in}
+\setlength\oddsidemargin{0in}
+\setlength\evensidemargin{0in}
+\setlength\parindent{0in}
+\setlength\parskip{0.13in} 
+ 
+\title{Quantitative Genomics and Genetics - Spring 2023 \\
+BTRY 4830/6830; PBSB 5201.01}
+\author{Anni Liu \\ \\ \\ Homework 1 (version 1 - posted February 2)}
+\date{Assigned February 2;  Due 11:59PM February 8}                                           % Activate to display a given date or no date
+
+
+\begin{document}
+
+\vspace{-20in}
+
+\maketitle
+\section*{Problem 1 (Easy)}
+
+Consider a coin (system) that you would like to learn about and two types of experiments: 1. One flip of the coin (Experiment 1), and Two flips of the coin (Experiment 2).  Consider the case where you are going to perform TWO experimental trials for Experiment 1 and ONE experimental trial for Experiment 2.
+
+\begin{itemize}
+
+\item[a.] Write out BOTH the sample spaces AND the Sigma Algebras for BOTH Experiments 1 and 2. \\
+
+\textcolor{blue}{Answer:\\ 
+Experiment1: The sample space $\Omega = \{H, T\}$. The $\sigma$-algebra $\mathcal{F} = \varnothing, \{H\}, \{T\}, \{H, T\}$ \\
+Experiment2: $\Omega = {HH, HT, TH, TT}$. $\mathcal{F} = \varnothing, \{HH\}, \{HT\}, \{TH\}, \{TT\}, \\
+\{HH, HT\}, \{HH, TH\}, \{HH, TT\}, \{HT, TH\},
+\{HT, TT\}, \{TH, TT\}, \\
+\{HH, HT, TH\}, \{HH, HT, TT\}, \{HH, TH, TT\}, \{HT, TH, TT\}, \\
+\{HH, HT, TH, TT\}$} \\
+
+\item[b.] Using one sentence at most, explain why the sets $\{H_{1},T_{2}\}$ describing the result of `heads' on the first trial and a `tails' on the second trial, resulting from the two trials of Experiment 1, is distinct from the set $\{HT\}$ describing the results of one trial of Experiment 2.\\
+
+\textcolor{blue}{Answer: \\
+Because the unit experiment that defines the Experiment 1 and Experiment 2 differs, and the $\sigma$-algebras for 2 experiments are different.}\\
+
+\item[c.] Define a probability model on $\Omega$ (i.e. assign specific probabilities to each outcome) for Experiment 1 such that $Pr(H)=0.8, Pr(T)=0.2$.  What is the probability of each event of the Sigma-algebra that you defined for this Experiment in part [a] (note: we are asking for the probabilities for the Sigma-algebra of the Experiment and NOT for what resulted from the two experimental trials for this Experiment!)?  Could this be a legitimate probability model for a coin / this experiment? Explain your answer using no more than one sentence.\\
+
+\textcolor{blue}{Answer: \\
+$Pr(\mathcal{F}): \mathcal{F} \rightarrow [0, 1]$ satisfying 3 axioms of probability, where $Pr(\varnothing) = 0, Pr(\{H\}) = 0.8, Pr(\{T\}) = 0.2, Pr(\{H, T\}) = 1$.}\\
+
+\textcolor{blue}{Yes, this could be a legitimate probability model because it meets 3 xioms of probability where $Pr(A) \ge 0$ for any event A, $Pr(\Omega) = 1$, and $Pr(A_1 \cup A_2 \cup ...) = Pr(A_1) + Pr(A_2) + ...$ given $ A_1, A_2, ...$ are disjoint events.}\\
+
+
+\item[d.] Considering the probability model in part [c] calculate $Pr(H \cap T)$ and explain why this demonstrates the events $\{ H\}$ and $\{ T \}$ are not independent.  \\
+
+\textcolor{blue}{Answer: \\
+$Pr(\{H\} \cap \{T\}) = Pr(\varnothing)$ = 0, but $Pr(\{H\}) \times Pr(\{T\})$ = 0.8 $\times$ 0.2 = 0.16 $\neq$ 0. Since $Pr(\{H\} \cap \{T\}) \neq Pr(\{H\}) \times Pr(\{T\})$, events \{H\} and \{T\} are not independent.}\\
+
+\end{itemize}
+
+
+\section*{Problem 2 (Medium)}
+
+Consider a coin that you plan to learn about with the following experiment: 3 flips of the coin.
+
+\begin{itemize}
+
+\item[a.] Write out the sample space of this experiment. \\
+
+\textcolor{blue}{Answer: \\
+$\Omega = \{HHH, HTH, HTT, HHT, THH, TTH, THT, TTT\}$} \\
+
+
+\item[b.] For the (appropriate) Sigma Algebra of this experiment, how many subsets will be the null / empty set?  How many subsets will have one element?  How many subsets will have two elements?  How many subsets will have eight elements?   Note that you DO NOT need to write out these sets or the entire Sigma Algebra (i.e., the answer for each should be one number). \\
+
+\textcolor{blue}{Answer:\\
+1; 8; 28; 1}\\
+
+
+\item[c.] Define a probability model such that each of the subsets of the Sigma Algebra that have ONE element each are assigned THE SAME probability.  Explain why from this starting point, you can calculate the probabilities of all of the other subsets of the Sigma Algebra.  Note that you DO NOT need to write out these probabilities for the other subsets of the Sigma Algebra - just explain your reasoning (which may include an example or two).\\
+
+\textcolor{blue}{Answer:\\
+$Pr(\mathcal{F}): \mathcal{F} \rightarrow [0, 1]$ satisfying 3 axioms of probability, where $Pr(\{HHH\}) = Pr(\{HTH\}) = Pr(\{HTT\}) = Pr(\{HHT\}) = Pr(\{THH\}) = Pr(\{TTH\}) = Pr(\{THT\}) = Pr(\{TTT\}) = \frac{1}{8} = 0.125))$. The probabilities of all other subsets of the Sigma Algebra can be calculated by adding or subtracting the probabilities of the subsets that have one element. For example, the probability of the complement of $\{HHH\}$ can be derived by subtracting the probability of this subset from the probability of the entire sample space ($Pr(\Omega) - Pr(\{HHH\})$ = 1 - 0.125 = 0.875).}\\
+
+
+\item[d.] Define the random variables $X_1$ that is the `number of heads on the first flip' and $X_2$ that is the `number of heads on the second flip'.  For $X_1$ and $X_2$, write out the values that these random variables take for each of the possible sample outcomes (i.e., the outcomes you wrote out for the sample space in part [a]) that could result from a single experimental trial.\\
+
+\textcolor{blue}{Answer:\\
+$X_1(HHH) = 1, X_2(HHH) = 1; X_1(HTH) = 1, X_2(HTH) = 0; X_1(HTT) = 1, X_2(HTT) = 0; X_1(HHT) = 1, X_2(HHT) = 1; X_1(THH) = 0, X_2(THH) = 1; X_1(TTH) = 0, X_2(TTH) = 0; X_1(THT) = 0, X_2(THT) = 1; X_1(TTT) = 0, X_2(TTT) = 0$}\\
+
+
+\item[e.] What is $Pr(X_1 = 1)$?  What is the $Pr(X_2 = 1)$?  Explain how you arrived at these answers.\\
+
+\textcolor{blue}{Answer:\\
+$Pr(X_1 = 1)$ = 0.5. \\
+Recalling the values that $X_1$ and $X_2$ take for each of the possible sample outcomes in (d) and the probability model defined in (c), we can derive that $Pr(X_1 = 1) = \\
+Pr(\{HHH\}, \{HTH\}, \{HTT\}, \{HHT\}) = 0.125 + 0.125 + 0.125 + 0.125 = 0.5$ \\
+Likewise, $Pr(X_2 = 1) = Pr(\{HHH\}, \{HHT\}, \{THH\}, \{THT\}) = 0.125 + 0.125 + 0.125 + 0.125 = 0.5$}\\
+
+\item[f.] What is $Pr(X_2 =1 | X_1 = 1)$?  Show your work by making use of the formula for conditional probability.\\
+
+\textcolor{blue}{Answer:\\
+$Pr(X_2 =1 | X_1 = 1) = \frac{Pr(X_2 = 1 \cap X_1 = 1)}{Pr(X_1 = 1)} = \frac{Pr(\{HHH\}, \{HHT\})}{Pr(\{HHH\}, \{HTH\}, \{HTT\}, \{HHT\})} = \frac{0.125 + 0.125}{0.125 + 0.125 + 0.125 + 0.125} = 0.5$ }\\
+
+\item[g.] Show why your answer to part [f] is consistent with $X_1$ and $X_2$ being independent.\\
+
+
+\textcolor{blue}{Answer:\\
+If $X_1$ and $X_2$ are independent, we will expect that no matter what values these two random variables take, $Pr(X_2 = m| X_1 = n) = Pr(X_2 = m)$ or $Pr(X_2 = m \cap X_1 = n) = Pr(X_2 = m) \times Pr(X_1 = n)$. Given that $Pr(X_2 = 1 | X_1 = 1)$ = 0.5 (shown in [f]) and $Pr(X_2 = 1)$ = 0.5 (shown in [e]), we can derive that $Pr(X_2 =1 | X_1 = 1) = Pr(X_2 = 1)$ = 0.5. Also, since $Pr(X_2 = 1 \cap X_1 = 1)$ = 0.25 (shown in [f]) and $Pr(X_2 = 1) = Pr(X_1 = 1)$ = 0.5 (shown in [e]), $Pr(X_2 = 1 \cap X_1 = 1)$ = $Pr(X_2 = 1) \times Pr(X_1 = 1) = 0.5 \times 0.5 = 0.25$. 
+}\\
+
+\item[h.] Define a new random variable $X_3$ that is `the number of heads observed for all three flips'.  Write out the values that this random variable takes for each of the possible outcomes of a single experimental trial. 
+
+
+\textcolor{blue}{Answer:\\
+$X_3(HHH) = 3, X_3(HTH) = 2, X_3(HTT) = 1, X_3(HHT) = 2, X_3(THH) = 2, X_3(TTH) = 1, X_3(THT) = 1, X_3(TTT) = 0$}\\
+
+\item[i.] What is $Pr(X_3 =3 | X_1 = 1)$?  Show your work by making use of the formula for conditional probability.\\
+
+\textcolor{blue}{Answer:\\
+$Pr(X_3 = 3 | X_1 = 1) = \frac{Pr(X_3 = 3 \cap X_1 = 1)}{Pr(X_1 = 1)} = \frac{Pr(\{HHH\})}{Pr(\{HHH\}, \{HTH\}, \{HTT\}, \{HHT\})} = \frac{0.125}{0.125 + 0.125 + 0.125 + 0.125} = 0.25$ 
+}\\
+
+\item[j.] Explain why your answer to part [i] shows $X_1$ and $X_3$ are NOT independent and using no more than two sentences, explain why this makes sense intuitively given how these random variables are defined?\\
+
+\textcolor{blue}{Answer:\\
+Given that $Pr(X_3 = 3 | X_1 = 1) = 0.25$ (shown in [i]) and $Pr(X_3 = 3) = Pr(\{HHH\}) = 0.125$, we can derive that $Pr(X_3 = 3 | X_1 = 1) \neq Pr(X_3 = 3)$. Also, since $Pr(X_3 = 3 \cap X_1 = 1) = 0.125$ and $Pr(X_3 = 3) \times Pr(X_1 = 1) = 0.125 \times 0.5 = 0.0625$, $Pr(X_3 = 3 \cap X_1 = 1) \neq Pr(X_3 = 3) \times Pr(X_1 = 1)$.}\\
+\\
+\textcolor{blue}{
+$X_1$ and $X_3$ are not independent because the number of heads in one flip directly influences the total number of heads observed among all 3 flips. If we know the outcome of one coin flip, it can alter the outcome for the total number of heads for all 3 flips.}\\
+
+\end{itemize}
+
+
+\section*{Problem 3 (Difficult)}
+
+\begin{itemize}
+\item[a.] Note that $Pr(\emptyset)=0$ always.  Assume two events $\mathcal{A}_1$ and $\mathcal{A}_2$ are disjoint with $Pr(\mathcal{A}_1)>0$ and $Pr(\mathcal{A}_2)>0$.  Prove that these two disjoint events are not independent.\\
+
+\textcolor{blue}{Answer:\\
+Because $\mathcal{A}_1$ and $\mathcal{A}_2$ are disjoint, meaning that they have no elements in common, then $Pr(\mathcal{A}_1 \cap \mathcal{A}_2) = Pr(\varnothing) = 0$. Given that $Pr(\mathcal{A}_1)>0$ and $Pr(\mathcal{A}_2)>0$, we can derive that $Pr(\mathcal{A}_1) \times Pr(\mathcal{A}_2) > 0$. Therefore, $Pr(\mathcal{A}_1 \cap \mathcal{A}_2) \neq Pr(\mathcal{A}_1) \times Pr(\mathcal{A}_2)$
+}\\
+
+\item[b.] Consider a system and associated experiment where the sample space is the set of Natural numbers.  Make use of the Axioms of Probability to show why we cannot define a probability function on the (appropriate) Sigma Algebra of this sample space that assigns an equal probability to each (non-empty set) subset of the Sigma algebra that has a single element.\\
+
+\textcolor{blue}{Answer:\\
+Assume the system is the number of sand grains, and the experiment is to count the number of sand grains at various scales (e.g., sterile slice, room, hut, school, city, country, earth, universe) so that the collection of each outcome (i.e., the number of sand grains) at each scale covers all Natural numbers. Given that this set of Natural numbers includes infinite elements (i.e., 0 sand grain, 1 sand grain, 2 sand grains, ..., 7 sextillion sand grains, ...), if we were to assign an equal probability each (non-empty set) subset of the Sigma Algebra that has a single element, then the probability of each subset would be $\frac{1}{\infty}$, which approaches 0. Assume all the probabilities for all subsets that have a single element take their limits 0, then the probability of the union of these subsets, that is the probability of the sample space, would approach 0. This violates the axiom of probability stating that the probability of the sample space is 1. } \\
+
+\textcolor{blue}{
+On the other hand, if we were to assign a non-zero (even extremely trivial) equal probability to each subset (non-empty set) of the Sigma Algebra with a single element, then the sum of probabilities of all elements in the sample space would surpass 1. This violates the axiom of probability stating that the probability of the sample space is 1.}
+
+\end{itemize}
+
+\end{document}
+
