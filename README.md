@@ -3,24 +3,26 @@
 This repository contains my coding practice using the materials from both the fundamental and cutting-edge computational biology/bioinformatics coursework, workshops, technical manuals, books, and other resources. My learning notes about recently developed computational biology/bioinformatics concepts from academic articles, blog posts, and podcasts are presented here, as well.
 
 ## Coding practice
-<hr>
-
 **Analyze bulk RNA-Seq data**
 
   - [Align and count the reads](BulkRNASeq/AlignmentCountingTCell.Rmd)
   - [Differentially gene expression analysis](DEAnalysisTCell.Rmd)
 
+<hr>
+
 **Analyze single cell RNA-Seq data**
+
+<hr>
 
 **Build auto-encoder for somatic mutations**
 
 
 ## Learning note
-<hr>
-
 **[Multimodal data integration](Note_MultimodalDataIntegration.md)**
 
 > Multimodal integration of radiology, pathology and genomics for prediction of response to PD-(L)1 blockade in patients with non-small cell lung cancer. Nat Cancer 3, 1151–1164 (2022). https://doi.org/10.1038/s43018-022-00416-8
+
+<hr>
 
 **Deep learning architecture Enformer**
 
