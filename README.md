@@ -6,7 +6,7 @@ This repository contains my coding practice and learning notes using the materia
 **Analyze bulk RNA-Seq data**
 
   - [Align and count the reads](BulkRNASeq/AlignmentCountingTCell.Rmd)
-  - [Differentially gene expression analysis](DEAnalysisTCell.Rmd)
+  - [Differential gene expression analysis](DEAnalysisTCell.Rmd)
 
 <hr>
 
