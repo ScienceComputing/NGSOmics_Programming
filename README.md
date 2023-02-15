@@ -1,6 +1,6 @@
 # Quantitative biology
 
-This repository contains my coding practice, learning notes, and assignments based on the materials from computational biology/bioinformatics coursework, workshops, technical manuals, books, and other resources. 
+This repository contains my coding practice, learning notes, and assignment solutions based on the materials from computational biology/bioinformatics coursework, workshops, technical manuals, books, and other resources. 
 
 **Analyze bulk RNA-Seq data**
 
