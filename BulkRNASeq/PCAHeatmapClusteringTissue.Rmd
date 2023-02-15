@@ -1,0 +1,285 @@
+---
+title: "Visulize results through principal component analysis, heatmap, and clustering using the heart, liver, and kidney tissues RNA-Seq Data"
+author: "Anni Liu"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: 
+  html_document:
+    code_folding: show
+---
+
+```{r, shorcut, include=FALSE}
+## RStudio keyboard shortcut
+# Cursor at the beginning of a command line: Ctrl+A
+# Cursor at the end of a command line: Ctrl+E
+# Clear all the code from your console: Ctrl+L
+# Create a pipe operator %>%: Ctrl+Shift+M (Windows) or Cmd+Shift+M (Mac)
+# Create an assignment operator <-: Alt+- (Windows) or Option+-(Mac) 
+# Knit a document (knitr): Ctrl+Shift+K (Windows) or Cmd+Shift+K (Mac)
+# Comment or uncomment current selection: Ctrl+Shift+C (Windows) or Cmd+Shift+C (Mac)
+```
+
+
+# Load and save images
+```{r}
+load("2023Feb15RNAseq_PCAAnalysis_ALiu.RData")
+```
+
+```{r}
+image.date <- format(Sys.Date(), "%Y%b%d")
+save.image(file = paste0(image.date, "RNAseq_PCAAnalysis_ALiu.RData"))
+```
+
+
+# Tutorial
+# Load data
+```{r}
+load("./data/gc_TissueFull.RData")
+geneCounts
+```
+
+
+# Run DESeq2
+```{r}
+library(DESeq2)
+dds <- DESeqDataSet(geneCounts, design = ~Tissue)
+dds <- DESeq(dds)
+```
+
+
+# Extract the pairwise comparison
+```{r}
+LiverVsKidney <- results(dds, contrast = c("Tissue", "Liver", "Kidney")) # Typically put the mutant/treatment as the first and the wildtype/control as the second (base) 
+HeartVsLiver <- results(dds, contrast = c("Tissue", "Liver", "Kidney"))
+# For the likelihood ratio test (LRT), the returned value `stat` is the difference in deviance between the reduced model and the full model, which is compared to a chi-squared distribution to generate a pvalue.
+HeartVsKidney <- results(dds, contrast = c("Tissue", "Liver", "Kidney"))
+HeartVsKidney
+```
+
+
+# *Identify genes upregulated in heart versus other tissues
+```{r}
+HeartVsLiver.DF <- as.data.frame(HeartVsLiver)
+HeartVsKidney.DF <- as.data.frame(HeartVsKidney)
+
+# Filter out the results mapped to NA padj
+HeartVsLiver.DF <- with(HeartVsLiver.DF, HeartVsLiver.DF[!is.na(padj), ])
+HeartVsKidney.DF <- with(HeartVsKidney.DF, HeartVsKidney.DF[!is.na(padj), ])
+
+# Extract the columns of interest
+HeartVsLiver.DF <- HeartVsLiver.DF[c("log2FoldChange", "padj")]
+HeartVsKidney.DF <- HeartVsKidney.DF[c("log2FoldChange", "padj")]
+
+# Merge data
+colnames(HeartVsLiver.DF) <- paste0("HeartVsLiver", "_", colnames(HeartVsLiver.DF))
+colnames(HeartVsKidney.DF) <- paste0("HeartVsKidney", "_", colnames(HeartVsKidney.DF))
+fullTable <- merge(HeartVsLiver.DF, HeartVsKidney.DF, by = 0) # Use the row names to combine two datasets **horizontally**
+fullTable[1:6, ]
+```
+
+
+```{r}
+UpHeart <- fullTable$HeartVsLiver_log2FoldChange > 0 & fullTable$HeartVsKidney_log2FoldChange > 0 & fullTable$HeartVsLiver_padj < 0.05 & fullTable$HeartVsKidney_padj < 0.05
+
+UpHeartTable <- fullTable[UpHeart, ]
+UpHeartTable[1:6, ]
+```
+
+
+# Identify genes upregulated in heart for both liver and kidney comparisons
+```{r}
+forVenn <- data.frame(UpvsLiver = fullTable$HeartVsLiver_log2FoldChange > 0 & fullTable$HeartVsLiver_padj < 0.05,
+                      UpvsKidney = fullTable$HeartVsKidney_log2FoldChange > 0 & fullTable$HeartVsKidney_padj < 0.05)
+forVenn[1:6, ]
+```
+
+
+```{r}
+limma::vennDiagram(forVenn) # The number of intersection suggest the number of genes upregulated in heart, compared to both liver and kidney
+```
+
+
+# Visulize counts
+Look at the count distribution of a single gene/a group of genes. Because the count is an integer, the variation between genes are quite large. For example, we have some genes with 10 counts, while other genes with 1000 counts. We need a log-scale to compare the distribution of a group of genes. 
+```{r}
+normLog2Counts <- normTransform(dds) # normTransform() automatically adds 1 to our normalized counts prior to log2 transformation
+normLog2Counts
+assay(normLog2Counts)[1:6, ]
+```
+
+## Boxplot
+```{r}
+matrixNorm <- assay(normLog2Counts)
+boxplot(matrixNorm, las = 2, names = c("Heart_1", "Heart_2", "Kidney_1", "Kidney_2", "Liver_1", "Liver_2")) # las = 2: make axis labels perpendicular (las=2) to keep the labels from running into each other
+```
+
+
+## Mean Sd plot
+```{r}
+vsn::meanSdPlot(matrixNorm) # Plot row standard deviations versus row means (ranked).
+```
+
+
+## `rlog` transformation 
+The `rlog` transformation attempts to shrink the variance for genes (e.g., genes with low counts) based on their mean expression. This transformation is very useful for count visualization. 
+
+`rlog()` function transforms the count data to the log2 scale in a way which minimizes differences between samples for rows with small counts, and which normalizes with respect to library size.
+```{r}
+rlogTissue <- rlog(dds) # object can be DESeqDataSet, or matrix of counts
+rlogTissue # class: DESeqTransform
+assay(rlogTissue)[1:6, ]
+```
+
+
+`rlog()` cuts the variance for genes more dramatically than `normTransform()`.
+```{r}
+rlogMatrix <- assay(rlogTissue)
+vsn::meanSdPlot(rlogMatrix)
+```
+
+Recap: `lfcShrink()` shrinks the `log2 fold-change` values of genes that do not have much significance. This allows us to use the `log2 fold-change` as a **measure of significance** of change in our ranking for analysis and in programs such as `GSEA`. 
+
+`rlog()`: count and variance; `lfcShrink()`: log2 fold-change and significance.
+
+
+# Dimension reduction - quality control
+Principal component analysis (PCA) searches for a few dimensions of features (genes) to represent the major variations in samples. The sources of variation is expected to correlate with the homogeneous sample groups and thus PCA provides a method to visually identify reproducibility of sample replicates (sample similarity).
+```{r}
+plotPCA(rlogTissue, 
+        intgroup = "Tissue", # A metadata column to color samples
+        ntop = nrow(rlogTissue)) # ntop: number of top genes to use for principal components, selected by the highest row variance; here we use all genes in PCA
+
+# What we see from the plot: 
+# PC1: there is drastic contrast in PC1 among heart, liver, and kidney.
+# PC2: there is no drastic contrast in PC2 between the heart and liver; however, there is remarkable contrast in PC2 between the heart and kidney, and liver and kidney.  
+```
+
+
+```{r}
+##------Run PCA------
+pcRes <- prcomp(t(rlogMatrix))
+class(pcRes)
+
+##------Extract PC------
+pcRes$x # Rowname: sample
+
+##------Plot PC------
+# Produce the similar plot as using plotPCA(); ploPCA() shows the proportion of variance mapping to each PC on the axis label
+plot(pcRes$x,
+     col = colData(rlogTissue)$Tissue,
+     pch = 20,
+     cex = 2)
+legend("top", legend = c("Heart", "Kidney", "Liver"),
+       fill = unique(colData(rlogTissue)$Tissue))
+
+##------Extract loadings------
+pcRes$rotation[1:6, ] # Rowname: gene ID
+
+##------Identify 100 genes most negatively contribute to PC2------
+PC2markers <- sort(pcRes$rotation[, 2], decreasing = F)[1:100]
+PC2markers # names of PCmarkers are gene IDs.
+
+##------Search the gene function------
+# https://www.ncbi.nlm.nih.gov/gene/?term=20505
+
+##------Examine the expression of 100 genes most negatively contribute to PC2------
+PC2_HeartVsLiver <- HeartVsLiver$log2FoldChange[rownames(HeartVsKidney) %in% names(PC2markers)]
+PC2_HeartVsKidney <- HeartVsKidney$log2FoldChange[rownames(HeartVsKidney) %in% names(PC2markers)]
+PC2_LiverVsKidney <- LiverVsKidney$log2FoldChange[rownames(LiverVsKidney) %in% names(PC2markers)]
+
+##------Make boxplots------
+boxplot(PC2_HeartVsLiver, PC2_HeartVsKidney, PC2_LiverVsKidney, names = c("Heart/Liver", "Heart/Kidney", "Liver/Kidney"), ylab = "log2FC")
+
+# What we see from the plot: top 100 genes negatively contribute to PC2 are upregulated in the kidney tissue, compared to both heart and liver. However, there is no drastic log2FC in these genes between heart and liver, which confirms our previous observation that there is no drastic contrast in PC2 between the heart and liver.
+```
+
+
+# Sample-to-Sample correlation - quality control
+Evaluate the correlation between expression profiles of samples.
+```{r}
+# Create a correlation matrix
+sampleCor <- cor(rlogMatrix)
+sampleCor[1:6, ]
+
+# Visualize the correlation matrix
+sampleDists <- as.dist(1 - cor(rlogMatrix)) # This function computes and returns the distance matrix computed by using the specified distance measure (e.g., euclidean) to compute the distances between the rows of a data matrix.
+sampleDistMatrix <- as.matrix(sampleDists)
+library(pheatmap)
+library(RColorBrewer)
+blueColors <- brewer.pal(9, "Blues")
+colors <- colorRampPalette(rev(blueColors))(255) # Divide 9 types of blues to 255 blues
+plot(1:255, rep(1, 255), col = colors, pch = 20, cex = 20, ann = F, yaxt = "n")
+pheatmap(sampleDistMatrix, clustering_distance_rows = sampleDists, clustering_distance_cols = sampleDists, color = colors)
+
+annoCol <- as.data.frame(colData(dds))
+pheatmap(sampleDistMatrix, clustering_distance_rows = sampleDists, clustering_distance_cols = sampleDists, color = colors, annotation_col = annoCol)
+```
+
+
+# Clustering analysis for 3 and 3+ group comparison
+## Likelihood-ratio test
+```{r}
+dds2 <- DESeq(dds, test = "LRT", reduced = ~1)
+acrossGroups <- results(dds2)
+acrossGroups <- acrossGroups[order(acrossGroups$pvalue), ]
+acrossGroups[1:3, ]
+```
+
+
+## Review the expression profile of a gene one at a time
+```{r}
+plotCounts(dds2, gene = "17888", intgroup = "Tissue")
+```
+
+
+## Filter the dataset with significant LRT results
+```{r}
+sigChanges <- rownames(acrossGroups)[acrossGroups$padj < 0.01 & !is.na(acrossGroups$padj)] # Return the significant gene names
+sigMat <- rlogMatrix[rownames(rlogMatrix) %in% sigChanges, ]
+nrow(rlogMatrix)
+nrow(sigMat)
+```
+
+
+## Cluster genes and samples
+```{r}
+pheatmap(sigMat, scale = "row", show_rownames = F) # scale = "row" means we do the z-score transformation on the normalized gene count; this z-score transformation helps distinguish the similarity and difference in gene expression patterns across tissues 
+
+# pheatmap(sigMat, show_rownames = F)
+
+set.seed(153)
+k <- pheatmap(sigMat, scale = "row", kmeans_k = 7) # The heatmap rownames show the cluster name and importantly the number of genes within each cluster.
+
+names(k$kmeans) # k is a list
+
+# Show the cluster membership associated with each gene
+cluster.DF <- as.data.frame(factor(k$kmeans$cluster))
+colnames(cluster.DF) <- "Cluster"
+cluster.DF[1:10, , drop = F] # Data frames with a single column will return just the content of that column
+
+# ! Plot the heatmap highlighting the membership of genes to clusters
+OrderByCluster <- sigMat[order(cluster.DF$Cluster), ]
+pheatmap(OrderByCluster, scale = "row", annotation_row = cluster.DF, show_rownames = F, cluster_rows = F)
+```
+
+
+### *Pick the optimal number of clusters
+The Silhouette method evaluates the similarity between a cluster member and all other members of that cluster to the similarity between this cluster member and members of all other clusters, so as to decide the best number of clusters.
+
+$ S_i = \frac{b_i - a_i}{max(a_i, b_i)} $
+
+```{r}
+library(NbClust)
+rowScaledMat <- t(scale(t(sigMat)))
+clusterNum <- NbClust(rowScaledMat, distance = "euclidean", min.nc = 2, max.nc = 12, method = "kmeans", index = "silhouette") # Construct the clustering 11 times
+clusterNum$Best.nc # Return the best number of clusters
+# Three may not be enough. We may want to deeply understand the patterns in data by increasing the number of clusters.
+
+# clusterNum$Best.partition # Return the cluster membership for each gene; a vector named with gene IDs
+clusterNum$Best.partition[1:10]
+orderedCluster <- sort(clusterNum$Best.partition)
+orderedCluster[1:10]
+sigMat <- sigMat[match(names(orderedCluster), rownames(sigMat)), ] # Subset the rows of sigMat using the genes in orderedCluster
+
+# Visualize the new 3 clustering alongside our old 7 clustering
+pheatmap(sigMat, scale = "row", annotation_row = cluster.DF, show_rownames = F, cluster_rows = F)
+```
