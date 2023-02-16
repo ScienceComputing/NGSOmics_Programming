@@ -1,0 +1,122 @@
+---
+title: "Gene Set Enrichment Analysis Using T-Regulatory Cell RNA-Seq Data"
+author: "Anni Liu"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: 
+  html_document:
+    code_folding: show
+---
+
+```{r, shorcut, include=FALSE}
+## RStudio keyboard shortcut
+# Cursor at the beginning of a command line: Ctrl+A
+# Cursor at the end of a command line: Ctrl+E
+# Clear all the code from your console: Ctrl+L
+# Create a pipe operator %>%: Ctrl+Shift+M (Windows) or Cmd+Shift+M (Mac)
+# Create an assignment operator <-: Alt+- (Windows) or Option+-(Mac) 
+# Knit a document (knitr): Ctrl+Shift+K (Windows) or Cmd+Shift+K (Mac)
+# Comment or uncomment current selection: Ctrl+Shift+C (Windows) or Cmd+Shift+C (Mac)
+```
+
+
+# Load and save images
+```{r}
+load("2023Feb16RNAseq_GeneSet_ALiu.RData")
+```
+
+```{r}
+image.date <- format(Sys.Date(), "%Y%b%d")
+save.image(file = paste0(image.date, "RNAseq_GeneSet_ALiu.RData"))
+```
+
+
+# Tutorial
+# Questions of interest
+* Do cell cycle genes change more [enrich] between conditions than other genes?
+* Are genes related to "immune response" enriched in any clusters?
+
+
+# Sources of gene sets
+* [GO consortium](http://geneontology.org)
+* [REACTOME](https://reactome.org)
+* [KEGG](https://www.genome.jp/kegg/)
+* [MsigDB](https://www.gsea-msigdb.org/gsea/msigdb/)
+
+
+# MSigDB and gene set collections
+## Read the hallmarks gene set with gene symbols using `getGmt()`
+```{r}
+library(GSEABase)
+hallMarks <- getGmt(con = "./data/h.all.v7.1.symbols.gmt")
+hallMarks
+class(hallMarks) # GeneSetCollection; list-style
+names(hallMarks) # Access the names of all gene sets
+hallMarks[[1]] # Read the first gene set which has 200 genes
+```
+
+## List the gene symbols within a gene set using `geneIds`
+```{r}
+geneIds(hallMarks)[1] # Show the gene symbols affiliated with the first gene set
+```
+
+
+## Work with `{msigdbr}`
+```{r}
+library(msigdbr)
+mm_H <- msigdbr(species = "Mus musculus", category = "H") # Extract all the mouse hallmark gene sets
+# species: Species name, such as Homo sapiens or Mus musculus.
+# category: MSigDB collection abbreviation, such as H or C1.
+# subcategory: MSigDB sub-collection abbreviation, such as CGP (chemical and genetic pertubations) or BP (biological process).
+# https://www.gsea-msigdb.org/gsea/msigdb/human/genesets.jsp
+# Note that these mouse gene sets are computationally derived from orthologous analysis; they may not be perfect
+
+head(mm_H)
+```
+
+
+# *Test gene set enrichment
+* First method - functional enrichment: test any association of our gene set with our group of differentially expressed genes 
+* Second method - Gene Set Enrichment Analysis (GSEA): test any association of our gene set with the `ranking` of all our genes [not merely differentially expressed genes] 
+
+## Load the differential expression data
+```{r}
+Activated_minus_Resting <- read.csv("./data/Group_Activated_minus_Resting.csv")
+Activated_minus_Resting[1:6, ]
+```
+
+
+## Screen out NA in `padj`
+```{r}
+Activated_minus_Resting <- Activated_minus_Resting[!is.na(Activated_minus_Resting$padj), ]
+Activated_minus_Resting[1:6, ]
+```
+
+## Functional enrichment
+```{r}
+# Create a named vector of 1s or 0s indicating if a gene is upregulated or downregulated 
+UpInAct <- (Activated_minus_Resting$padj < 0.05 & Activated_minus_Resting$log2FoldChange > 0) |> as.integer()
+names(UpInAct) <- Activated_minus_Resting$ENTREZID
+UpInAct[1:6]
+table(UpInAct)
+
+# List supported genomes
+library(goseq)
+supGenomes <- supportedGenomes() 
+supGenomes[1:6, ]
+
+# [!I mportant step]Examine the gene length bias in differential expression analysis and remove any artefactual enrichment for long and short genes 
+pwf <- nullp(DEgenes = UpInAct, genome = "mm10", id = "knownGene", plot.fit = T).
+
+# What can we learn from the plot?
+# If there is no bias in differential expression analysis caused by gene length, the line will be horizontal.
+# In this plot, the line is not horizontal but bent, indicating the gene length bias in the dataset.
+
+# Identify the top enriched functional terms in GO 
+# Specify the genome build and ID (here we match TxDb.UCSC.mm10.knownGene.db) and the categories we plan to test (GO:BP, GO:MF, GO:CC, KEGG). Unfortunately, goseq does not contain the gene set in the msigdbr.
+GO_UpInAct <- goseq(pwf, genome = "mm10", id = "knownGene",
+                    test.cats = c("GO:BP"))
+GO_UpInAct[1:6, ]
+
+# "Wallenius" approximates the true distribution of numbers of members of a category amongst DE genes by the Wallenius non-central hypergeometric distribution. This distribution assumes that within a category all genes have the same probability of being chosen. Therefore, this approximation works best when the range in probabilities obtained by the probability weighting function is small. "Wallenius" is the recommended method for calculating p-values.
+
+```
