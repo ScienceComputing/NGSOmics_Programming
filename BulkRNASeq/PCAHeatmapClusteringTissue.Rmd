@@ -326,7 +326,6 @@ pheatmap(pc2.mat, scale = "row", cluster_rows = F, show_rownames = F, annotation
 
 ## PCA of a GO term
 Produce a PCA plot of the GO `heart development` genes (`GO:0007507`). 
-
 ```{r}
 library(org.Mm.eg.db) # Genome wide annotation for Mouse, primarily based on mapping using Entrez Gene identifiers.
 heart.develop <- AnnotationDbi::select(x = org.Mm.eg.db, keytype = "GOALL", 
