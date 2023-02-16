@@ -7,6 +7,7 @@ This repository contains my coding practice, learning notes, and assignment solu
   - [Align and count the reads](BulkRNASeq/AlignmentCountingTCell.Rmd)
   - [Differential gene expression analysis](BulkRNASeq/DEAnalysisTCell.Rmd)
   - [Principal component analysis, heatmap, and clustering](BulkRNASeq/PCAHeatmapClusteringTissue.Rmd)
+  - [Gene set enrichment](BulkRNASeq/GeneSetTCell.Rmd)
 
 <hr>
 
