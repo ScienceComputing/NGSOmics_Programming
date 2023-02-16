@@ -283,3 +283,93 @@ sigMat <- sigMat[match(names(orderedCluster), rownames(sigMat)), ] # Subset the 
 # Visualize the new 3 clustering alongside our old 7 clustering
 pheatmap(sigMat, scale = "row", annotation_row = cluster.DF, show_rownames = F, cluster_rows = F)
 ```
+
+
+# Exercise
+## PCA
+```{r}
+easypackages::libraries("DESeq2", "ggplot2")
+load("./data/gC_TissueFull.RData")
+dds <- DESeqDataSet(geneCounts, design = ~Tissue)
+dds <- DESeq(dds)
+
+rlog(dds) |> 
+  plotPCA(intgroup = "Tissue") +
+  theme_bw()
+```
+
+
+## Likelihood-ratio test and heatmap
+```{r}
+easypackages::libraries("data.table", "pheatmap")
+dds2 <- DESeq(dds, test = "LRT", reduced = ~1)
+all.changes <- results(dds2)
+all.changes.dt <- as.data.table(all.changes)
+all.changes.dt$gene.id <- rownames(all.changes)
+rlog.matrix <- assay(rlog(dds))
+sig.genes <- all.changes.dt[padj < 0.01 & !is.na(padj), gene.id]
+sig.mat <- rlog.matrix[rownames(rlog.matrix) %in% sig.genes, ]
+anno.df <- colData(rlog(dds))[, 1, drop = F] |> as.data.frame()
+
+pheatmap(sig.mat, scale = "row", show_rownames = F, annotation_col = anno.df)
+```
+
+
+## PCA loadings
+```{r}
+pc.res <- prcomp(t(rlog.matrix))
+pc2.rank <- sort(pc.res$rotation[, 2], decreasing = T) # Sort the loadings of PC2
+pc2.mat <- sig.mat[match(names(pc2.rank), rownames(sig.mat), nomatch = 0), ] # nomatch: the value to be returned in the case when no match is found. 
+pheatmap(pc2.mat, scale = "row", cluster_rows = F, show_rownames = F, annotation_col = anno.df)
+```
+
+
+## PCA of a GO term
+Produce a PCA plot of the GO `heart development` genes (`GO:0007507`). 
+
+```{r}
+library(org.Mm.eg.db) # Genome wide annotation for Mouse, primarily based on mapping using Entrez Gene identifiers.
+heart.develop <- AnnotationDbi::select(x = org.Mm.eg.db, keytype = "GOALL", 
+                                       keys = "GO:0007507", columns = "ENTREZID")
+heart.develop.entrez <- unique(heart.develop$ENTREZID) # Extract unique ENTREZIDs of genes contributing to the heart development
+
+rlog.tissue <- rlog(dds)
+rlog.tissue[rownames(rlog.tissue) %in% heart.develop.entrez, ] |>
+  plotPCA(intgroup = "Tissue") + 
+  theme_bw()
+```
+
+
+## *Heatmap of a GO term
+```{r}
+liver.develop <- AnnotationDbi::select(x = org.Mm.eg.db, keytype = "GOALL",
+                                       keys = "GO:0001889", columns = "ENTREZID")
+liver.develop.entrez <- unique(liver.develop$ENTREZID)
+kidney.develop <- AnnotationDbi::select(x = org.Mm.eg.db, keytype = "GOALL",
+                                        keys = "GO:0001822", columns = "ENTREZID")
+kidney.develop.entrez <- unique(kidney.develop$ENTREZID)
+
+anno.row <- data.frame(heart = factor(rownames(sig.mat) %in% heart.develop.entrez),
+                       liver = factor(rownames(sig.mat) %in% liver.develop.entrez),
+                       kidney = factor(rownames(sig.mat) %in% kidney.develop.entrez))
+anno.row[1:10, ] # Show if a gene contributes to the development of heart, liver, or kidney
+rownames(anno.row) <- rownames(sig.mat)
+
+anno.color <- list(heart = c("FALSE" = "white", "TRUE" = "purple"),
+                   liver = c("FALSE" = "white", "TRUE" = "chocolate"),
+                   kidney = c("FALSE" = "white", "TRUE" = "darkgreen"))
+
+pheatmap(sig.mat, scale = "row", show_rownames = F, 
+         annotation_col = anno.df, annotation_row = anno.row, 
+         annotation_colors = anno.color)
+```
+
+
+## Clustering
+```{r}
+library(NbClust)
+row.scaled.mat <- t(scale(t(sig.mat)))
+cluster.num <- NbClust(row.scaled.mat, distance = "euclidean", min.nc = 2, max.nc = 12, method = "kmeans", index = "silhouette")
+
+k <- pheatmap(sig.mat, scale = "row", kmeans_k = cluster.num$Best.nc[1])
+```
