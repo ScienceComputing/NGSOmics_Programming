@@ -68,7 +68,7 @@ mm_H <- msigdbr(species = "Mus musculus", category = "H") # Extract all the mous
 # category: MSigDB collection abbreviation, such as H or C1.
 # subcategory: MSigDB sub-collection abbreviation, such as CGP (chemical and genetic pertubations) or BP (biological process).
 # https://www.gsea-msigdb.org/gsea/msigdb/human/genesets.jsp
-# Note that these mouse gene sets are computationally derived from orthologous analysis; they may not be perfect
+# Note that these mouse gene sets are computationally derived from orthologous analysis; they may not be perfect.
 
 head(mm_H)
 ```
