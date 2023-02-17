@@ -54,6 +54,7 @@ names(hallMarks) # Access the names of all gene sets
 hallMarks[[1]] # Read the first gene set which has 200 genes
 ```
 
+
 ## List the gene symbols within a gene set using `geneIds`
 ```{r}
 geneIds(hallMarks)[1] # Show the gene symbols affiliated with the first gene set
@@ -78,6 +79,7 @@ head(mm_H)
 * First method - functional enrichment: test any association of our gene set with our group of differentially expressed genes 
 * Second method - Gene Set Enrichment Analysis (GSEA): test any association of our gene set with the `ranking` of all our genes [not merely differentially expressed genes] 
 
+
 # Functional enrichment
 ## Load the differential expression data
 ```{r}
@@ -91,6 +93,7 @@ Activated_minus_Resting[1:6, ]
 Activated_minus_Resting <- Activated_minus_Resting[!is.na(Activated_minus_Resting$padj), ]
 Activated_minus_Resting[1:6, ]
 ```
+
 
 ## Perform the functional enrichment
 ```{r}
