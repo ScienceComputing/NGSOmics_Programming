@@ -21,7 +21,7 @@ output:
 
 # Load and save images
 ```{r}
-load("2023Feb16RNAseq_GeneSet_ALiu.RData")
+load("2023Feb17RNAseq_GeneSet_ALiu.RData")
 ```
 
 ```{r}
@@ -68,7 +68,7 @@ mm_H <- msigdbr(species = "Mus musculus", category = "H") # Extract all the mous
 # category: MSigDB collection abbreviation, such as H or C1.
 # subcategory: MSigDB sub-collection abbreviation, such as CGP (chemical and genetic pertubations) or BP (biological process).
 # https://www.gsea-msigdb.org/gsea/msigdb/human/genesets.jsp
-# Note that these mouse gene sets are computationally derived from orthologous analysis; they may not be perfect.
+# Note that these mouse gene sets are computationally derived from orthologous analysis; they may not be perfect
 
 head(mm_H)
 ```
@@ -78,6 +78,7 @@ head(mm_H)
 * First method - functional enrichment: test any association of our gene set with our group of differentially expressed genes 
 * Second method - Gene Set Enrichment Analysis (GSEA): test any association of our gene set with the `ranking` of all our genes [not merely differentially expressed genes] 
 
+# Functional enrichment
 ## Load the differential expression data
 ```{r}
 Activated_minus_Resting <- read.csv("./data/Group_Activated_minus_Resting.csv")
@@ -91,7 +92,7 @@ Activated_minus_Resting <- Activated_minus_Resting[!is.na(Activated_minus_Restin
 Activated_minus_Resting[1:6, ]
 ```
 
-## Functional enrichment
+## Perform the functional enrichment
 ```{r}
 # Create a named vector of 1s or 0s indicating if a gene is upregulated or downregulated 
 UpInAct <- (Activated_minus_Resting$padj < 0.05 & Activated_minus_Resting$log2FoldChange > 0) |> as.integer()
@@ -119,4 +120,83 @@ GO_UpInAct[1:6, ]
 
 # "Wallenius" approximates the true distribution of numbers of members of a category amongst DE genes by the Wallenius non-central hypergeometric distribution. This distribution assumes that within a category all genes have the same probability of being chosen. Therefore, this approximation works best when the range in probabilities obtained by the probability weighting function is small. "Wallenius" is the recommended method for calculating p-values.
 
+# Retrieve the genes in the immune response functional group (GO:0006955)
+library(org.Mm.eg.db)
+keytypes(org.Mm.eg.db)
+keys(org.Mm.eg.db, keytype = "GO")
+columns(org.Mm.eg.db)
+ImmuneResponseGenes <- AnnotationDbi::select(x = org.Mm.eg.db, keytype = "GOALL", keys = "GO:0006955", columns = "ENTREZID")
+ImmuneResponseGenes # Show the gene set of immune response
+
+# Subset the differential gene expression table using the genes in the immune response functional group (GO:0006955)
+IRG_Entrez <- unique(ImmuneResponseGenes$ENTREZID)
+IRG_Res <-  Activated_minus_Resting[Activated_minus_Resting$ENTREZID %in% IRG_Entrez, ]
+write.csv(IRG_Res,
+          file = "./data/ImmuneResponseDEGeneTable.csv",
+          row.names = F)
+```
+
+
+## ClusterProfiler
+### Perform the functional enrichment
+```{r}
+library(clusterProfiler)
+sig_genes <- Activated_minus_Resting[!is.na(Activated_minus_Resting$padj) & Activated_minus_Resting$padj < 0.05, 1]
+sig_genes[1:6]
+sig_gene_enr <- enrichGO(sig_genes, OrgDb = org.Mm.eg.db)
+sig_gene_enr 
+sig_gene_enr_res <- sig_gene_enr |> as.data.frame()
+write.csv(sig_gene_enr_res,
+          file = "./data/sig_gene_enr_res.csv",
+          row.names = F)
+```
+
+
+### Visualize the results
+```{r}
+# Dotplot
+library(ggplot2)
+clusterProfiler::dotplot(sig_gene_enr, showCategory = 8) +
+  theme(axis.text.y = element_text(size = 7)) # Make the GO term description smaller
+
+# What can we learn from the plot?
+# GeneRatio on the X-axis: proportion of genes in the gene set that are significantly changed between the activated status and resting status
+# Count: number of genes in the gene set that are significantly changed between the activated status and resting status
+# p.adjust: the more red, the more significant
+
+# Enrichment maps: show how the significant functional groups relate to each other
+library(enrichplot)
+sig_gene_enr <- pairwise_termsim(sig_gene_enr)
+emapplot(sig_gene_enr, showCategory = 15, cex_label_category = 0.6) + 
+  theme(text = element_text(size = 7))
+
+# What can we learn from the plot?
+# Dot: individual gene set
+# Thickness of bond between 2 dots: how many overlapping significant genes between 2 individual gene sets?
+```
+
+# Gene Set Enrichment Analysis (GSEA)
+* Test any association of our gene set with the `ranking` of all our genes [not merely differentially expressed genes]. The functional enrichment analysis may ignore the functional relevance of genes that are filtered out based on the cut-off (e.g., `padj` < 0.05). 
+* `lfcShrink()` shrinks the `log2 fold-change` values of genes that do not have much significance. This allows us to use the `log2 fold-change` as a **measure of significance** of change in our ranking for analysis and in programs such as `GSEA`.
+
+## Create a ranked and named vector of gene scores
+```{r}
+# Create a ranked and named vector of gene scores. Here we rank genes using the `stat` to give sensible measure of differential expression. If we have the modified log2 fold changes using `lfsShrink()`, we could also use log2FoldChange to rank genes
+forRNK <- Activated_minus_Resting$stat[order(Activated_minus_Resting$stat, decreasing = T)]
+names(forRNK) <- Activated_minus_Resting$ENTREZID
+forRNK[1:6]
+```
+
+
+## View the MSigDb enrichment of C7 (immunological signature)
+```{r}
+library(msigdbr)
+mm_c7 <- msigdbr(species = "Mus musculus", category = "C7")[c("gs_name", "entrez_gene")]
+```
+
+
+# Run the GSEA
+```{r}
+library(clusterProfiler)
+sig_gene_enr_GSEA <- GSEA(forRNK, TERM2GENE = mm_c7, eps = 1e-100) # eps: This parameter sets the boundary for calculating the p value.
 ```
