@@ -1,0 +1,213 @@
+\documentclass[letterpaper, 11pt]{article}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\usepackage{setspace}
+\usepackage{paralist}
+\usepackage{amsmath}
+\usepackage{epsfig,psfrag}
+\usepackage{color}
+
+
+\renewcommand{\labelenumi}{(\theenumi)}
+
+\pdfpagewidth 8.5in
+\pdfpageheight 11in
+
+\setlength\topmargin{0in}
+\setlength\leftmargin{0in}
+\setlength\headheight{0in}
+\setlength\headsep{0in}
+\setlength\textheight{9in}
+\setlength\textwidth{6.5in}
+\setlength\oddsidemargin{0in}
+\setlength\evensidemargin{0in}
+\setlength\parindent{0in}
+\setlength\parskip{0.13in} 
+ 
+\title{Quantitative Genomics and Genetics - Spring 2023 \\
+BTRY 4830/6830; PBSB 5201.01}
+\author{Anni Liu \\ \\ \\ Homework 2 (version 1 - posted February 9)}
+\date{Assigned February 9; Due 11:59PM February 17}                                           % Activate to display a given date or no date
+
+\begin{document}
+
+\vspace{-20in}
+
+\maketitle
+\section*{Problem 1 (Easy)}
+
+\begin{itemize}
+\item[a.] Explain why a probability mass function $P_X(x)$ can be used to calculate the probability that a random variable $X$ will take a specific value while a probability density function $f_X(x)$ cannot.\\
+
+\textcolor{blue}{Answer:\\ $P_X(x)$ assigns probabilities to discrete values of a random variable, which calculates the probability that a discrete random variable X will take a specific value. For example, if $X$ is a random variable that can only take values 0, 1, or 2, then $P_X(x)$ assigns probabilities to each of these values such that the sum of the probability of each value is 1. To derive the probability that $X$ takes a specific value, we evaluate $P_X(x)$ at that value. On the other hand, $f_X(x)$ is used to describe the distribution of a continuous random variable, which assigns a probability density to each value of the random variable $X$, rather than a probability. Since a continuous random variable can take an infinite number of values, and to adhere to the axiom of probabilities stating that $Pr(\Omega) = 1$, the probability of this continuous random variable taking a specific value is set as 0, otherwise even if a very small probability were assigned to a specific value, the sum of the probability of each specific value will surpass 1. That explains why $f_X(x)$ cannot calculate the probability that a random variable $X$ will take a specific value. If we hope to calculate the probability using $f_X(x)$, we need to calculate the area under $f_X(x)$ in the interval that includes a specific value. }\\
+
+\item[b.] Which of the following statements are true (i.e., answer will be only True or False for each, no other explanation or derivation required):\\
+\\
+b1. If random variables $X_1$ and $X_2$ are independent, then $Cov(X_1,X_2) = 0$.\\
+\\
+\textcolor{blue}{Answer:\\ True}\\
+
+b2. If random variables $X_1$ and $X_2$ are not independent, then $Cov(X_1,X_2) \neq 0$.\\
+\\
+\textcolor{blue}{Answer:\\ False}\\
+
+b3. If $Cov(X_1,X_2) = 0$ then random variables $X_1$ and $X_2$ are independent.\\
+\\
+\textcolor{blue}{Answer:\\ False}\\
+
+
+b4. If $Cov(X_1,X_2) \neq 0$ then random variables $X_1$ and $X_2$ are not independent.\\
+\\
+\textcolor{blue}{Answer:\\ True}\\
+
+\end{itemize}
+
+\section*{Problem 2 (Medium)}
+
+Consider a coin and a two flip experiment.  Assume a probability function defined on the Sigma Algebra (which you do not need to specify explicitly for this question) that assigns a probability of 0.15 to each of the outcomes \{HH\}, \{TT\} and a probability of 0.35 to each of \{HT\}, \{TH\}.  Consider a random variable $X_1$ that takes the value `1' if the first flip is H and that takes the value `0' if the first flip is T, a random variable $X_2$ that takes the value `1'  if the two flips are the same and `0' if the two flips are different, and a random variable $X_3$ that takes the value `1'  if either of the two flips are T and `0' if neither of the two flips are T. 
+
+\begin{itemize}
+
+\item[a.] Write out the pmf of $X_1$, $X_2$, and $X_3$, i.e., for each, your answer should be of the form $Pr(X_i = 0) = ?, Pr(X_i = 1) = ?, etc.$.
+
+\textcolor{blue}{Answer:\\ $Pr(X_1 = 0) = Pr(\{TT\}, \{TH\}) = 0.15 + 0.35 = 0.5; Pr(X_1 = 1) = Pr(\{HH\}, \{HT\}) = 0.15 + 0.35 = 0.5$}\\
+
+\textcolor{blue}{$Pr(X_2 = 0) = Pr(\{HT\}, \{TH\}) = 0.35 + 0.35 = 0.7; Pr(X_2 = 1) = Pr(\{HH\}, \{TT\}) = 0.15 + 0.15 = 0.3$}\\
+
+\textcolor{blue}{$Pr(X_3 = 0) = Pr(\{HH\}) = 0.15; Pr(X_3 = 1) = Pr(\{TT\}, \{HT\}, \{TH\}) = 0.15 + 0.35 + 0.35 = 0.85$}\\
+
+\item[b.] Use the general formula for the expected value of a (discrete) random variable to calculate the expected values of $X_1$, $X_2$, and $X_3$ and show your work (!!).\\
+
+\textcolor{blue}{Answer: \\
+$EX_1 = \Sigma_{i=min(X_1)}^{max(X_1)}(X_1 = i)Pr(X_1 = i) \\
+= (0)Pr(X_1 = 0) + (1)Pr(X_1 = 1) \\
+= 0 \times 0.5 + 1 \times 0.5 = 0.5\\
+\\
+EX_2 = \Sigma_{i=min(X_2)}^{max(X_2)}(X_2 = i)Pr(X_2 = i) \\ 
+= (0)Pr(X_2 = 0) + (1)Pr(X_2 = 1) \\
+= 0 \times 0.7 + 1 \times 0.3 = 0.3\\
+\\
+EX_3 = \Sigma_{i=min(X_3)}^{max(X_3)}(X_3 = i)Pr(X_3 = i) \\
+= (0)Pr(X_3 = 0) + (1)Pr(X_3 = 1) \\
+= 0 \times 0.15 + 1 \times 0.85 = 0.85
+$
+}\\ 
+
+\item[c.] Use the formula for the variance of a (discrete) random variable to calculate the variance of $X_1$, $X_2$, and $X_3$ and show your work (!!).\\
+
+\textcolor{blue}{Answer: \\
+$Var(X_1) = \Sigma_{i=min(X_1)}^{max(X_1)}((X_1 = i) - EX_1)^2Pr(X_1 = i) = (0 - 0.5)^2 \times 0.5 + (1 - 0.5)^2 \times 0.5 = 0.25\\
+Var(X_2) = \Sigma_{i=min(X_2)}^{max(X_2)}((X_2 = i) - EX_2)^2Pr(X_2 = i) = (0 - 0.3)^2 \times 0.7 + (1 - 0.3)^2 \times 0.3 = 0.21\\
+Var(X_3) = \Sigma_{i=min(X_3)}^{max(X_3)}((X_3 = i) - EX_3)^2Pr(X_3 = i) = (0 - 0.85)^2 \times 0.15 + (1 - 0.85)^2 \times 0.85 = 0.1275$
+}\\
+
+\item[d.] Write out the joint (bivariate) distribution for random variables $X_1$ and $X_2$, i.e., your answer should be of the form $Pr(X_1 = 0, X_2 = 0) = ?, Pr(X_1 = 1, X_2 = 0) = ?, etc.$.\\
+
+\textcolor{blue}{Answer: \\
+$Pr(X_1 = 0, X_2 = 0) = Pr(\{TH\}) = 0.35; \\
+Pr(X_1 = 1, X_2 = 0) = Pr(\{HT\}) = 0.35; \\
+Pr(X_1 = 0, X_2 = 1) = Pr(\{TT\}) = 0.15; \\
+Pr(X_1 = 1, X_2 = 1) = Pr(\{HH\}) = 0.15$
+}\\
+
+\item[e.] Use the formula for covariance of a (discrete) random variable to calculate $Cov(X_1,X_2)$ and show your work (!!).\\
+\textcolor{blue}{Answer: \\
+$Cov(X_1, X_1) = E(X_1X_1) - EX_1EX_1 = E(X_1^2) - (EX_1)^2 = Var(X_1) = E[(X_1 - EX_1)(X_1 - EX_1)]\\
+\\
+Cov(X_1, X_2) = E[(X_1 - EX_1)(X_2 - EX_2)] \\
+= \Sigma_{i=min(X_1)}^{i=max(X_1)}\Sigma_{j=min(X_2)}^{j=max(X_2)}((X_1 = i) - EX_1)((X_2 = j) - EX_2)P_{X_1, X_2}(x_1, x_2) \\
+= ((X_1 = 1) - EX_1)((X_2 = 0) - EX_2)Pr_{X_1, X_2}(X_1 = 1, X_2 = 0) + \\
+((X_1 = 1) - EX_1)((X_2 = 1) - EX_2)Pr_{X_1, X_2}(X_1 = 1, X_2 = 1) + \\
+((X_1 = 0) - EX_1)((X_2 = 0) - EX_2)Pr_{X_1, X_2}(X_1 = 0, X_2 = 0) + \\
+((X_1 = 0) - EX_1)((X_2 = 1) - EX_2)Pr_{X_1, X_2}(X_1 = 0, X_2 = 1) \\
+= (1 - 0.5) \times (0 - 0.3) \times 0.35 + (1 - 0.5) \times (1 - 0.3) \times 0.15 + (0 - 0.5) \times (0 - 0.3) \times 0.35 + (0 - 0.5) \times (1 - 0.3) \times 0.15 \\
+= 0
+$
+}\\
+
+\item[f.] Write out the joint (bivariate) distribution for random variables $X_1$ and $X_3$.\\
+\textcolor{blue}{Answer: \\
+$Pr(X_1 = 0, X_3 = 0) = Pr(\varnothing) = 0; \\
+Pr(X_1 = 1, X_3 = 0) = Pr(\{HH\}) = 0.15; \\
+Pr(X_1 = 0, X_3 = 1) = Pr(\{TT\}, \{TH\}) = 0.15 + 0.35 = 0.5; \\
+Pr(X_1 = 1, X_3 = 1) = Pr(\{HT\}) = 0.35$
+}\\
+
+\item[g.] Use the formula for covariance of a (discrete) random variable to calculate $Cov(X_1,X_3)$ and show your work (!!).\\
+
+\textcolor{blue}{Answer: \\
+$Cov(X_1, X_1) = E(X_1X_1) - EX_1EX_1 = E(X_1^2) - (EX_1)^2 = Var(X_1) = E[(X_1 - EX_1)(X_1 - EX_1)]\\
+\\
+Cov(X_1, X_3) = E[(X_1 - EX_1)(X_3 - EX_3)] \\
+= \Sigma_{i=min(X_1)}^{i=max(X_1)}\Sigma_{j=min(X_3)}^{j=max(X_3)}((X_1 = i) - EX_1)((X_3 = j) - EX_3)P_{X_1, X_3}(x_1, x_3) \\
+= ((X_1 = 1) - EX_1)((X_3 = 0) - EX_3)Pr_{X_1, X_3}(X_1 = 1, X_3 = 0) + \\
+((X_1 = 1) - EX_1)((X_3 = 1) - EX_3)Pr_{X_1, X_3}(X_1 = 1, X_3 = 1) + \\
+((X_1 = 0) - EX_1)((X_3 = 0) - EX_3)Pr_{X_1, X_3}(X_1 = 0, X_3 = 0) + \\
+((X_1 = 0) - EX_1)((X_3 = 1) - EX_3)Pr_{X_1, X_3}(X_1 = 0, X_3 = 1) \\
+= (1 - 0.5) \times (0 - 0.85) \times 0.15 + (1 - 0.5) \times (1 - 0.85) \times 0.35 + (0 - 0.5) \times (0 - 0.85) \times 0 + (0 - 0.5) \times (1 - 0.85) \times 0.5 \\
+= -0.075
+$
+}\\
+
+\item[h.] Using no more than two sentences, provide an intuitive explanation as to why the sign of the covariance in part [e] makes sense given the probability distribution of $[X_1,X_2]$ in part [d]. 
+\textcolor{blue}{Answer: \\
+When $X_1$ and $X_2$ are both small, or $X_1$ is big and $X_2$ is small, their $Pr(X_1, X_2)$ are the SAME. This also applies to the situation where $X_1$ and $X_2$ are both big, or $X_1$ is small and $X_2$ is big, indicating no pattern between the change in $X_1$ and $X_2$ and their joint probability distribution.
+}\\
+
+\item[i.] Using no more than two sentences, provide an intuitive explanation as to why the sign of the covariance in part [g] makes sense given the probability distribution of $[X_1,X_3]$ in part [f]. 
+\textcolor{blue}{Answer: \\
+When $X_1$ and $X_3$ are both small/big, their $Pr(X_1, X_3)$ are relatively small, although $Pr(X_1 = 1, X_3 = 1)$ shows a bigger value than $Pr(X_1 = 1, X_3 = 0)$. There seems a negative pattern between the change in $X_1$ and $X_3$ and their joint probability distribution.
+}\\
+
+\item[j.] Calculate the correlation of $X_1$ and $X_3$, i.e., $corr(X_1, X_3)$ (show your work using the formula for correlation!!).\\
+\textcolor{blue}{Answer: \\
+$Cov(X_1, X_3) = -0.075$ (shown in [g]); $Var(X_1) = 0.25, Var(X_3) = 0.1275$ (shown in [c])\\
+$Corr(X_1, X_3) = \frac{Cov(X_1, X_3)}{\sqrt{Var(X_1)}\sqrt{Var(X_3)}} = \frac{-0.075}{\sqrt{0.25} \times \sqrt{0.1275}} \approx -0.42$
+}\\
+
+
+\end{itemize}
+
+\section*{Problem 3 (Difficult)}
+
+Not all symmetric matrices are covariance matrices.  Demonstrate this point by showing for the covariance matrix of a random vector: $\textbf{X}=\left[X_1,X_2\right]$:
+\[
+\textrm{Var}(\textbf{X}) = 
+ \begin{bmatrix}
+  \textrm{Var}(X_1) &  \textrm{Cov}(X_1,X_2)   \\
+   \textrm{Cov}(X_1,X_2)  &  \textrm{Var}(X_2)   \\
+  \end{bmatrix}
+\]
+that the following cannot both be true: $\textrm{Cov}(X_1,X_2)>\textrm{Var}(X_1) \mbox{ and } \textrm{Cov}(X_1,X_2)>\textrm{Var}(X_2)$. \\
+\\
+{\bf Hint:} There are many ways to show this.  One approach is to demonstrate a contradiction where your first line will be:
+\begin{equation*}
+	2Cov(X_1,X_2)>VarX_1+ VarX_2
+\end{equation*}
+and your last line will be:\\
+\begin{equation*}
+	0> Var(X_1 - X_2)
+\end{equation*}
+by making use of the formulas involving variance, covariance, and variance of sums of random variables provided in class.
+
+\textcolor{blue}{Answer: \\
+Assume $\textrm{Cov}(X_1,X_2)>\textrm{Var}(X_1) \mbox{ and } \textrm{Cov}(X_1,X_2)>\textrm{Var}(X_2)$ can be both true.
+\begin{align}
+2Cov(X_1, X_2) > Var(X_1) + Var(X_2)\\
+0 > Var(X_1) + Var(X_2) - 2Cov(X_1, X_2) \\
+\because Y = a + bX, Var(Y) = b^2Var(X)\\
+\therefore Var(-X_2) = Var(X_2)\\
+\because Y_1 = a_1 + b_1X_1, Y_2 = a_2 + b_2X_2; Cov(Y_1, Y_2) = b_1b_2Cov(X_1, X_2)\\
+\therefore Cov(X_1, -X_2) = -Cov(X_1, X_2)\\
+\because Var(X_2) = Var(-X_2), Cov(X_1, -X_2) = -Cov(X_1, X_2)\\
+\therefore 0 > Var(X_1) + Var(-X_2) + 2Cov(X_1, -X_2) \\
+\because Var(X_1 + X_2) = Var(X_1) + Var(X_2) + 2Cov(X_1, X_2)\\
+\therefore Var(X_1 - X_2) = Var(X_1) + Var(-X_2) + 2Cov(X_1, -X_2)\\
+0 > Var(X_1 - X_2)
+\end{align}
+}\\
+
+\end{document}
+
