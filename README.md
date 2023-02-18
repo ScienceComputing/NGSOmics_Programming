@@ -13,6 +13,9 @@ This repository contains my coding practice, learning notes, and assignment solu
 
 **Analyze single cell RNA-Seq data**
 
+  - [Use Cell Ranger and LOUPE browser](SingleCellRNASeq/CellRangerQCReport.Rmd)
+
+
 <hr>
 
 
