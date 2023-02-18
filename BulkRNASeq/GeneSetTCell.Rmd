@@ -261,7 +261,7 @@ supGenomes[1:6, ]
 pwf <- nullp(DEgenes = up.in.liver, genome = "mm10", id = "knownGene", plot.fit = T)
 
 # Identify GO term cellular component groups enriched in genes significantly upregulated in liver
-# Specify the genome build and ID (here we match TxDb.UCSC.mm10.knownGene.db) and the categories we plan to test (GO:CC - cellular component). 
+# Specify the genome build and ID (here we match TxDb.UCSC.mm10.knownGene.db) and the categories we plan to test (GO:CC - cellular component)
 GO.up.in.liver <- goseq(pwf, genome = "mm10", id = "knownGene", test.cats = c("GO:CC"))
 GO.up.in.liver[1:6, ]
 ```
