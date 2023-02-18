@@ -148,6 +148,7 @@ sig_genes <- Activated_minus_Resting[!is.na(Activated_minus_Resting$padj) & Acti
 sig_genes[1:6]
 sig_gene_enr <- enrichGO(sig_genes, OrgDb = org.Mm.eg.db)
 sig_gene_enr 
+class(sig_gene_enr) # enrichResult
 sig_gene_enr_res <- sig_gene_enr |> as.data.frame()
 write.csv(sig_gene_enr_res,
           file = "./data/sig_gene_enr_res.csv",
@@ -155,7 +156,7 @@ write.csv(sig_gene_enr_res,
 ```
 
 
-### Visualize the results
+### *Visualize the results
 ```{r}
 # Dotplot
 library(ggplot2)
@@ -178,9 +179,11 @@ emapplot(sig_gene_enr, showCategory = 15, cex_label_category = 0.6) +
 # Thickness of bond between 2 dots: how many overlapping significant genes between 2 individual gene sets?
 ```
 
+
 # Gene Set Enrichment Analysis (GSEA)
 * Test any association of our gene set with the `ranking` of all our genes [not merely differentially expressed genes]. The functional enrichment analysis may ignore the functional relevance of genes that are filtered out based on the cut-off (e.g., `padj` < 0.05). 
 * `lfcShrink()` shrinks the `log2 fold-change` values of genes that do not have much significance. This allows us to use the `log2 fold-change` as a **measure of significance** of change in our ranking for analysis and in programs such as `GSEA`.
+
 
 ## Create a ranked and named vector of gene scores
 ```{r}
@@ -194,12 +197,142 @@ forRNK[1:6]
 ## View the MSigDb enrichment of C7 (immunological signature)
 ```{r}
 library(msigdbr)
-mm_c7 <- msigdbr(species = "Mus musculus", category = "C7")[c("gs_name", "entrez_gene")]
+mm_c7 <- msigdbr(species = "Mus musculus", category = "C7")[,c("gs_name", "entrez_gene")]
 ```
 
 
-# Run the GSEA
+## Run the GSEA
 ```{r}
 library(clusterProfiler)
 sig_gene_enr_GSEA <- GSEA(forRNK, TERM2GENE = mm_c7, eps = 1e-100) # eps: This parameter sets the boundary for calculating the p value.
+sig_gene_enr_GSEA
+class(sig_gene_enr_GSEA) # gseaResult
+```
+
+
+## Visualize the results
+```{r}
+# Create a dotplot
+dotplot(sig_gene_enr_GSEA, showCategory = 6) + 
+  theme(axis.text.y = element_text(size = 7))
+
+# Create an enrichment map
+library(enrichplot)
+sig_gene_enr_GSEA <- pairwise_termsim(sig_gene_enr_GSEA)
+emapplot(sig_gene_enr_GSEA, showCategory = 10, cex_label_category = 0.6) + 
+  theme(text = element_text(size = 7))
+
+# Create a running score plot, which locates the most significant functinonal group
+gseaplot(sig_gene_enr_GSEA, geneSetID = 1, by = "runningScore", title = "GSE15330_HSC_VS_LYMPHOID_PRIMED_MULTIPOTENT_PROGENITOR_DN")
+```
+
+
+## Save the GSEA results
+```{r}
+write.csv(as.data.frame(sig_gene_enr_GSEA), "cluster_profiler_GSEA_result.csv")
+```
+
+
+# Exercise
+## *`goseq` cellular component analysis
+Identify GO term cellular component groups enriched in genes significantly upregulated in liver with goseq. What are the top 5 terms?
+```{r}
+# Load the differential expression data
+heart.minus.liver <- read.csv("./data/Heart_minus_liver.csv")
+heart.minus.liver[1:6, ]
+
+# Screen out NA in `padj`
+heart.minus.liver <- heart.minus.liver[!is.na(heart.minus.liver$padj), ]
+heart.minus.liver[1:6, ]
+
+# Perform the functional enrichment
+# Create a named vector of 1s or 0s indicating if a gene is upregulated or downregulated in the liver
+up.in.liver <- (heart.minus.liver$padj < 0.05 & heart.minus.liver$log2FoldChange < 0) |> as.integer()
+names(up.in.liver) <- heart.minus.liver$ID
+up.in.liver[1:6]
+table(up.in.liver)
+
+# List supported genomes
+library(goseq)
+supGenomes <- supportedGenomes() 
+supGenomes[1:6, ]
+
+# Examine the gene length bias in differential expression analysis and remove any artefactual enrichment for long and short genes 
+pwf <- nullp(DEgenes = up.in.liver, genome = "mm10", id = "knownGene", plot.fit = T)
+
+# Identify GO term cellular component groups enriched in genes significantly upregulated in liver
+# Specify the genome build and ID (here we match TxDb.UCSC.mm10.knownGene.db) and the categories we plan to test (GO:CC - cellular component). 
+GO.up.in.liver <- goseq(pwf, genome = "mm10", id = "knownGene", test.cats = c("GO:CC"))
+GO.up.in.liver[1:6, ]
+```
+
+
+## ClusterProfiler for KEGG enrichment
+Plot the -log10 pvalue for top 5 terms in a plot.
+```{r}
+library(clusterProfiler)
+
+# Create a ranked and named vector of gene scores
+gene.score <- heart.minus.liver$stat[order(heart.minus.liver $stat, decreasing = T)]
+names(gene.score) <- heart.minus.liver$ID
+gene.score[1:6]
+
+KEGG.heart.liver <- gseKEGG(
+  geneList = gene.score,
+  organism = "mmu",
+  keyType = "kegg", 
+  eps = 10e-100)
+
+head(KEGG.heart.liver)
+
+plot(factor(KEGG.heart.liver$ID[1:5], levels = c("mmu05330", "mmu00360", "mmu05332", "mmu00040", "mmu04612")), 
+     -log10(KEGG.heart.liver$p.adjust)[1:5], 
+     main = "Top 5 KEGG enriched terms",
+     ylab = "-log10(p.adj)", 
+     type = "n",
+     las = 2) # las: make the label perpendicular to the x-axis
+points(x = -log10(KEGG.heart.liver$p.adjust)[1:5], cex = 2, col = "dark red", bg = "dark red", pch = 21)
+```
+
+
+## Show the top 5 KEGG enriched terms in a dotplot 
+```{r}
+library(ggplot2)
+clusterProfiler::dotplot(KEGG.heart.liver, showCategory = 5) +
+  theme(axis.text.y = element_text(size = 7)) 
+```
+
+
+## Show the top 5 KEGG enriched terms in an enrichment map
+```{r}
+library(enrichplot)
+KEGG.heart.liver.pt <- pairwise_termsim(KEGG.heart.liver)
+emapplot(sig_gene_enr, showCategory = 5, cex_label_category = 0.6) + 
+  theme(text = element_text(size = 7))
+```
+
+
+## *Heatmap of leading edge genes
+**Draw a heatmap of the genes driving enrichment in the top 3 KEGG terms**. Use `rlog` counts, scale across rows using a Z-score, and include the kidney data as a reference point.
+```{r}
+library(pheatmap)
+library(DESeq2)
+gene.id <- unlist(strsplit(KEGG.heart.liver$core_enrichment[1:3],"/"))
+
+load("data/gC_TissueFull.RData")
+dds <- DESeqDataSet(geneCounts, design = ~Tissue)
+dds$Tissue <- relevel(dds$Tissue, ref = "Kidney")
+dds <- DESeq(dds)
+dds.res <- results(dds, contrast = c("Tissue", "Liver", "Heart"))
+rlog.tissue <- rlog(dds)
+mat <- assay(rlog.tissue)[rownames(rlog.tissue) %in% gene.id,]
+anno.df <- as.data.frame(colData(dds)) # colData accesses the metadata [Tissue, sizeFactor]
+anno.df
+anno.df <- anno.df[, 1, drop = F] # Keep the Tissue column only
+anno.df
+
+pheatmap(mat,
+         scale="row", 
+         show_rownames = F,
+         annotation_col = anno.df)
 ```
