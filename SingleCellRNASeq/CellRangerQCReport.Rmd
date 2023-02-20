@@ -1,1 +1,58 @@
+---
+title: "Analysis Single Cell RNA-Seq Data with Seurat"
+author: "Anni Liu"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: 
+  html_document:
+    code_folding: show
+---
 
+```{r, shorcut, include=FALSE}
+## RStudio keyboard shortcut
+# Cursor at the beginning of a command line: Ctrl+A
+# Cursor at the end of a command line: Ctrl+E
+# Clear all the code from your console: Ctrl+L
+# Create a pipe operator %>%: Ctrl+Shift+M (Windows) or Cmd+Shift+M (Mac)
+# Create an assignment operator <-: Alt+- (Windows) or Option+-(Mac) 
+# Knit a document (knitr): Ctrl+Shift+K (Windows) or Cmd+Shift+K (Mac)
+# Comment or uncomment current selection: Ctrl+Shift+C (Windows) or Cmd+Shift+C (Mac)
+```
+
+
+# Tutorial
+# Load `Cell Ranger` results into `Seurat` object
+```{r}
+install.packages("Seurat")
+library(Seurat)
+samID <- "CTRL" # CTRL: control
+x10_file <- Read10X("./data/CTRL/") # Read 3 files: barcodes.tsv.gz; features.tsv.gz (gene ID); matrix.mtx.gz
+obj <- CreateSeuratObject(counts = x10_file, project = samID, min.cells = 5, min.features = 200)
+# min.cells: Include features detected in at least this many cells. 
+# min.features: Include cells where at least this many features are detected.
+obj$dset <- samID # Create a character vector "CTRL" in the meta.data
+# obj@meta.data[["dset"]]
+obj <- RenameCells(obj, add.cell.id = samID) # Rename the barcode (optional); add.cell.id: prefix to add cell names - active.ident object
+obj[["percent.mt"]] <- PercentageFeatureSet(obj, pattern = "^mt-") # Calculate the mitochondrial contents in each cell; PercentageFeatureSet(): calculate the percentage of all counts that belong to a given set of features
+```
+
+
+# View the cell meta information
+```{r}
+# The object `meta.data` containsthe cell barcode, mitochondrial contents, datasets, and clustering, etc.
+obj@meta.data[1:6, ]
+rownames(obj@meta.data[1:6, ]) # These are cell barcodes
+obj@meta.data[1, "nCount_RNA"] # This cell contains 1290 reads
+obj@meta.data[1, "nFeature_RNA"] # There are 535 genes detected for this cell in the CTRL group
+obj@meta.data[1, "percent.mt"] # There are 43% of the reads belonging to the mitochondria
+nrow(obj@meta.data) # There are 7939 cells
+```
+
+
+# View the raw count matrix
+```{r}
+head(obj@assays$RNA@counts)
+# Each row represents each gene symbol; each column represents each cell
+
+head(obj@assays$RNA@data)
+# View the normalized count for each gene in each cell
+```
