@@ -13,7 +13,7 @@ This repository holds various coding practice, learning notes, and assignment so
 
 **Analyze single cell RNA-Seq data**
 
-  - [Analyze single cell RNA-Seq Data with Seurat](SingleCellRNASeq/Seurat.Rmd)
+  - [Use Seurat workflow](SingleCellRNASeq/Seurat.Rmd)
 
 
 <hr>
