@@ -1,5 +1,5 @@
 ---
-title: "Analysis Single Cell RNA-Seq Data with Seurat"
+title: "Analysis of Mouse Single Cell RNA-Seq Data with Seurat"
 author: "Anni Liu"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: 
@@ -22,7 +22,7 @@ output:
 # Tutorial
 # Load `Cell Ranger` results into `Seurat` object
 ```{r}
-install.packages("Seurat")
+# install.packages("Seurat")
 library(Seurat)
 samID <- "CTRL" # CTRL: control
 x10_file <- Read10X("./data/CTRL/") # Read 3 files: barcodes.tsv.gz; features.tsv.gz (gene ID); matrix.mtx.gz
@@ -55,4 +55,216 @@ head(obj@assays$RNA@counts)
 
 head(obj@assays$RNA@data)
 # View the normalized count for each gene in each cell
+```
+
+
+# Evaluate the data
+```{r}
+# Compare read counts, gene counts, and mitochondrial content
+VlnPlot(obj, features = c("nCount_RNA", "nFeature_RNA", "percent.mt"), pt.size = 0.2)
+# nCount_RNA: read counts per cell; nFeature_RNA: number of genes per cell; percent.mt: mitochondrial percentage per cell
+# pt.size: point size for geom_violin
+
+# Pairwise compare the read counts and gene counts
+FeatureScatter(obj, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
+# Points on the upper right corner: two or more cells cluster in a single droplet
+
+# Pairwise compare the read counts and mitochondrial content
+FeatureScatter(obj, feature1 = "nCount_RNA", feature2 = "percent.mt")
+# Points on the upper left corner: cell debris with low contents of nuclear genes (nCount_RNA) while high contents of mitochondrial genes (percent.mt)
+```
+
+
+# Remove the droplets/cells with high mitochondrial content and low read counts
+```{r}
+summary(obj@meta.data$percent.mt)
+
+mt_cutH <- 10 # Set the cut-off for the mitochondrial content; usually we use 10 percent; if we study the immune cell/muscle cell with the high mitochondrial content, we may assign a higher value than 10 to the cut-off
+obj_unfiltered <- obj
+obj <- subset(obj, subset = percent.mt < mt_cutH)
+```
+
+
+# Evaluate the filtered data
+```{r}
+VlnPlot(obj_unfiltered, features = c("nCount_RNA", "nFeature_RNA", "percent.mt"), pt.size = 0.2)
+VlnPlot(obj, features = c("nCount_RNA", "nFeature_RNA", "percent.mt"), pt.size = 0.2)
+
+FeatureScatter(obj_unfiltered, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
+FeatureScatter(obj, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
+
+FeatureScatter(obj_unfiltered, feature1 = "nCount_RNA", feature2 = "percent.mt")
+FeatureScatter(obj, feature1 = "nCount_RNA", feature2 = "percent.mt")
+```
+
+
+# Determine the cell cycle phase
+```{r}
+# Convert the human marker genes for S phase and G2/M phase into the corresponding mouse genes
+# Ref: https://bioconductor.org/packages/release/bioc/vignettes/biomaRt/inst/doc/accessing_ensembl.html#step1-identifying-the-database-you-need
+convertHumanGeneList <- function(x){
+  require("biomaRt")
+  human <- useEnsembl(biomart = "ensembl", dataset = "hsapiens_gene_ensembl", mirror = "www")
+  mouse <- useEnsembl(biomart = "ensembl", dataset = "mmusculus_gene_ensembl", mirror = "www")
+  genesV2 = getLDS(attributes = c("hgnc_symbol"), 
+                   filters = "hgnc_symbol", 
+                   values = x , 
+                   mart = human,
+                   attributesL = c("mgi_symbol"), 
+                   martL = mouse, 
+                   uniqueRows = T)
+  humanx <- unique(genesV2[, 2])
+  return(humanx)}
+s_gene <- convertHumanGeneList(cc.genes$s.genes)
+g2m_gene <- convertHumanGeneList(cc.genes$g2m.genes)
+```
+
+
+# Estimate the cell cyle
+```{r}
+obj <- CellCycleScoring(obj, s.features = s_gene, g2m.features = g2m_gene, set.ident = TRUE)
+obj@meta.data[1:2,]
+
+# Show the number of cells in each cell cycle
+yd_dat <- as.data.frame(table(obj@meta.data$dset, obj@meta.data$Phase))
+head(yd_dat)
+
+# Visualize the distribution of cell cycles in a bar plot
+library(ggplot2)
+ggplot(yd_dat, aes(x = Var1, y = Freq, fill = Var2)) +
+  geom_bar(stat = "identity", position = "stack") + 
+  labs(x = "", y = "Counts", fill = "Phase") + 
+  theme_classic()
+```
+
+
+# *Normalize data
+```{r}
+obj <- ScaleData(obj, vars.to.regress = c("percent.mt", "S.score", "G2M.score", "Phase"))
+```
+
+
+# Principal component analysis 
+```{r}
+set.seed(1000)
+obj <- RunPCA(obj, npcs = 30, verbose = FALSE)
+# npcs: total Number of PCs to compute and store 
+# verbose: print the top genes associated with high/low loadings for the PCs
+
+# Use the elbow plot to estimate the number of principle components
+ElbowPlot(obj, ndims = 30)
+# ndims: number of PCs
+
+numPC <- 15
+```
+
+
+# Compute the nearest neighbor graph
+```{r}
+set.seed(1000)
+maxPC <- numPC # Determined by the elbow plot
+# Construct the shared nearest-neighbor graph
+obj <- FindNeighbors(obj, reduction = "pca", dims = 1:maxPC)
+# Identify clusters of cells by a shared nearest neighbor (SNN) modularity optimization based clustering algorithm
+obj <- FindClusters(obj, resolution = 0.5)
+
+# resolution: use a value above (below) 1.0 if you want to obtain a larger (smaller) number of clusters.
+```
+
+
+# Clustering by UMAP and t-SNE
+```{r}
+obj <- RunUMAP(obj, reduction = "pca", dims = 1:maxPC)
+obj <- RunTSNE(obj, reduction = "pca", dims = 1:maxPC)
+
+# Create a UMAP plot
+DimPlot(obj, reduction = "umap")
+
+# Create a t-SNE plot
+DimPlot(obj, reduction = "tsne")
+```
+
+
+# Identify marker genes for each cluster
+```{r}
+obj <- SetIdent(obj, value = "seurat_clusters") # obj@meta.data$seurat_clusters
+clust.markers <- FindAllMarkers(obj, 
+                                only.pos = TRUE,
+                                min.pct = 0.25, 
+                                logfc.threshold = 0.25)
+# min.pct: only test genes that are detected in a minimum fraction of min.pct cells in either of the two populations. Meant to speed up the function by not testing genes that are very infrequently expressed. Default is 0.1
+# logfc.threshold: limit testing to genes which show, on average, at least X-fold difference (log-scale) between the two groups of cells. Default is 0.25 Increasing logfc.threshold speeds up the function, but can miss weaker signals.
+head(clust.markers)
+```
+
+
+# Select top 5 marker genees for each cluster
+```{r}
+topG <- clust.markers %>% 
+  group_by(cluster) %>% 
+  top_n(n = 5, wt = avg_log2FC)
+head(topG)
+# top_n {dplyr}: select top n rows (by value)
+# wt: the variable to use for ordering; avg_log2FC is a column from `clust.markers`
+```
+
+
+# Advanced plots
+## Adjust point size
+```{r}
+# Create a UMAP plot with customized point size
+DimPlot(obj, reduction = "umap", pt.size = 0.2)
+```
+
+
+## Label clusters
+```{r}
+# Create a UMAP plot with clustering labels; no need to map the legend color to the cluster color
+DimPlot(obj, reduction = "umap", pt.size = 0.2, label = T) +
+  NoLegend()
+```
+
+
+## *Make a heatmap of top 5 marker gene expression
+```{r}
+DoHeatmap(obj, features = topG$gene) + 
+  NoLegend()
+```
+
+
+## Make a feature plot of marker gene expression
+```{r}
+# Examine the location in the UMAP cluster expressed by the specific marker gene; what proportion of cells are expressed by this marker gene
+gene_marker <- c("Krt1", "Pthlh", "Krt14", "Cenpa", "Shh")
+FeaturePlot(obj, features = gene_marker, pt.size = 0.2)
+```
+
+
+## !Make a ridge plot of marker gene expression
+```{r}
+# Display the distribution of expression levels of the specific marker gene per cluster
+RidgePlot(obj, features = gene_marker)
+```
+
+
+# Compare the cell cycle phases in each cluster
+```{r}
+tbl <- table(obj@meta.data$seurat_clusters, obj@meta.data$Phase)
+tbl_dat <- as.data.frame(tbl)
+to <- rowSums(tbl)
+names(to) <- rownames(tbl)
+tbl_dat$to <- to[match(names(to), tbl_dat$Var1)]
+tbl_dat$prop <- tbl_dat$Freq / tbl_dat$to
+tbl_dat[1:2, ]
+
+ggplot(tbl_dat, aes(x = Var1,y = prop, fill = Var2)) +
+  geom_bar(stat = "identity", position = "stack") +
+  labs(x = "Seurat_clusters", y = "Proportion", fill = "Phase") +
+  theme_classic()
+
+# The second cluster may need to be removed, due to the potential cell cycle bias in much fewer proportions of G1 phases
+
+cellID <- rownames(obj@meta.data)[!obj@meta.data$seurat_clusters == 2]
+obj_rm <- obj[, cellID]
+saveRDS(obj_rm, "scSeq_Seurat_clean.rds")
 ```
