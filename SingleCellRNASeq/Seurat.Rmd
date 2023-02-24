@@ -38,7 +38,7 @@ obj[["percent.mt"]] <- PercentageFeatureSet(obj, pattern = "^mt-") # Calculate t
 
 # View the cell meta information
 ```{r}
-# The object `meta.data` containsthe cell barcode, mitochondrial contents, datasets, and clustering, etc.
+# The object `meta.data` contains the cell barcode, mitochondrial contents, datasets, and clustering, etc.
 obj@meta.data[1:6, ]
 rownames(obj@meta.data[1:6, ]) # These are cell barcodes
 obj@meta.data[1, "nCount_RNA"] # This cell contains 1290 reads
@@ -67,11 +67,11 @@ VlnPlot(obj, features = c("nCount_RNA", "nFeature_RNA", "percent.mt"), pt.size =
 
 # Pairwise compare the read counts and gene counts
 FeatureScatter(obj, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
-# Points on the upper right corner: two or more cells cluster in a single droplet
+# Notice that points on the upper right corner: two or more cells cluster in a single droplet
 
 # Pairwise compare the read counts and mitochondrial content
 FeatureScatter(obj, feature1 = "nCount_RNA", feature2 = "percent.mt")
-# Points on the upper left corner: cell debris with low contents of nuclear genes (nCount_RNA) while high contents of mitochondrial genes (percent.mt)
+# Notice that points on the upper left corner: cell debris with low contents of nuclear genes (nCount_RNA) while high contents of mitochondrial genes (percent.mt)
 ```
 
 
@@ -120,10 +120,10 @@ g2m_gene <- convertHumanGeneList(cc.genes$g2m.genes)
 ```
 
 
-# Estimate the cell cyle
+# Estimate the cell cycle
 ```{r}
-obj <- CellCycleScoring(obj, s.features = s_gene, g2m.features = g2m_gene, set.ident = TRUE)
-obj@meta.data[1:2,]
+obj <- CellCycleScoring(obj, s.features = s_gene, g2m.features = g2m_gene, set.ident = T)
+obj@meta.data[1:2, ]
 
 # Show the number of cells in each cell cycle
 yd_dat <- as.data.frame(table(obj@meta.data$dset, obj@meta.data$Phase))
@@ -138,7 +138,7 @@ ggplot(yd_dat, aes(x = Var1, y = Freq, fill = Var2)) +
 ```
 
 
-# *Normalize data
+# *Normalize the data
 ```{r}
 obj <- ScaleData(obj, vars.to.regress = c("percent.mt", "S.score", "G2M.score", "Phase"))
 ```
@@ -257,14 +257,149 @@ tbl_dat$to <- to[match(names(to), tbl_dat$Var1)]
 tbl_dat$prop <- tbl_dat$Freq / tbl_dat$to
 tbl_dat[1:2, ]
 
-ggplot(tbl_dat, aes(x = Var1,y = prop, fill = Var2)) +
+ggplot(tbl_dat, aes(x = Var1, y = prop, fill = Var2)) +
   geom_bar(stat = "identity", position = "stack") +
   labs(x = "Seurat_clusters", y = "Proportion", fill = "Phase") +
   theme_classic()
 
-# The second cluster may need to be removed, due to the potential cell cycle bias in much fewer proportions of G1 phases
+# Notice that the second cluster may need to be removed, due to the potential cell cycle bias in much fewer proportions of G1 phases
 
 cellID <- rownames(obj@meta.data)[!obj@meta.data$seurat_clusters == 2]
 obj_rm <- obj[, cellID]
 saveRDS(obj_rm, "scSeq_Seurat_clean.rds")
 ```
+
+
+# *Excercise
+## Manipulate data with Seurat
+```{r}
+library(Seurat)
+# Load the Seurat object
+obj2 <- readRDS("./data/scSeq_CKO_1kCell_ori.rds")
+
+# Calculate the mitochondrial contents of each cell
+obj2[["percent.mt"]] <- PercentageFeatureSet(obj2, pattern = "^mt-") 
+
+# View the meta data information
+obj2@meta.data[1:6, ]
+```
+
+
+## Perform the quality control
+```{r}
+# Access the read counts (nCount_RNA), gene counts (nFeature_RNA), and mitochondrial content (percent.mt) for each cell and draw a violin plot of each
+VlnPlot(obj2, features = c("nCount_RNA", "nFeature_RNA", "percent.mt"), 
+        cols = c("#82AC7C"), pt.size = 0.3)
+
+
+# Make a scatter plot for nCount_RNA vs nFeature_RNA
+FeatureScatter(obj2, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
+# Notice that points on the upper right corner: two or more cells cluster in a single droplet
+
+# Make a scatter plot for nCount_RNA vs percent.mt
+FeatureScatter(obj2, feature1 = "nCount_RNA", feature2 = "percent.mt")
+# Notice that points on the upper left corner: these may be cell debris with low contents of nuclear genes (nCount_RNA) while high contents of mitochondrial genes (percent.mt)
+
+# Remove cells with percent.mt >= 10
+summary(obj2@meta.data$percent.mt)
+mt.cutoff <- 10 
+obj3 <- subset(obj2, subset = percent.mt < mt.cutoff)
+
+# Evaluate the filtered data
+VlnPlot(obj2, features = c("nCount_RNA", "nFeature_RNA", "percent.mt"), pt.size = 0.3)
+VlnPlot(obj3, features = c("nCount_RNA", "nFeature_RNA", "percent.mt"), pt.size = 0.3)
+
+FeatureScatter(obj2, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
+FeatureScatter(obj3, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
+
+FeatureScatter(obj2, feature1 = "nCount_RNA", feature2 = "percent.mt")
+FeatureScatter(obj3, feature1 = "nCount_RNA", feature2 = "percent.mt")
+```
+
+
+## Evaluate the cell cycle
+```{r}
+# Estimate the cell cycle phase of each cell and make a table to describe how many cells per phase
+## Convert the human marker genes for S phase and G2/M phase into the corresponding mouse genes
+convertHumanGeneList <- function(x){
+  require("biomaRt")
+  human <- useEnsembl(biomart = "ensembl", dataset = "hsapiens_gene_ensembl", mirror = "useast")
+  mouse <- useEnsembl(biomart = "ensembl", dataset = "mmusculus_gene_ensembl", mirror = "useast")
+  genesV2 = getLDS(attributes = c("hgnc_symbol"), 
+                   filters = "hgnc_symbol", 
+                   values = x , 
+                   mart = human,
+                   attributesL = c("mgi_symbol"), 
+                   martL = mouse, 
+                   uniqueRows = T)
+  humanx <- unique(genesV2[, 2])
+  return(humanx)}
+s_gene <- convertHumanGeneList(cc.genes$s.genes)
+g2m_gene <- convertHumanGeneList(cc.genes$g2m.genes)
+
+obj3 <- CellCycleScoring(obj3, s.features = s_gene, g2m.features = g2m_gene, set.ident = T)
+obj@meta.data[1:2, ]
+
+## Show the number of cells in each cell cycle
+as.data.frame(table(obj@meta.data$dset, obj@meta.data$Phase))
+```
+
+
+## Normalize the data 
+```{r}
+# Scale data by regressing to mitochondrial content (percent.mt) and cell cycle (S.score, G2M.score, Phase)
+obj3 <- ScaleData(obj3, vars.to.regress = c("percent.mt", "S.score", "G2M.score", "Phase"))
+```
+
+
+## Cluster the data
+```{r}
+# Construct principle component analysis (PCA) and estimate how many PCs would best represent this data
+set.seed(1000)
+obj3 <- RunPCA(obj3, npcs = 30, verbose = FALSE)
+ElbowPlot(obj3, ndims = 30)
+numPC <- 10
+
+# Compute the nearest neighbor graph
+maxPC <- numPC
+obj3 <- FindNeighbors(obj3, reduction = "pca", dims = 1:maxPC)
+obj3 <- FindClusters(obj3, resolution = 0.5)
+
+# Create UMAP and t-SNE plots
+obj3 <- RunUMAP(obj3, reduction = "pca", dims = 1:maxPC)
+obj3 <- RunTSNE(obj3, reduction = "pca", dims = 1:maxPC)
+DimPlot(obj3, reduction = "umap")
+DimPlot(obj3, reduction = "tsne")
+```
+
+
+## Identify marker genes for each cluster
+```{r}
+# Select marker genes for each cluster and generate a heatmap of the top five marker genes for each cluster
+obj3 <- SetIdent(obj3, value = "seurat_clusters")
+cluster.marker <- FindAllMarkers(obj3, 
+                                 only.pos = T,
+                                 min.pct = 0.25, 
+                                 logfc.threshold = 0.25)
+
+top5.gene <- cluster.marker %>% 
+  group_by(cluster) %>% 
+  top_n(n = 5, wt = avg_log2FC)
+head(top5.gene)
+
+DoHeatmap(obj3, features = top5.gene$gene) + 
+  NoLegend()
+```
+
+
+## Show the top marker genes of each cluster in FeaturePlot and RidgePlot
+```{r}
+# Examine the location in the UMAP cluster expressed by the specific marker gene; what proportion of cells are expressed by this marker gene
+gene.marker <- top5.gene$gene
+FeaturePlot(obj3, features = gene.marker, pt.size = 0.2)
+
+# Display the distribution of expression levels of the specific marker gene per cluster
+RidgePlot(obj3, features = gene.marker)
+```
+
+
