@@ -1,0 +1,207 @@
+---
+title: "Analysis of Mouse Single Cell RNA-Seq Data with Bioconductor"
+author: "Anni Liu"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: 
+  html_document:
+    code_folding: show
+---
+
+```{r, shorcut, include=FALSE}
+## RStudio keyboard shortcut
+# Cursor at the beginning of a command line: Ctrl+A
+# Cursor at the end of a command line: Ctrl+E
+# Clear all the code from your console: Ctrl+L
+# Create a pipe operator %>%: Ctrl+Shift+M (Windows) or Cmd+Shift+M (Mac)
+# Create an assignment operator <-: Alt+- (Windows) or Option+-(Mac) 
+# Knit a document (knitr): Ctrl+Shift+K (Windows) or Cmd+Shift+K (Mac)
+# Comment or uncomment current selection: Ctrl+Shift+C (Windows) or Cmd+Shift+C (Mac)
+```
+
+
+# Load and save images
+```{r}
+load("2023Feb25scRNAseq_Bioconductor_ALiu.RData")
+```
+
+```{r}
+image.date <- format(Sys.Date(), "%Y%b%d")
+save.image(file = paste0(image.date, "scRNAseq_Bioconductor_ALiu.RData"))
+```
+
+
+# Tutorial
+# Load data and differentiate empty droplets
+```{r}
+# BiocManager::install("DropletUtils")
+# BiocManager::install("DropletTestFiles")
+library(DropletUtils) |> suppressPackageStartupMessages()
+library(DropletTestFiles) |> suppressPackageStartupMessages()
+fname <- "./filepath/toCellRanger/results" # Each directory should contain a matrix file, a gene/feature annotation file, and a barcode annotation file
+sce <- read10xCounts(fname, col.names = T) # sce: single cell experiment object
+cellID <- colData(sce)$Barcode
+
+# Load a small subset of the data
+sce <- readRDS("./data/scSeq_CTRL_sceSub.rds")
+sce # class: SingleCellExperiment 
+```
+
+
+# View the `SingleCellExperiment` object
+```{r}
+# View the cell information
+colData(sce)[1:6, ]
+# View the gene information
+rowData(sce)[1:6, ] # ENSMUST defines a mouse transcript
+```
+
+
+# Access UMI counts in each droplet
+```{r}
+# UMI stands for Unique Molecular Identifier and the UMI count refers to the number of unique molecular identifiers, or unique barcodes, that are associated with each gene transcript in a single cell; By counting the number of UMIs associated with each gene transcript in a given cell, scRNA-seq analysis can provide an accurate estimate of gene expression levels in that cell
+bcrank <- barcodeRanks(counts(sce)) # counts() gets a matrix of raw count data, e.g., number of reads or transcripts
+bcrank[1:6, ] # Each cell is ranked by UMI counts; rank: rank of each barcode (averaged across ties); total: total counts for each barcode
+```
+
+
+# *Perform the quality control
+## knee plot for identifying the empty droplet
+```{r}
+uniq <- !duplicated(bcrank$rank) # duplicated() determines which elements of a vector or data frame are duplicates of elements with smaller subscripts, and returns a logical vector indicating which elements (rows) are duplicates
+
+plot(bcrank$rank[uniq], bcrank$total[uniq], # total: total counts for each barcode
+     log = "xy", # Both axes are to be logarithmic
+     xlab = "Rank", ylab = "Total UMI count", cex.lab = 1.2) # cex.lab: set sizes for axes
+abline(h = metadata(bcrank)$inflection, col= "darkgreen", lty = 2)
+abline(h = metadata(bcrank)$knee, col = "dodgerblue", lty = 2)
+legend("bottomleft", legend = c("Inflection", "Knee"),
+      col = c("darkgreen", "dodgerblue"), lty = 2, cex = 1.2)
+# What we can learn from the knee plot?
+# x-axis: cell barcodes (droplets) ranked by their UMI counts
+# y-axis: total UMI count in each droplet
+# inflection point: point when the total UMI count per droplet starts to decrease rapidly
+# knee point: cut off of the total UMI count to differentiate cells valid for downstream analysis [exclude the empty droplet]
+# The cell whose UMI counts is >= 5887 [metadata(bcrank)$knee] are proper for the analysis
+```
+
+
+## *Identify non-empty droplets
+```{r}
+set.seed(100)
+limit <- 100   
+e.out <- emptyDrops(counts(sce), lower = limit, test.ambient = T)
+e.out
+
+# limit: a numeric scalar specifying the lower bound on the total UMI count, at or below which all barcodes are assumed to correspond to empty droplets
+# test.ambient: a logical scalar indicating whether results should be returned for barcodes with total UMI counts less than or equal to the value in `lower`
+
+# How to interpret the returned data.frame?
+# Total: integer, the total UMI count for each barcode
+# LogProb: numeric, the log-probability of observing the barcode's count vector under the null model [H0: this droplet is empty]
+# PValue: numeric, the Monte Carlo p-value against the null model [H0: this droplet is empty]
+# Limited: logical, indicating whether this droplet passes the threshold of the lowest total UMI count
+# FDR: If < 0.001, this droplet is not empty
+# We can determine if a droplet is empty by using the combination of the returned values `Limited` and `FDR`, or by using the returned value `FDR`.
+
+summary(e.out$FDR <= 0.001)
+
+# Concordance by testing with FDR and limited
+table(Sig = e.out$FDR <= 0.001, Limited = e.out$Limited)
+```
+
+
+## Visulize the distribution of significance of empty reads
+```{r}
+hist(e.out$PValue[e.out$Total <= limit & e.out$Total > 0],
+     xlab = "P-value", main = "", col = "grey80") 
+```
+
+
+## Visulize the distribution of significance of non-empty reads
+```{r}
+hist(e.out$PValue[e.out$Total > limit],
+     xlab = "P-value", main = "", col = "grey80") 
+```
+
+
+## Select non-empty droplets with FDR <= 0.001
+```{r}
+sce2 <- sce[, which(e.out$FDR <= 0.001)]
+```
+
+
+## Normalize the counts data
+```{r}
+# BiocManager::install("scran")
+# BiocManager::install("scater")
+library(scran)
+library(scuttle)
+library(scater)
+clusters <- quickCluster(sce2)
+sce2 <- computeSumFactors(sce2, cluster = clusters)
+sce2 <- logNormCounts(sce2) # Convert the normalized counts to the log scale
+sce2 # assays(2): counts logcounts
+```
+
+
+# Cluster data
+## *Identify variable features for the clustering analysis [feature selection]
+```{r}
+# Refer to: http://bioconductor.org/books/3.13/OSCA.basic/feature-selection.html
+set.seed(1000)
+# Model the variables
+dec.pbmc <- modelGeneVarByPoisson(sce2) # UMI counts typically exhibit near-Poisson variation if we only consider technical noise from library preparation and sequencing. This can be used to construct a mean-variance trend in the log-counts with the modelGeneVarByPoisson() function. 
+
+# Select the top 1 percent highly variable genes
+top.pbmc <- getTopHVGs(dec.pbmc, prop = 0.1)
+```
+
+
+## Construct the nearest-neighbor graph-based clustering
+```{r}
+set.seed(1000)
+# Evaluate PCs
+sce2 <- denoisePCA(sce2, subset.row = top.pbmc, technical = dec.pbmc) 
+# denoisePCA(): Denoise log-expression data by removing principal components corresponding to technical noise
+# technical: an object containing the technical components of variation for each gene in x
+
+# Perform t-stochastic neighbour embedding (t-SNE) for the cells, based on the data in a SingleCellExperiment object
+sce2 <- runTSNE(sce2, dimred = "PCA")
+
+# Perform uniform manifold approximation and projection (UMAP) for the cells, based on the data in a SingleCellExperiment object
+sce2 <- runUMAP(sce2, dimred = "PCA")
+
+g <- buildSNNGraph(sce2, k = 10, use.dimred = "PCA")
+clust <- igraph::cluster_walktrap(g)$membership
+colLabels(sce2) <- factor(clust) # Store the clustering membership information
+colData(sce2)
+
+## Create t-SNE and UMAP plots
+plotTSNE(sce2, colour_by = "label") # Need runTSNE() before
+plotUMAP(sce2, colour_by = "label") # Need runUMAP() before
+```
+
+
+# Remove ambient RNAs
+Cell-free RNAs can contaminate droplets. As most ambient RNAs can be identified in the empty droplets, rather than the non-empty droplets, we can differentiate ambient RNAs easily.
+```{r}
+# Extract potential ambient RNAs and their estimated scores
+amb <- metadata(e.out)$ambient[, 1] # Recap: e.out <- emptyDrops(counts(sce), lower = limit, test.ambient = T)
+# metadata(e.out)$ambient
+head(amb)
+
+# Remove ambient RNAs
+library(scater)
+stripped <- sce2[names(amb), ]
+out <- removeAmbience(counts(stripped), ambient = amb, groups = colLabels(stripped)) 
+# removeAmbience: estimate and remove the ambient profile from a count matrix, given pre-existing groupings of similar cells [colLabels(stripped)]. This function is largely intended for plot beautification rather than real analysis.
+# This function returns a numeric matrix-like object of the same dimensions as y, containing the counts after removing the ambient contamination.
+# dim(counts(stripped))
+```
+
+
+# Integrate corrected counts
+```{r}
+counts(stripped, withDimnames = FALSE) <- out
+stripped <- logNormCounts(stripped)
+```
