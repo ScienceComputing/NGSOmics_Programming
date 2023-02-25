@@ -21,9 +21,6 @@ This repository holds various coding practice, learning notes, and assignment so
 
 **Analyze ATAC-Seq data**
 
-  - [Use Seurat workflow](SingleCellRNASeq/Seurat.Rmd)
-  - [Use bioconductor packages to orchestrate single cell RNA-Seq data analysis](SingleCellRNASeq/Bioconductor.Rmd)
-
 
 <hr>
 
