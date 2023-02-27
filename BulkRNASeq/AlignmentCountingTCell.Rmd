@@ -1,5 +1,5 @@
 ---
-title: "Alignment and Counting Using T-Regulatory Cell RNA-Seq Data"
+title: "Alignment and Counting Using Mouse T-Regulatory Cell RNA-Seq Data"
 author: "Anni Liu"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: 
@@ -16,17 +16,6 @@ output:
 # Create an assignment operator <-: Alt+- (Windows) or Option+-(Mac) 
 # Knit a document (knitr): Ctrl+Shift+K (Windows) or Cmd+Shift+K (Mac)
 # Comment or uncomment current selection: Ctrl+Shift+C (Windows) or Cmd+Shift+C (Mac)
-```
-
-
-# Load and save images
-```{r}
-load("2023Jan27RNAseq_AlignCount_ALiu.RData")
-```
-
-```{r}
-image.date <- format(Sys.Date(), "%Y%b%d")
-save.image(file = paste0(image.date, "RNAseq_AlignCount_ALiu.RData"))
 ```
 
 
