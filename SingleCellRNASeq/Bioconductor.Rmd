@@ -1,5 +1,5 @@
 ---
-title: "Analysis of Mouse Single Cell RNA-Seq Data with Bioconductor"
+title: "Analysis of Mouse Skin Single Cell RNA-Seq Data with Bioconductor"
 author: "Anni Liu"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: 
