@@ -19,17 +19,6 @@ output:
 ```
 
 
-# Load and save images
-```{r}
-load("2023Feb25scRNAseq_Bioconductor_ALiu.RData")
-```
-
-```{r}
-image.date <- format(Sys.Date(), "%Y%b%d")
-save.image(file = paste0(image.date, "scRNAseq_Bioconductor_ALiu.RData"))
-```
-
-
 # Tutorial
 # Load data
 ```{r}
