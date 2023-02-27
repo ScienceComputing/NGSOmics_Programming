@@ -31,7 +31,7 @@ save.image(file = paste0(image.date, "scRNAseq_Bioconductor_ALiu.RData"))
 
 
 # Tutorial
-# Load data and differentiate empty droplets
+# Load data
 ```{r}
 # BiocManager::install("DropletUtils")
 # BiocManager::install("DropletTestFiles")
@@ -60,12 +60,14 @@ rowData(sce)[1:6, ] # ENSMUST defines a mouse transcript
 ```{r}
 # UMI stands for Unique Molecular Identifier and the UMI count refers to the number of unique molecular identifiers, or unique barcodes, that are associated with each gene transcript in a single cell; By counting the number of UMIs associated with each gene transcript in a given cell, scRNA-seq analysis can provide an accurate estimate of gene expression levels in that cell
 bcrank <- barcodeRanks(counts(sce)) # counts() gets a matrix of raw count data, e.g., number of reads or transcripts
-bcrank[1:6, ] # Each cell is ranked by UMI counts; rank: rank of each barcode (averaged across ties); total: total counts for each barcode
+bcrank[1:6, ] 
+
+# By using barcodeRanks(), each cell is ranked by the total UMI counts; the returned value rank refers to the rank of each cell barcode by its total UMI counts (averaged across ties); the returned value total refers to the total UMI counts for each cell/barcode
 ```
 
 
 # *Perform the quality control
-## knee plot for identifying the empty droplet
+## *Draw the knee plot for identifying the empty droplet
 ```{r}
 uniq <- !duplicated(bcrank$rank) # duplicated() determines which elements of a vector or data frame are duplicates of elements with smaller subscripts, and returns a logical vector indicating which elements (rows) are duplicates
 
@@ -76,9 +78,10 @@ abline(h = metadata(bcrank)$inflection, col= "darkgreen", lty = 2)
 abline(h = metadata(bcrank)$knee, col = "dodgerblue", lty = 2)
 legend("bottomleft", legend = c("Inflection", "Knee"),
       col = c("darkgreen", "dodgerblue"), lty = 2, cex = 1.2)
-# What we can learn from the knee plot?
-# x-axis: cell barcodes (droplets) ranked by their UMI counts
-# y-axis: total UMI count in each droplet
+
+# What can we learn from the knee plot?
+# x-axis: the rank of each cell barcode (droplet) ranked by its total UMI counts
+# y-axis: total UMI counts for each cell barcode
 # inflection point: point when the total UMI count per droplet starts to decrease rapidly
 # knee point: cut off of the total UMI count to differentiate cells valid for downstream analysis [exclude the empty droplet]
 # The cell whose UMI counts is >= 5887 [metadata(bcrank)$knee] are proper for the analysis
@@ -110,14 +113,14 @@ table(Sig = e.out$FDR <= 0.001, Limited = e.out$Limited)
 ```
 
 
-## Visulize the distribution of significance of empty reads
+## Visulize the distribution of significance of empty droplets
 ```{r}
 hist(e.out$PValue[e.out$Total <= limit & e.out$Total > 0],
      xlab = "P-value", main = "", col = "grey80") 
 ```
 
 
-## Visulize the distribution of significance of non-empty reads
+## Visulize the distribution of significance of non-empty droplets
 ```{r}
 hist(e.out$PValue[e.out$Total > limit],
      xlab = "P-value", main = "", col = "grey80") 
@@ -137,8 +140,7 @@ sce2 <- sce[, which(e.out$FDR <= 0.001)]
 library(scran)
 library(scuttle)
 library(scater)
-clusters <- quickCluster(sce2)
-sce2 <- computeSumFactors(sce2, cluster = clusters)
+sce2 <- computeSumFactors(sce2, cluster = quickCluster(sce2)) # Scaling normalization of single-cell RNA-seq data by deconvolving size factors from cell pools
 sce2 <- logNormCounts(sce2) # Convert the normalized counts to the log scale
 sce2 # assays(2): counts logcounts
 ```
@@ -157,7 +159,7 @@ top.pbmc <- getTopHVGs(dec.pbmc, prop = 0.1)
 ```
 
 
-## Construct the nearest-neighbor graph-based clustering
+## *Construct the nearest-neighbor graph-based clustering
 ```{r}
 set.seed(1000)
 # Evaluate PCs
@@ -171,8 +173,10 @@ sce2 <- runTSNE(sce2, dimred = "PCA")
 # Perform uniform manifold approximation and projection (UMAP) for the cells, based on the data in a SingleCellExperiment object
 sce2 <- runUMAP(sce2, dimred = "PCA")
 
-g <- buildSNNGraph(sce2, k = 10, use.dimred = "PCA")
-clust <- igraph::cluster_walktrap(g)$membership
+g <- buildSNNGraph(sce2, k = 10, use.dimred = "PCA") # Create nearest-neighbor graphs
+# k: if we have a subpopulation with fewer than k + 1 cells, buildSNNGraph() will forcibly construct edges between cells in that subpopulation and cells in other subpopulations. This increases the risk that the subpopulation will not form its own cluster as it is more interconnected with the rest of the cells in the dataset
+# We may consider k + 1 as the size of the smallest discoverable isolated subpopulation (where isolated means that the intra-subpopulation distances are smaller than the distances to the other subpopulations)
+clust <- igraph::cluster_walktrap(g)$membership # cluster_walktrap() finds densely connected subgraphs, also called communities in a graph via random walks. The idea is that short random walks tend to stay in the same community
 colLabels(sce2) <- factor(clust) # Store the clustering membership information
 colData(sce2)
 
@@ -191,17 +195,413 @@ amb <- metadata(e.out)$ambient[, 1] # Recap: e.out <- emptyDrops(counts(sce), lo
 head(amb)
 
 # Remove ambient RNAs
-library(scater)
+library(DropletUtils)
 stripped <- sce2[names(amb), ]
 out <- removeAmbience(counts(stripped), ambient = amb, groups = colLabels(stripped)) 
-# removeAmbience: estimate and remove the ambient profile from a count matrix, given pre-existing groupings of similar cells [colLabels(stripped)]. This function is largely intended for plot beautification rather than real analysis.
-# This function returns a numeric matrix-like object of the same dimensions as y, containing the counts after removing the ambient contamination.
+# removeAmbience: estimate and remove the ambient profile from a count matrix, given pre-existing groupings of similar cells [colLabels(stripped)]. This function is largely intended for plot beautification rather than real analysis
+# This removeAmbience function returns a numeric matrix-like object of the same dimensions as y, containing the counts after removing the ambient contamination
 # dim(counts(stripped))
 ```
 
 
 # Integrate corrected counts
 ```{r}
-counts(stripped, withDimnames = FALSE) <- out
-stripped <- logNormCounts(stripped)
+counts(stripped, withDimnames = F) <- out # Overwrite the original count matrix of `stripped` with the `out` matrix (returned by the removeAmbience()) without the row and column names of the `out` matrix; in other words, do not change the row and column names of the original count matrix of the `stripped`
+stripped <- logNormCounts(stripped) # Computes log2-transformed normalized expression values by adding a constant pseudo-count
+```
+
+
+# Visualize the gene expression of `Hba-a1` before and after the removal of ambient RNAs
+```{r}
+# Convert the gene symbol to ENSMBL ID
+ensmbl_id <- rowData(sce2)$ID[rowData(sce2)$Symbol == "Hba-a1"]
+plotExpression(sce2, x = "label", colour_by = "label", features = ensmbl_id) + 
+  ggtitle("Before the removal of ambient RNAs")
+# Notice that normally, the Hba-a1 gene could not be expressed in several types of cells [clusters]
+
+plotExpression(stripped, x = "label", colour_by = "label", features = ensmbl_id) + 
+  ggtitle("After the removal of ambient RNAs")
+# Notice that after the removal of ambient RNAs , the Hba-a1 gene are expressed in only two types of cells [two clusters]; so there is no Hba-a1 contamination
+```
+
+
+# Visualize the gene expression of `Krt17` before and after the removal of ambient RNAs
+```{r}
+# Convert the gene symbol to ENSMBL ID
+ensmbl_id <- rowData(sce2)$ID[rowData(sce2)$Symbol == "Krt17"]
+plotExpression(sce2, x = "label", colour_by = "label", features = ensmbl_id) + 
+  ggtitle("Before the removal of ambient RNAs")
+
+
+plotExpression(stripped, x = "label", colour_by = "label", features = ensmbl_id) + 
+  ggtitle("After the removal of ambient RNAs")
+
+# Notice that before and after the removal of ambient RNAs, the Krt17 gene are both expressed in several types of cells; so there is no Krt17 contamination
+```
+
+
+# Re-normalize and cluster data
+Since we remove the ambient RNAs, we generate a new count matrix and need to run the normalization and clustering again.
+```{r}
+dec <- modelGeneVar(stripped) # Recap line 159; identify the variable genes
+hvgs <- getTopHVGs(dec, n = 1000) # Select the top 1000 most variable genes
+stripped <- runPCA(stripped, ncomponents = 10, subset_row = hvgs) # Perform a principal components analysis (PCA) on a target matrix with the top 1000 most variable genes
+stripped <- runUMAP(stripped, dimred = "PCA") # Perform uniform manifold approximation and projection (UMAP) for the cells, based on the data in a SingleCellExperiment object
+g <- buildSNNGraph(stripped, k = 10, use.dimred = "PCA") # Create nearest-neighbor graphs
+clust <- igraph::cluster_walktrap(g)$membership # cluster_walktrap() finds densely connected subgraphs, also called communities in a graph via random walks. The idea is that short random walks tend to stay in the same community
+colLabels(stripped) <- factor(clust)
+plotUMAP(stripped, colour_by = "label")
+```
+
+
+# Save the results
+```{r}
+saveRDS(stripped, "data/scSeq_CTRL_sceSub_rmAmbRNA.rds")
+```
+
+
+# Remove the doublets
+The clumping of two or more cells in a single droplet is called doublet. The read counts and gene counts of a doublet are much higher than a single droplet.
+## Estimate the doublets
+```{r}
+# BiocManager::install("scDblFinder")
+library(scDblFinder)
+dbl.dens <- computeDoubletDensity(x = stripped, 
+                                  d = ncol(reducedDim(stripped)), # stripped; reducedDimNames(3): PCA TSNE UMAP
+                                  subset.row = hvgs)
+summary(dbl.dens)
+stripped$DoubletScore <- dbl.dens # Create a new column data `DoubletScore` in the SingleCellExperiment object `stripped`
+```
+
+
+## Visualize the doublet scores using UMAP
+See if the doublet correlates with the data distribution
+```{r}
+library(scater)
+plotUMAP(stripped, colour_by = "DoubletScore")
+
+# What we can learn from the plot?
+# Most data points show low doublet scores. We do not observe any enrichment of high doublet scores in any cluster, otherwise, we should remove the cluster
+```
+
+
+## *Alternative: visualize the doublet scores by cluster using violin plot
+```{r}
+plotColData(stripped, x = "label", y = "DoubletScore", colour_by = "label") +
+  geom_hline(
+    yintercept = quantile(colData(stripped)$DoubletScore, 0.95),
+    lty = "dashed",
+    color = "red"
+  )
+# Recap: lines 181 and 182
+
+# What can we learn from the plot?
+# No clusters have significantly higher doublet scores than other clusters. No clusters would be removed
+# The red dash line represents 95% quantile of doublet scores. The cells/barcodes with doublet scores higher than this cut-off would be removed
+```
+
+
+## Remove the doublets
+```{r}
+cut_off <- quantile(stripped$DoubletScore, 0.95)
+stripped$isDoublet <- c("no","yes")[factor(as.integer(stripped$DoubletScore >= cut_off), levels = c(0, 1))] # F, T -> 0, 1 -> no, yes
+table(stripped$isDoublet)
+sce_clean <- stripped[, stripped$isDoublet == "no"]
+```
+
+
+## Save the results
+```{r}
+saveRDS(sce_clean, "data/scSeq_CTRL_sceSub_rmAmbRNA_rmDoublet.rds")
+```
+
+ 
+# Make quality control plots of mitochondrial content, genes detected, and total reads per cell after clearance
+```{r}
+library(scater)
+# Identify the mitochondrial gene symbols
+mtGene <- rowData(sce_clean)$ID[grepl(rowData(sce_clean)$Symbol, pattern = "mt-")]
+
+# Create a logical vector indicating if the ENSMUSG IDs are mitochondrial gene IDs
+is.mito <- names(sce_clean) %in% mtGene 
+
+# Obtain the mitochondrial content, gene counts, and reads per cell
+sce_clean <- addPerCellQC(sce_clean, subsets = list(Mito = is.mito))
+
+# View the newly added columns
+sce_clean$subsets_Mito_sum
+
+# Create a violin plot of read counts per cell by cluster
+plotColData(sce_clean, x = "label", y = "sum", colour_by = "label") +
+  ggtitle("read counts") # sum
+
+# Create a violin plot of total gene counts detected per cell by cluster
+plotColData(sce_clean, x = "label", y = "detected", colour_by = "label") +
+  ggtitle("gene counts") # detected
+
+# Create a violin plot of mitochondrial percent per cell by cluster
+plotColData(sce_clean, x = "label", y = "subsets_Mito_percent", colour_by = "label") + 
+  ggtitle("mitocondrial content") # subsets_Mito_percent
+
+# Remove the droplets/cells with high mitochondrial contents
+mt_cutH <- 10 # Set the cut-off for the mitochondrial content; usually we use 10 percent
+sce_clean2 <- sce_clean[, sce_clean$subsets_Mito_percent < mt_cutH] # Subset by cell barcods [column]; https://rdrr.io/bioc/SingleCellExperiment/man/combine.html
+plotColData(sce_clean2, x = "label", y = "subsets_Mito_percent", colour_by = "label") + 
+  ggtitle("mitocondrial content")
+
+# Remove the third cluster
+cellID.keep <- rownames(sce_clean2@colData)[sce_clean2@colData$label != 3]
+sce_clean3 <- sce_clean2[, cellID.keep]
+
+# Re-evaluate the data after removal of droplets/cells with high mitochondrial contents
+plotColData(sce_clean3, x = "label", y = "subsets_Mito_percent", colour_by = "label") + 
+  ggtitle("mitocondrial content")
+```
+
+
+## *Mitochondrial contents vs read counts
+```{r}
+plotColData(sce_clean3, x = "sum", y = "subsets_Mito_percent", colour_by = "label") + 
+  ggtitle("is.mito vs read counts")
+
+# Similar to the following codes using {Seurat}:
+# FeatureScatter(obj_unfiltered, feature1 = "nCount_RNA", feature2 = "percent.mt")
+# FeatureScatter(obj, feature1 = "nCount_RNA", feature2 = "percent.mt")
+
+# What can we learn from the plot?
+# There seems no cell debris with low contents of nuclear genes (sum) while high contents of mitochondrial genes (subsets_Mito_percent)
+```
+
+
+## *Mitochondrial contents vs read counts
+```{r}
+plotColData(sce_clean3, x = "sum", y = "detected", colour_by = "label") + 
+  ggtitle("gene counts vs read counts")
+
+# Similar to the following codes using {Seurat}:
+# FeatureScatter(obj_unfiltered, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
+# FeatureScatter(obj, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
+
+# What can we learn from the plot?
+# There seems no doublets where the read counts and gene counts of are much higher than single droplets
+```
+
+
+# Estimate the variances of data can be explained by variables in `colData`
+```{r}
+sce_clean3$label <- droplevels(sce_clean3$label) # Recap: we previously remove one cluster 
+vars <- getVarianceExplained(sce_clean3, variables = c("label", "DoubletScore", "sum", "detected", "subsets_Mito_percent"))
+plotExplanatoryVariables(vars)
+
+# What can we learn from the plot?
+# Most variances can be explained by the label (clustering membership); while read counts, gene counts, mitochondrial content percent, and doublet score explained fewer variances than the label
+# The data quality is reliable
+# If read counts, gene counts, mitochondrial content percent, and/or doublet score explained similar or higher variances than the label, we need to remove the confounding effects of these factors [more info]
+```
+
+
+# Exercise
+# Load the `sce` object
+```{r}
+library(DropletUtils)
+library(DropletTestFiles)
+sce.e <- readRDS("./data/scSeq_CKO_sceSub.rds")
+```
+
+
+# Identify empty droplets
+```{r}
+bcrank <- barcodeRanks(counts(sce.e))
+uniq <- !duplicated(bcrank$rank) # Select the unique ranked total UMI counts
+
+# Recap: 
+# 1. UMI stands for Unique Molecular Identifier and the UMI count refers to the number of unique molecular identifiers, or unique barcodes, that are associated with each gene transcript in a single cell; By counting the number of UMIs associated with each gene transcript in a given cell, scRNA-seq analysis can provide an accurate estimate of gene expression levels in that cell
+# 2. By using barcodeRanks(), each cell is ranked by the total UMI counts; the returned value rank refers to the rank of each cell barcode by its total UMI counts (averaged across ties); the returned value total refers to the total UMI counts for each cell barcode
+
+plot(bcrank$rank[uniq], bcrank$total[uniq], 
+     log = "xy", # Both axes are to be logarithmic
+     xlab = "Rank", ylab = "Total counts for each barcode", cex.lab = 1.2) # cex.lab: set sizes for axes
+abline(h = metadata(bcrank)$inflection, col= "darkgreen", lty = 2)
+abline(h = metadata(bcrank)$knee, col = "dodgerblue", lty = 2)
+legend("bottomleft", legend = c("Inflection", "Knee"),
+      col = c("darkgreen", "dodgerblue"), lty = 2, cex = 1.2)
+
+# What can we learn from the knee plot?
+# This is a total UMI count for each barcode in the mouse skin cell dataset, plotted against its rank (in decreasing order of total UMI counts)
+# In the knee point, we decide the cut off of the total UMI count to differentiate cells valid for downstream analysis [exclude the empty droplet]. We learn that the cell whose UMI counts is >= 4852 [we can get this value by typing `metadata(bcrank)$knee`] are proper for the further analysis
+```
+
+
+# Identify non-empty droplets
+```{r}
+set.seed(9870)
+e.out <- emptyDrops(counts(sce.e), lower = 100, test.ambient = T)
+e.out
+
+# Recap:
+# How can we interpret the returned data.frame?
+# Total: integer, the total UMI count for each barcode
+# LogProb: numeric, the log-probability of observing the barcode's count vector under the null model [H0: this droplet is empty]
+# PValue: numeric, the Monte Carlo p-value against the null model [H0: this droplet is empty]
+# Limited: logical, indicating whether this droplet passes the threshold of the lowest total UMI count
+# FDR: If < 0.001, this droplet is not empty
+# We can determine if a droplet is empty by using the combination of the returned values `Limited` and `FDR`, or by using the returned value `FDR`
+
+summary(e.out$FDR <= 0.001)
+
+# Concordance by testing with FDR and limited
+table(Sig = e.out$FDR <= 0.001, Limited = e.out$Limited)
+
+# Subset the `sce.e` by the column because we want to remove the ineligible samples (cell barcodes) whose FDR > 0.001
+sce.e2 <- sce.e[, which(e.out$FDR <= 0.001)] # e.out$FDR <= 0.001 returns a logical vector with NA -> sce.e[, e.out$FDR <= 0.001] -> Error: logical subscript contains NAs
+```
+
+
+# Normalize and cluster data
+```{r}
+easypackages::libraries("scran", "scuttle", "scater") |> suppressPackageStartupMessages()
+
+# Normalize the data
+sce.e2 <- computeSumFactors(sce.e2, cluster = quickCluster(sce.e2)) # Scaling normalization of single-cell RNA-seq data by deconvolving size factors from cell pools
+sce.e2 <- logNormCounts(sce.e2) # Convert the normalized counts to the log scale
+
+# Select features for the clustering analysis
+set.seed(1000)
+dec.pbmc <- modelGeneVarByPoisson(sce.e2)
+top.pbmc <- getTopHVGs(dec.pbmc, prop = 0.1) # Select the top 1 percent highly variable genes
+
+set.seed(1000)
+# Evaluate PCs
+sce.e2 <- denoisePCA(sce.e2, subset.row = top.pbmc, technical = dec.pbmc)
+
+# Perform t-SNE for the cells
+sce.e2 <- runTSNE(sce.e2, dimred = "PCA")
+
+# Perform UMAP for the cells
+sce.e2 <- runUMAP(sce.e2, dimred = "PCA")
+
+# Create nearest-neighbor graphs
+g <- buildSNNGraph(sce.e2, k = 10, use.dimred = "PCA") 
+clust <- igraph::cluster_walktrap(g)$membership
+colLabels(sce.e2) <- factor(clust) 
+colData(sce.e2)
+
+## Create PCA, t-SNE, and UMAP plots
+plotPCA(sce.e2, colour_by = "label") # Not very clear separation of cell clusters
+plotTSNE(sce.e2, colour_by = "label") # Need runTSNE() before
+plotUMAP(sce.e2, colour_by = "label") # Need runUMAP() before
+```
+
+
+# Evaluate ambient RNA contamination
+```{r}
+# Extract potential ambient RNAs and their estimated scores
+amb.e <- metadata(e.out)$ambient[, 1] 
+# metadata(e.out)$ambient
+head(amb.e)
+
+# Remove ambient RNAs
+library(DropletUtils)
+stripped.e <- sce.e2[names(amb.e), ]
+out.e <- removeAmbience(counts(stripped.e), ambient = amb.e, groups = colLabels(stripped.e)) 
+
+# Integrate corrected counts
+counts(stripped.e, withDimnames = F) <- out.e 
+stripped.e2 <- logNormCounts(stripped.e) 
+
+# Visualize the gene expression of `Hba-a1` before and after the removal of ambient RNAs
+## Convert the gene symbol to ENSMBL ID
+ensmbl_id <- rowData(sce.e2)$ID[rowData(sce.e2)$Symbol == "Hba-a1"]
+plotExpression(sce.e2, x = "label", colour_by = "label", features = ensmbl_id) + 
+  ggtitle("Before the removal of ambient RNAs")
+# Notice that normally the Hba-a1 gene could not be expressed in several types of cells [several clusters]
+
+plotExpression(stripped.e2, x = "label", colour_by = "label", features = ensmbl_id) + 
+  ggtitle("After the removal of ambient RNAs")
+# Notice that after the removal of ambient RNAs , the Hba-a1 gene are expressed in only two types of cells [two clusters]; so there is no Hba-a1 contamination
+```
+
+
+# Re-normalize and cluster data
+```{r}
+set.seed(98709)
+dec <- modelGeneVar(stripped.e2) 
+hvgs <- getTopHVGs(dec, n = 1000) # Select the top 1000 most variable genes
+
+# Perform a principal components analysis (PCA) on a target matrix with the top 1000 most variable genes
+stripped.e3 <- runPCA(stripped.e2, ncomponents = 10, subset_row = hvgs) 
+
+# Perform UMAP for the cells
+stripped.e3 <- runUMAP(stripped.e2, dimred = "PCA") 
+
+# Create nearest-neighbor graphs
+g <- buildSNNGraph(stripped.e3, k = 10, use.dimred = "PCA") 
+clust <- igraph::cluster_walktrap(g)$membership
+colLabels(stripped.e3) <- factor(clust)
+plotUMAP(stripped.e3, colour_by = "label")
+```
+
+
+# Remove the doublets
+```{r}
+# Estimate the doublets
+library(scDblFinder)
+dbl.dens <- computeDoubletDensity(x = stripped.e3, 
+                                  d = ncol(reducedDim(stripped.e3)), # stripped.e3; reducedDimNames(3): PCA TSNE UMAP; number of reduced dimensions
+                                  subset.row = hvgs)
+summary(dbl.dens)
+stripped.e3$DoubletScore <- dbl.dens 
+
+# Visualize the doublet scores using UMAP
+plotUMAP(stripped.e3, colour_by = "DoubletScore")
+# What we can learn from the plot?
+# Most data points show low doublet scores. We do not observe any enrichment of high doublet scores in any cluster, otherwise, we should remove the cluster
+
+# Visualize the doublet scores by cluster using violin plot
+plotColData(stripped.e3, x = "label", y = "DoubletScore", colour_by = "label") +
+  geom_hline(
+    yintercept = quantile(colData(stripped.e3)$DoubletScore, 0.95),
+    lty = "dashed",
+    color = "red"
+  )
+# What can we learn from the plot?
+# No clusters have significantly higher doublet scores than other clusters. No clusters would be removed
+# The red dash line represents 95% quantile of doublet scores. The cells/barcodes with doublet scores higher than this cut-off would be removed
+
+cut.off <- quantile(stripped.e3$DoubletScore, 0.95)
+stripped.e3$isDoublet <- c("no","yes")[factor(as.integer(stripped.e3$DoubletScore >= cut.off), levels = c(0, 1))] # F, T -> 0, 1 -> no, yes
+table(stripped.e3$isDoublet)
+sce.clean <- stripped.e3[, stripped.e3$isDoublet == "no"] # dim(stripped.e3) -> number of genes, number of cell barcodes; dim(sce.clean)
+```
+
+
+# Create plots of mitochondrial content, genes detected, and total reads per cell after clearance
+```{r}
+# Identify the mitochondrial gene symbols
+mt.gene <- rowData(sce.clean)$ID[grepl(rowData(sce.clean)$Symbol, pattern = "mt-")]
+
+# Create a logical vector indicating if the ENSMUSG IDs are mitochondrial gene IDs
+is.mito <- names(sce.clean) %in% mt.gene
+
+# Obtain the mitochondrial content, gene counts, and reads per cell
+sce.clean <- addPerCellQC(sce.clean, subsets = list(Mito = is.mito))
+
+# View the newly added columns
+sce.clean$subsets_Mito_sum
+
+# Create a violin plot of read counts per cell by cluster
+plotColData(sce.clean, x = "label", y = "sum", colour_by = "label") +
+  ggtitle("read counts") # sum
+
+# Create a violin plot of total gene counts detected per cell by cluster
+plotColData(sce.clean, x = "label", y = "detected", colour_by = "label") +
+  ggtitle("gene counts") # detected
+
+# Create a violin plot of mitochondrial percent per cell by cluster
+plotColData(sce.clean, x = "label", y = "subsets_Mito_percent", colour_by = "label") + 
+  ggtitle("mitocondrial content") # subsets_Mito_percent
+
+# Create a scatter plot by comparing the read counts and gene counts
+plotColData(sce.clean, x = "sum", y = "detected", colour_by = "label") + 
+  ggtitle("read counts vs gene counts")
 ```
