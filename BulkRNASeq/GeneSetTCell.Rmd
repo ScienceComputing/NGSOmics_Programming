@@ -1,5 +1,5 @@
 ---
-title: "Gene Set Enrichment Analysis Using T-Regulatory Cell RNA-Seq Data"
+title: "Gene Set Enrichment Analysis Using Mouse T-Regulatory Cell RNA-Seq Data"
 author: "Anni Liu"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: 
