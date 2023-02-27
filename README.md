@@ -13,8 +13,8 @@ This repository holds various coding practice, learning notes, and assignment so
 
 **Analyze single cell RNA-Seq data**
 
-  - [Use Seurat workflow](SingleCellRNASeq/Seurat.Rmd)
-  - [Use bioconductor packages to orchestrate single cell RNA-Seq data analysis](SingleCellRNASeq/Bioconductor.Rmd)
+  - [Use Seurat workflow](SingleCellRNASeq/SeuratSkinCell.Rmd)
+  - [Use bioconductor packages to orchestrate single cell RNA-Seq data analysis](SingleCellRNASeq/BioconductorSkinCell.Rmd)
 
 
 <hr>
