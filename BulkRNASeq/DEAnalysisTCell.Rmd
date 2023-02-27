@@ -1,5 +1,5 @@
 ---
-title: "Differential expression analysis using T-Regulatory Cell RNA-Seq Data"
+title: "Differential expression analysis using Mouse T-Regulatory Cell RNA-Seq Data"
 author: "Anni Liu"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: 
