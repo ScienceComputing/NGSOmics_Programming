@@ -1,5 +1,5 @@
 ---
-title: "Principal Component Analysis, Heatmap, and Clustering Using the Heart, Liver, and Kidney Tissues RNA-Seq Data"
+title: "Principal Component Analysis, Heatmap, and Clustering Using the Mouse Heart, Liver, and Kidney Tissues RNA-Seq Data"
 author: "Anni Liu"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: 
