@@ -5,9 +5,9 @@ This repository holds various coding practice, learning notes, and assignment so
 **Analyze bulk RNA-Seq data**
 
   - [Align and count the reads](BulkRNASeq/AlignmentCountingTCell.Rmd)
-  - [Differential gene expression analysis](BulkRNASeq/DEAnalysisTCell.Rmd)
-  - [Principal component analysis, heatmap, and clustering](BulkRNASeq/PCAHeatmapClusteringTissue.Rmd)
-  - [Gene set enrichment analysis](BulkRNASeq/GeneSetTCell.Rmd)
+  - [Perform differential gene expression analysis](BulkRNASeq/DEAnalysisTCell.Rmd)
+  - [Perform principal component analysis, heatmap, and clustering](BulkRNASeq/PCAHeatmapClusteringTissue.Rmd)
+  - [Perform gene set enrichment analysis](BulkRNASeq/GeneSetTCell.Rmd)
 
 <hr>
 
