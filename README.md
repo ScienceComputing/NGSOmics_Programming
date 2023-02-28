@@ -19,11 +19,6 @@ This repository holds various coding practice, learning notes, and assignment so
 
 <hr>
 
-**Analyze ATAC-Seq data**
-
-
-<hr>
-
 
 **[Multimodal data integration](Note_MultimodalDataIntegration.md)**
 
