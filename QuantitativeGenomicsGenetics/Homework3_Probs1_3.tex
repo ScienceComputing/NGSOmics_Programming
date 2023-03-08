@@ -1,0 +1,120 @@
+\documentclass[letterpaper, 11pt]{article}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\usepackage{setspace}
+\usepackage{paralist}
+\usepackage{amsmath}
+\usepackage{epsfig,psfrag}
+\usepackage{color}
+
+
+\renewcommand{\labelenumi}{(\theenumi)}
+
+\pdfpagewidth 8.5in
+\pdfpageheight 11in
+
+\setlength\topmargin{0in}
+\setlength\leftmargin{0in}
+\setlength\headheight{0in}
+\setlength\headsep{0in}
+\setlength\textheight{9in}
+\setlength\textwidth{6.5in}
+\setlength\oddsidemargin{0in}
+\setlength\evensidemargin{0in}
+\setlength\parindent{0in}
+\setlength\parskip{0.13in} 
+ 
+\title{Quantitative Genomics and Genetics - Spring 2023 \\
+BTRY 4830/6830; PBSB 5201.01}
+\author{Anni Liu \\ \\ \\ Homework 3 (version 1 - posted February 23;  \textcolor{red}{version 2 - posted March 1)}}
+\date{Assigned February 23; Due 11:59PM March 6}                                           % Activate to display a given date or no date
+
+\begin{document}
+
+\vspace{-20in}
+
+\maketitle
+\section*{Problem 1 (Easy)}
+
+\begin{itemize}
+\item[a.] If you reject a null hypothesis, explain why this does not mean that your null hypothesis is definitely wrong.  Also explain why if you cannot reject a null hypothesis, you cannot interpret this result as evidence that the null hypothesis is correct.\\
+
+\textcolor{blue}{Answer:\\ 
+If we reject a null hypothesis, that only means the evidence against the null hypothesis being correct, because we actually do not know the true parameter value, and importantly, we evaluate the null hypothesis that is defined by us. Further, it could be possible that we make the type I error when the null hypothesis is correct while it is rejected by us.\\\\
+On the other hand, not rejecting a null hypothesis only means we have no evidence that the null hypothesis is wrong. Likewise, we cannot say the null hypothesis is correct as we do not know the true parameter value. Also, considering the situation where the null hypothesis is incorrect, we could make the type II error if not rejecting the incorrect null hypothesis.
+}\\
+
+\item[b.] Explain why we can precisely set the Type I error of a test but we cannot precisely control power.\\
+
+\textcolor{blue}{Answer:\\ 
+We can set the significance level ($\alpha$) to control the Type I error of the test. The $\alpha$ reflects the maximum acceptable probability of rejecting a null hypothesis assuming it is true. \\\\
+However, unlike the Type I error, the power cannot be precisely controlled by us because it depends on the actual parameter value, which is unknown. 
+}\\
+
+\end{itemize}
+
+\section*{Problem 2 (Medium)}
+
+\textit{The answers to questions below will require coding in R (make sure you answer all parts of all questions!).  You are welcome (and encouraged!) to use Rmarkdown and if you do, please submit your .Rmd script and a pdf for this problem (i.e., you may also use Rmarkdown for the entire assignment!).  Please note that you do not need to repeat code for each part (i.e., if you write a single block of code that generates the answers for some or all of the parts, that is fine, but do please label your output that answers each question!!).  For answers requiring code, do make sure your R code used to generate your answers is in an easy to run format.  Also, please label any figures so it is easy to discern what the figure is showing.  NOTE: there will be penalties for R code / scripts that fail to compile and / or run easily and similarly, penalties for answers that are not easy to decipher (i.e., please make sure your answers are presented in a clear manner)!}
+\\
+\\
+For parts [a] and [b], consider a single coin flip experiment, a random variable $X$ that returns the `number of tails' of the flip, and that the true probability distribution $Pr(X)$ is within the set of distributions described by the Bernoulli distribution indexed by parameter $p \in [0,1]$, such that the true distribution is $X \sim bern(p)$ for a specific value of p.
+
+\begin{itemize}
+\item[a.] Assume that the true value of the parameter $p=0.2$ (i.e., an unfair coin).  Write code that produces 100 distinct i.i.d samples of the random variable $X$ each with $n=10$ experimental trials.  Then for each sample, calculate the Maximum Likelihood Estimator $MLE(\hat{p})=\frac{1}{n}\sum_{i=1}^{n} x_i$, and using the function `hist()' plot a histogram of these 100 estimator values.\\
+\\
+Note that you do not have to simulate the original flip outcomes for each sample (e.g., $[H, H, T, ...]$) just the random vectors where each of the $n=10$ elements correspond to a value of the random variable $X$ (i.e.,[1,1,0,...]), where you are welcome to use the function `rbinom()' for this purpose.  Also note, that if this were a typical estimation experiment, you would not know the true value of $p$ and you would only have ONE sample of size $n=10$ (in this problem, you are simulating many possible experiments to give yourself a sense of the possibilities you could obtain for your one experiment and a sense of what the probability distribution $Pr(MLE(\hat{p}))$ of the estimator $MLE(\hat{p})$ looks like when $n=10$ and $p=0.2$.
+
+\item[b.] Repeat the exercise in part [a] but assume that $p=0.5$ (all other aspects the same as in [a] and the notes apply) AND repeat the exercise in part [a] but assume that $p=0.5$ and $n=100$ (all other aspects the same as in [a] and the notes apply).\\
+
+\end{itemize}
+
+For parts [c-e] consider a measuring heights in the US experiment, the reals as the sample space, a continuous random variable $X$ that represents heights that have been scaled (i.e., still defined on the reals) and that the true probability distribution $Pr(X)$ is within the set of distributions described by the normal distribution indexed by parameters $\mu \in (-\infty,\infty), \sigma^2 \in [0,\infty)$, such that the true distribution is $X \sim N(\mu,\sigma^2)$ for specific parameter pair $[\mu,\sigma^2]$.
+
+\begin{itemize}
+
+\item[c.] Assume that the true value of the parameters are $\mu=0, \sigma^2 = 1$.  Write code that produces 100 distinct i.i.d samples of the random variable $X$ each with $n=10$ experimental trials.  Then for each sample, calculate the Maximum Likelihood Estimators $MLE(\hat{\mu})=\frac{1}{n}\sum_{i=1}^{n} x_i$, $MLE(\hat{\sigma}^2)=\frac{1}{n}\sum_{i=1}^{n} (x_i - \bar{x})^2$ and and then use the function `hist()' to plot two histogram, one for each of these 100 estimator values.\\
+\\
+Note that you just have to simulate the random sample vectors where each of the $n=10$ elements correspond to a value of the random variable $X$, where you are welcome to use the function `rnorm()' for this purpose.  Again also note that if this were a typical estimation experiment, you would not know the true value of $\mu,\sigma^2$ and you would only have ONE sample of size $n=10$ (in this problem, you are simulating many possible experiments to give yourself a sense of the possibilities you could obtain for your one experiment and a sense of what the probability distributions of the estimator $Pr(MLE(\hat{\mu}))$ and $Pr(MLE(\hat{\sigma}^2))$ look like when $\mu=0, \sigma^2 = 1$ (note that you could plot the joint probability distribution of these two estimators but this is not required to answer the question).
+
+\item[d.] Repeat the exercise in part [c] but assume that $\mu=1, \sigma^2 = 2$ (all other aspects the same as in [c] and the notes apply) AND repeat the exercise in part [c] but assume that $\mu=1, \sigma^2 = 2$ and $n=100$ (all other aspects the same as in [c] and the notes apply)\\
+
+\item[e.] In part [d], calculate an estimator of $\sigma^2$ but instead of the MLE for $\sigma^2$ calculate the unbiased estimator $\hat{\sigma}^2 = \frac{1}{n-1} \sum_{i=1}^{n} (x_i - \bar{x})^2$ (all other aspects the same as in [c-d] and the notes apply)\\
+
+\end{itemize}
+
+Consider a `height' type experiment where we can assume $X \sim N(\mu, \sigma^2)$ where the true $\mu=0.5$ and $\sigma^2=1$ is known to you in this case (obviously in real cases, this will never be known).  Assume that you will be generating samples of size $n$ and that for each sample, the test statistic you will be calculating will be the mean of the sample.  For parts [f] and [h] (and equivalent parts of [j]) you are being asked to provide answers based on the distribution of the test statistic (the mean) for the null hypothesis OR for the true distribution of the test statistic (the mean) for the experiment, where the R functions `qnorm()' and `pnorm()' can be used in the calculation of the answers.
+\\
+\\
+PLEASE NOTE THE FOLLOWING: (1) For iid sample of size $n$ where each random variable is normally distributed with parameters $\mu$ and $\sigma^2$, the mean of this sample \textcolor{red}{$\bar{X} = \frac{1}{n}\sum_{i=1}^n X_i$} is ALSO normally distributed with parameters $\mu$ and $\sigma^2/n$ (i.e., if the statistic is the mean, the sampling distribution of the mean is normal with the same $\mu$ as the original random variable and $\sigma^2$ parameter equal to the original random variable $\sigma^2$ DIVIDED by $n$ - so in symbolic terms: $\bar{X} \sim N(\mu, \sigma^2 / n$)!! (2) For parts [g] and [i] (and equivalent parts of [j]) you are being asked to simulate $k=1000$ samples of size $n$ (i.e., 1000 separate samples) under the null hypothesis OR under the true distribution for the experiment and for each of the $k$ samples, you are asked to calculate the mean statistic, where the function `rnorm()' can be used to generate the samples.  
+
+\begin{itemize}
+\item[f.] Consider $H_0: \mu = 0$ where you know the true $\sigma^2=1$ for the purposes of this question (remember, not realistic!).  Consider a sample size $n=20$ and the mean of the sample as the test statistic.  What is the critical threshold for this statistic for a Type I error $= \alpha = 0.05$ when considering a one-sided test where if $H_0$ is wrong, the correct answer is in the positive direction (i.e., $H_A > 0$)?  What are the two values of the critical threshold for this statistic for a Type I error $= \alpha = 0.05$ when considering a two-sided test (i.e., $H_A \neq 0$)?  HINT: use the function ?qnorm()?.
+
+\item[g.] Simulate $k=1000$ samples under the null hypothesis in part \textcolor{red}{[f]}, calculate the mean for each sample, and plot a histogram of the means.  NOTE: you do not need to output the samples or the means (!!), just the histogram (and provide your code).  btw, no answer required, but take a look at how many of your sample statistics are beyond the critical thresholds you calculated in part [f]...
+
+\item[h.] Consider the true distribution of the experiment $\mu = 0.5, \sigma^2=1$ for the purposes of this question (again, not realistic!).  Consider a sample size $n=20$ and the mean of the sample as the test statistic.  What is the power of this test for the null hypothesis in part [f] with a Type I error $= \alpha = 0.05$ a one-sided test where if $H_0$ is wrong, the correct answer is in the positive direction (i.e., $H_A > 0$)?  What is the power of this test for the null hypothesis in part [f] with a Type I error $= \alpha = 0.05$ when considering a two-sided test (i.e., $H_A \neq 0$)?  HINT: use the function `pnorm()' and your critical thresholds from part [f].
+
+\item[i.] Simulate $k=1000$ samples under the true distribution (as used in part [h]), calculate the mean for each sample, and plot a histogram of the means.  NOTE: you do not need to output the samples or the means (!!), just the histogram (and provide your code).  btw, no answer required, but take a look at how many of your sample statistics are beyond the critical thresholds you calculated in part [f] and see how this compares to the power you calculated in part [h]...
+
+\item[j.] Repeat parts [f-i] but consider $n=100$.
+
+\end{itemize}
+
+\section*{Problem 3 (Difficult)}
+
+Assume a single coin flip experiment / random variable that maps to the number of tails / sample size $n$ where the sample is i.i.d.  In this case, the possible samples are $n$ element random vectors where each element takes the value zero or one according to a Bernoulli distribution with parameter $\theta = p$.  Demonstrate that the $MLE(\hat{p})$ derived from the sampling distribution of the sample random vector produces the same $MLE(\hat{p})$ that we obtain for $ X \sim Bin(n, p)$ (i.e., the Binomial distribution with parameters $n$ and $p$). \\
+
+\textcolor{blue}{Answer:\\ 
+Let's consider a sample of size n from a Bernoulli distribution, where $\mathbf{x} = (x_1, x_2, \dots, x_n)$ and $x_i \sim Bern(p)$ for $i=1,2,\dots,n$. The likelihood function for this sample is given by: $L(p | \textbf{x}) = \prod_{i=1}^n p^{x_i}(1-p)^{1-x_i}$. To find the MLE for $p$, we can maximize the likelihood function with respect to $p$ by taking the derivative of the logarithm of the likelihood function and setting it equal to zero. This yields: $l(p|\textbf{x}) = ln(L(p|\textbf{x}) = \Sigma_{i=1}^{n}ln(p^{x_i}(1-p)^{1-x_i}) = \Sigma_{i=1}^{n}(x_ilnp + (1-x_i)ln(1-p))$ \\
+$\frac{\partial l(p|\textbf{x})}{\partial p} = \frac{\Sigma_{i=1}^{n}x_i}{p} - \frac{n - \Sigma_{i=1}^{n}x_i}{1-p} = 0$. Therefore, $MLE(\hat{p}) = \frac{\Sigma_{i=1}^{n}x_i}{n}$\\\\
+Now, let's consider $y$ as the count of tails of a $n$ element random vector where each element takes the value zero or one, and thus $y = \Sigma_{i=1}^{n} x_i$ and $y ~ \sim Bin(n, p)$. The likelihood function given this $y$ is:
+$L(p|y) = \binom{n}{y} p^{y}(1-p)^{n-y}$. By the same token, to identify the MLE for $p$, we can maximize the likelihood function with respect to $p$ by taking the derivative of the logarithm of the likelihood function and setting it equal to zero. \\
+This yields: $l(p|y) = lnL(p|y) = ln\binom{n}{y} + ylnp + (n-y)ln(1-p)$\\
+$\frac{\partial l(p|y)}{\partial p} = \frac{y}{p} - \frac{n-y}{1-p} =  \frac{\Sigma_{i=1}^{n}x_i}{p} - \frac{n - \Sigma_{i=1}^{n}x_i}{1-p} = 0$. Therefore, $MLE(\hat{p}) = \frac{\Sigma_{i=1}^{n}x_i}{n}$\\\\
+We now can conclude that $MLE(\hat{p})$ derived from the sampling distribution of the sample random vector produces the same $MLE(\hat{p})$ that we obtain for $ X \sim Bin(n, p)$. 
+}\\
+
+\end{document}
