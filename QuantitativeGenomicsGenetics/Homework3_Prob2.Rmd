@@ -1,0 +1,361 @@
+---
+title: "Homework 3 - Problem 2"
+author: "Anni Liu"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output:
+  pdf_document: default
+  html_document:
+    code_folding: show
+---
+
+
+# a
+## Create a function of the MLE estimator of p
+```{r}
+MLE.p <- function(p.val = NULL, n.val = NULL) {
+  for (i in 1:100) {
+    # Produce one distinct i.i.d sample of the random variable
+    set.seed(i)
+    x.vec <- rbinom(n = n.val, size = 1, p = p.val) 
+    p.hat.vec <- c(p.hat.vec, (1/n.val)*sum(x.vec))
+  }
+  return(p.hat.vec)
+}  
+```
+
+
+## p = 0.2, n = 10
+```{r}
+p.hat.vec <- NULL
+out.MLE.p <- MLE.p(p.val = 0.2, n.val = 10)
+hist(out.MLE.p, xlab = "MLE estimator on p", 
+     main = "Histogram of MLE estimator on p \n(true p = 0.2, n = 10)")
+hist(out.MLE.p, prob = TRUE, xlab = "MLE estimator on p", 
+     main = "Density histogram of MLE estimator on p \n(true p = 0.2, n = 10)")
+```
+
+
+# b
+## p = 0.5, n = 10
+```{r}
+p.hat.vec <- NULL
+out.MLE.p <- MLE.p(p.val = 0.5, n.val = 10)
+hist(out.MLE.p, xlab = "MLE estimator on p", 
+     main = "Histogram of MLE estimator on p \n(true p = 0.5, n = 10)")
+hist(out.MLE.p, prob = TRUE, xlab = "MLE estimator on p", 
+     main = "Density histogram of MLE estimator on p \n(true p = 0.5, n = 10)")
+```
+
+
+## p = 0.5, n = 100
+```{r}
+p.hat.vec <- NULL
+out.MLE.p <- MLE.p(p.val = 0.5, n.val = 100)
+hist(out.MLE.p, xlab = "MLE estimator on p", 
+     main = "Histogram of MLE estimator on p \n(true p = 0.5, n = 100)")
+hist(out.MLE.p, prob = TRUE, xlab = "MLE estimator on p", 
+     main = "Density histogram of MLE estimator on p \n(true p = 0.5, n = 100)")
+```
+
+
+# c 
+## Create a function of the MLE estimator of mu and sigma^2
+```{r}
+MLE.hat <- function(mu.val = NULL, sigma2.val = NULL, n.val = NULL) {
+  for (i in 1:100) {
+    # Produce one distinct i.i.d sample of the random variable
+    set.seed(i)
+    x.vec <- rnorm(n = n.val, mean = mu.val, sd = sqrt(sigma2.val))
+    mu.hat.vec <- c(mu.hat.vec, (1/n.val)*sum(x.vec))
+    sigma2.hat.vec <- c(sigma2.hat.vec, (1/n.val)*sum((x.vec - mean(x.vec))^2))
+  }
+  return(list(mu = mu.hat.vec, sigma2 = sigma2.hat.vec))
+}  
+```
+
+
+## mu = 0, sigma^2 = 1, n = 10
+```{r}
+mu.hat.vec <- NULL
+sigma2.hat.vec <- NULL
+out.MLE.mu.sigma2 <- MLE.hat(mu.val = 0, sigma2.val = 1, n.val = 10)
+
+# Histograms for mu
+hist(out.MLE.mu.sigma2[["mu"]], 
+     xlab = expression(paste("MLE estimator on ", mu)), 
+     main = expression(paste("Histogram of MLE estimator on ", mu)))
+hist(out.MLE.mu.sigma2[["mu"]], prob = TRUE, 
+     xlab = expression(paste("MLE estimator on ", mu)), 
+     main = expression(paste("Density histogram of MLE estimator on ", mu)))
+
+# Histograms for sigma2
+hist(out.MLE.mu.sigma2[["sigma2"]], xlab = expression(paste("MLE estimator on ", sigma^2)), 
+     main = expression(paste("Histogram of MLE estimator on ", sigma^2)))
+hist(out.MLE.mu.sigma2[["sigma2"]], prob = TRUE, 
+     xlab = expression(paste("MLE estimator on ", sigma^2)), 
+     main = expression(paste("Density histogram of MLE estimator on ", sigma^2)))
+```
+
+
+# d
+## mu = 1, sigma^2 = 2, n = 10
+```{r}
+mu.hat.vec <- NULL
+sigma2.hat.vec <- NULL
+out.MLE.mu.sigma2 <- MLE.hat(mu.val = 1, sigma2.val = 2, n.val = 10)
+
+# Histograms for mu
+hist(out.MLE.mu.sigma2[["mu"]], xlab = expression(paste("MLE estimator on ", mu)), 
+     main = expression(paste("Histogram of MLE estimator on ", mu)))
+hist(out.MLE.mu.sigma2[["mu"]], prob = TRUE, 
+     xlab = expression(paste("MLE estimator on ", mu)), 
+     main = expression(paste("Density histogram of MLE estimator on ", mu)))
+
+# Histograms for sigma2
+hist(out.MLE.mu.sigma2[["sigma2"]], xlab = expression(paste("MLE estimator on ", sigma^2)), 
+     main = expression(paste("Histogram of MLE estimator on ", sigma^2)))
+hist(out.MLE.mu.sigma2[["sigma2"]], prob = TRUE, 
+     xlab = expression(paste("MLE estimator on ", sigma^2)), 
+     main = expression(paste("Density histogram of MLE estimator on ", sigma^2)))
+```
+
+
+## mu = 1, sigma^2 = 2, n = 100
+```{r}
+mu.hat.vec <- NULL
+sigma2.hat.vec <- NULL
+out.MLE.mu.sigma2 <- MLE.hat(mu.val = 1, sigma2.val = 2, n.val = 100)
+
+# Histograms for mu
+hist(out.MLE.mu.sigma2[["mu"]], xlab = expression(paste("MLE estimator on ", mu)), 
+     main = expression(paste("Histogram of MLE estimator on ", mu, " (n = 100)")))
+hist(out.MLE.mu.sigma2[["mu"]], prob = TRUE, 
+     xlab = expression(paste("MLE estimator on ", mu)), 
+     main = expression(paste("Density histogram of MLE estimator on ", mu, " (n = 100)")))
+
+# Histograms for sigma2
+hist(out.MLE.mu.sigma2[["sigma2"]], xlab = expression(paste("MLE estimator on ", sigma^2)), 
+     main = expression(paste("Histogram of MLE estimator on ", sigma^2, " (n = 100)")))
+hist(out.MLE.mu.sigma2[["sigma2"]], prob = TRUE, 
+     xlab = expression(paste("MLE estimator on ", sigma^2)), 
+     main = expression(paste("Density histogram of MLE estimator on ", sigma^2, " (n = 100)")))
+```
+
+
+# e
+## Create a function of the unbiased estimator of sigma^2
+```{r}
+unbiased.sigma.hat <- function(mu.val = NULL, sigma2.val = NULL, n.val = NULL) {
+  for (i in 1:100) {
+    # Produce one distinct i.i.d sample of the random variable
+    set.seed(i)
+    x.vec <- rnorm(n = n.val, mean = mu.val, sd = sqrt(sigma2.val))
+    mu.hat.vec <- c(mu.hat.vec, (1/n.val)*sum(x.vec))
+    sigma2.hat.vec <- c(sigma2.hat.vec, (1/(n.val - 1))*sum((x.vec - mean(x.vec))^2))
+  }
+  return(list(mu = mu.hat.vec, sigma2 = sigma2.hat.vec))
+}  
+```
+
+
+## mu = 0, sigma^2 = 1, n = 10
+```{r}
+mu.hat.vec <- NULL
+sigma2.hat.vec <- NULL
+out.unbiased.mu.sigma2 <- unbiased.sigma.hat(mu.val = 0, sigma2.val = 1, n.val = 10)
+
+# Histograms for mu
+hist(out.unbiased.mu.sigma2[["mu"]], 
+     xlab = expression(paste("Estimator on ", mu)), 
+     main = expression(paste("Histogram of the estimator on ", mu)))
+hist(out.unbiased.mu.sigma2[["mu"]], prob = TRUE, 
+     xlab = expression(paste("Estimator on ", mu)), 
+     main = expression(paste("Density histogram of the estimator on ", mu)))
+
+# Histograms for sigma2
+hist(out.unbiased.mu.sigma2[["sigma2"]], 
+     xlab = expression(paste("Unbiased estimator on ", sigma^2)), 
+     main = expression(paste("Histogram of unbiased estimator on ", sigma^2)))
+hist(out.unbiased.mu.sigma2[["sigma2"]], prob = TRUE, 
+     xlab = expression(paste("Unbiased estimator on ", sigma^2)), 
+     main = expression(paste("Density histogram of unbiased estimator on ", sigma^2)))
+```
+
+
+## mu = 1, sigma^2 = 2, n = 10
+```{r}
+mu.hat.vec <- NULL
+sigma2.hat.vec <- NULL
+out.unbiased.mu.sigma2 <- unbiased.sigma.hat(mu.val = 1, sigma2.val = 2, n.val = 10)
+
+# Histograms for mu
+hist(out.unbiased.mu.sigma2[["mu"]], 
+     xlab = expression(paste("Estimator on ", mu)), 
+     main = expression(paste("Histogram of estimator on ", mu)))
+hist(out.unbiased.mu.sigma2[["mu"]], prob = TRUE, 
+     xlab = expression(paste("Estimator on ", mu)), 
+     main = expression(paste("Density histogram of estimator on ", mu)))
+
+# Histograms for sigma2
+hist(out.unbiased.mu.sigma2[["sigma2"]], 
+     xlab = expression(paste("Unbiased estimator on ", sigma^2)), 
+     main = expression(paste("Histogram of unbiased estimator on ", sigma^2)))
+hist(out.unbiased.mu.sigma2[["sigma2"]], prob = TRUE, 
+     xlab = expression(paste("Unbiased estimator on ", sigma^2)), 
+     main = expression(paste("Density histogram of unbiased estimator on ", sigma^2)))
+```
+
+
+## mu = 1, sigma^2 = 2, n = 100
+```{r}
+mu.hat.vec <- NULL
+sigma2.hat.vec <- NULL
+out.unbiased.mu.sigma2 <- unbiased.sigma.hat(mu.val = 1, sigma2.val = 2, n.val = 100)
+
+# Histograms for mu
+hist(out.unbiased.mu.sigma2[["mu"]], 
+     xlab = expression(paste("Estimator on ", mu)), 
+     main = expression(paste("Histogram of estimator on ", mu)))
+hist(out.unbiased.mu.sigma2[["mu"]], prob = TRUE, 
+     xlab = expression(paste("Estimator on ", mu)), 
+     main = expression(paste("Density histogram of estimator on ", mu)))
+
+# Histograms for sigma2
+hist(out.unbiased.mu.sigma2[["sigma2"]], 
+     xlab = expression(paste("Unbiased estimator on ", sigma^2)), 
+     main = expression(paste("Histogram of unbiased estimator on ", sigma^2)))
+hist(out.unbiased.mu.sigma2[["sigma2"]], prob = TRUE, 
+     xlab = expression(paste("Unbiased estimator on ", sigma^2)), 
+     main = expression(paste("Density histogram of unbiased estimator on ", sigma^2)))
+```
+
+
+# f
+```{r}
+# Critical threshold: the value of the test statistic that maps to the significance level; 
+# it is a value such that if we observe a statistic that is on one side of it, we will reject H0;
+# Pr(|test statistic| > critical threshold | H0) = alpha
+ct.one <- qnorm(p = 0.05, mean = 0, sd = 1/sqrt(20), lower.tail = F)
+print(paste("The critical threshold for a one-sided test is", ct.one |> round(3)))
+
+ct.two1 <- qnorm(p = 0.025, mean = 0, sd = 1/sqrt(20), lower.tail = F)
+ct.two2 <- qnorm(p = 0.025, mean = 0, sd = 1/sqrt(20), lower.tail = T)
+print(paste(
+  "The two values of the critical threshold for a two-sided test are",
+  ct.two2 |> round(3), 
+  "and", 
+  ct.two1 |> round(3)))
+```
+
+
+# g
+```{r}
+# Produce 1000 distinct i.i.d samples of the random variable
+mu.hat <- function(mu.val = NULL, sigma2.val = NULL, n.val = NULL) {
+  for (i in 1:1000) {
+    set.seed(i)
+    # Simulate a sampling distribution of the mean
+    x.vec <- rnorm(n = n.val, mean = mu.val, sd = sqrt(sigma2.val/n.val)) 
+    mu.hat.vec <- c(mu.hat.vec, (1/n.val)*sum(x.vec)) 
+  }
+  return(mu.hat.vec)
+}  
+
+mu.hat.vec <- NULL
+out.mu <- mu.hat(mu.val = 0, sigma2.val = 1, n.val = 20)
+
+hist(out.mu, xlab = "Sample mean", main = "Histogram of the sample mean", xlim = c(-3, 3))
+abline(v = ct.one, lty = 2, lwd = 2)
+abline(v = ct.two1, lty = 3, lwd = 2)
+abline(v = ct.two2, lty = 3, lwd = 2)
+legend("topleft", 
+       c("Critical value of one-sided test", "Critical value of two-sided test"), 
+       lty = c(2, 3), cex = 0.8)
+```
+
+
+# h
+```{r}
+# Power: the probability of obtaining a test statistic 
+# that is more extreme than the critical threshold under the null hypothesis 
+# if the alternative hypothesis is true or the null hypothesis is wrong 
+# Pr(|test statistic| > critical threshold | H1) = 1 - beta
+pw.one <- pnorm(q = ct.one, mean = 0.5, sd = 1/sqrt(20), lower.tail = F)
+print(paste("The power for a one-sided test is", pw.one |> round(3)))
+
+pw.two <- pnorm(q = ct.two1, mean = 0.5, sd = 1/sqrt(20), lower.tail = F) + pnorm(q = ct.two2, mean = 0.5, sd = 1/sqrt(20), lower.tail = T)
+print(paste("The power for a two-sided test is", pw.two |> round(3)))
+```
+
+
+# i
+```{r}
+# Produce 1000 distinct i.i.d samples of the random variable
+mu.hat.vec <- NULL
+out.mu <- mu.hat(mu.val = 0.5, sigma2.val = 1, n.val = 20)
+
+hist(out.mu, xlab = "Sample mean", main = "Histogram of the sample mean", xlim = c(-3, 3))
+abline(v = ct.one, lty = 2, lwd = 2)
+abline(v = ct.two1, lty = 3, lwd = 2)
+abline(v = ct.two2, lty = 3, lwd = 2)
+legend("topleft", 
+       c("Critical value of one-sided test", "Critical value of two-sided test"), 
+       lty = c(2, 3), cex = 0.8)
+```
+
+
+# j
+## Repeat f with n = 100
+```{r}
+ct.one <- qnorm(p = 0.05, mean = 0, sd = 1/sqrt(100), lower.tail = F)
+print(paste("The critical threshold for a one-sided test is", ct.one |> round(3)))
+
+ct.two1 <- qnorm(p = 0.025, mean = 0, sd = 1/sqrt(100), lower.tail = F)
+ct.two2 <- qnorm(p = 0.025, mean = 0, sd = 1/sqrt(100), lower.tail = T)
+print(paste(
+  "The two values of the critical threshold for a two-sided test are",
+  ct.two2 |> round(3), 
+  "and", 
+  ct.two1 |> round(3)))
+```
+
+
+## Repeat g with n = 100
+```{r}
+mu.hat.vec <- NULL
+out.mu <- mu.hat(mu.val = 0, sigma2.val = 1, n.val = 100)
+
+hist(out.mu, xlab = "Sample mean", main = "Histogram of the sample mean", xlim = c(-3, 3))
+abline(v = ct.one, lty = 2, lwd = 2)
+abline(v = ct.two1, lty = 3, lwd = 2)
+abline(v = ct.two2, lty = 3, lwd = 2)
+legend("topleft", 
+       c("Critical value of one-sided test", "Critical value of two-sided test"), 
+       lty = c(2, 3), cex = 0.8)
+```
+
+
+## Repeat h with n = 100
+```{r}
+pw.one <- pnorm(q = ct.one, mean = 0.5, sd = 1/sqrt(100), lower.tail = F)
+print(paste("The power for a one-sided test is", pw.one |> round(4)))
+
+pw.two <- pnorm(q = ct.two1, mean = 0.5, sd = 1/sqrt(100), lower.tail = F) + 
+  pnorm(q = ct.two2, mean = 0.5, sd = 1/sqrt(100), lower.tail = T)
+print(paste("The power for a two-sided test is", pw.two |> round(4)))
+```
+
+
+## Repeat i with n = 100
+```{r}
+mu.hat.vec <- NULL
+out.mu <- mu.hat(mu.val = 0.5, sigma2.val = 1, n.val = 100)
+
+hist(out.mu, xlab = "Sample mean", main = "Histogram of the sample mean", xlim = c(-3, 3))
+abline(v = ct.one, lty = 2, lwd = 2)
+abline(v = ct.two1, lty = 3, lwd = 2)
+abline(v = ct.two2, lty = 3, lwd = 2)
+legend("topleft", 
+       c("Critical value of one-sided test", "Critical value of two-sided test"), 
+       lty = c(2, 3), cex = 0.8)
+```
