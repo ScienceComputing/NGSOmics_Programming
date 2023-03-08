@@ -12,3 +12,4 @@ A container is an isolated environment for running an application. A virtual mac
 The hypervisor is a software to create and manage the virtual machines. For example, VirtualBox, VMware are cross-platform hypervisors which can be run on the Windows, Mac OS, and Linux. The Hyper-v can only be run on the Windows. 
 
 ## What are the benefits of building virtual machines?
+We can run our applications in isolation.
