@@ -29,6 +29,32 @@ mainChrSeq <- lapply(mainChromosomes,
                      function(x) BSgenome.Hsapiens.UCSC.hg19[[x]])
 names(mainChrSeq) <- mainChromosomes
 mainChrSeqSet <- DNAStringSet(mainChrSeq)
-Biostrings::writeXStringSet(x = mainChrSeqSet,
-                filepath = "BSgenome.Hsapiens.UCSC.hg19.mainChrs.fa")
+Biostrings::writeXStringSet(x = mainChrSeqSet, 
+                            filepath = "BSgenome.Hsapiens.UCSC.hg19.mainChrs.fa")
+```
+
+
+## Build the index
+```{r}
+library(Rsubread)
+buildindex(basename = "BSgenome.Hsapiens.UCSC.hg19.mainChrs",
+           reference = "BSgenome.Hsapiens.UCSC.hg19.mainChrs.fa",
+           indexSplit = TRUE,
+           memory = 1000)
+
+# indexSplit: logical indicating whether the index can be split into multiple blocks. The block size is determined by the value of memory. FALSE by default (ie. a single-block index is generated).
+# memory: a numeric value specifying the amount of memory (in megabytes) used for storing the index during read mapping. 8000 MB by default. Note that this option is ignored when indexSplit is FALSE.
+```
+
+
+
+## Align **paired** sequence reads
+```{r}
+library(ShortRead)
+read1 <- readFastq("./data/ENCFF175VOD.fastq.gz")
+read2 <- readFastq("./data/ENCFF447BGX.fastq.gz")
+writeFastq(read1[1:1000,],"ATACSample_r1.fastq.gz")
+writeFastq(read2[1:1000,],"ATACSample_r2.fastq.gz")
+# id(read2[1:1000,])
+# myRes <- bamQC("~/Downloads/Sorted_ATAC_50K_2.bam")
 ```
