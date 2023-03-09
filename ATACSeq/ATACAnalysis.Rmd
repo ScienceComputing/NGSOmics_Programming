@@ -47,7 +47,6 @@ buildindex(basename = "BSgenome.Hsapiens.UCSC.hg19.mainChrs",
 ```
 
 
-
 ## Align **paired** sequence reads
 ```{r}
 library(ShortRead)
@@ -57,4 +56,31 @@ writeFastq(read1[1:1000,],"ATACSample_r1.fastq.gz")
 writeFastq(read2[1:1000,],"ATACSample_r2.fastq.gz")
 # id(read2[1:1000,])
 # myRes <- bamQC("~/Downloads/Sorted_ATAC_50K_2.bam")
+```
+
+
+## Align sequence reads using `Rsubread`
+```{r}
+library(Rsubread)
+align(index = "BSgenome.Hsapiens.UCSC.hg19.mainChrs",
+      readfile1 = read1, readfile2 = read2,
+      output_file = "ATAC_50K_2.bam",
+      nthreads = 2, type = 1,
+      unique = TRUE, maxFragLength = 2000)
+# type: a character string or an integer giving the type of sequencing data. Possible values include rna (or 0; RNA-seq data) and dna (or 1; genomic DNA-seq data such as WGS, WES, ChIP-seq data etc.). Character strings are case insensitive.
+```
+
+
+## Alternative: align sequence reads using `Rbowtie2`
+```{r}
+library(Rbowtie2)
+bowtie2_build(references = "BSgenome.Hsapiens.UCSC.hg19.mainChrs.fa",
+              bt2Index = "BSgenome.Hsapiens.UCSC.hg19.mainChrs_bowtie2")
+```
+
+
+## Decompress FASTQ files
+```{r}
+gunzip("ATAC_Data/ATAC_FQs/SRR891269_1.fastq.gz")
+gunzip("ATAC_Data/ATAC_FQs/SRR891269_2.fastq.gz")
 ```
