@@ -29,3 +29,17 @@ minor_allele
 # Count the nucleotide positions showing the minor allele across samples = minor allele frequency
 xa_result <- (geno_in[,1] == minor_allele) + (geno_in[,2] == minor_allele)
 xa_result
+
+
+# Construct a function that calculates the frequency of minor alleles across samples at the two nucleotide positions
+xa_converter <- function(geno_in){
+  # Frequency of each allele at the two nucleotide positions
+  geno_count <- table(c(geno_in[, 1],geno_in[, 2]))
+  
+  # Find the least frequent allele (minor allele)
+  minor_allele <- names(geno_count[geno_count == min(geno_count)])[1]
+  
+  # Count the minor alleles across samples at the two nucleotide positions
+  xa_result <- (geno_in[, 1] == minor_allele) + (geno_in[, 2] == minor_allele)
+  return(xa_result)
+}
