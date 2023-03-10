@@ -26,6 +26,6 @@ minor_allele <- names(geno_count[geno_count == min(geno_count)])
 minor_allele
 
 
-# Count the number of individual nucleotide positions showing the minor allele
+# Count the nucleotide positions showing the minor allele across samples = minor allele frequency
 xa_result <- (geno_in[,1] == minor_allele) + (geno_in[,2] == minor_allele)
 xa_result
