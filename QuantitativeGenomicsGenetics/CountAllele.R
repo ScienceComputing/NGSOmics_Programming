@@ -32,14 +32,14 @@ xa_result
 
 
 # Construct a function that calculates the frequency of minor alleles across samples at the two nucleotide positions
-xa_converter <- function(geno_in){
-  # Frequency of each allele at the two nucleotide positions
+xa_converter <- function(geno_in){ 
+  # Estimate the frequency of each allele of a genotype spanning the two nucleotide positions
   geno_count <- table(c(geno_in[, 1],geno_in[, 2]))
   
-  # Find the least frequent allele (minor allele)
+  # Find the name of the least frequent allele (minor allele)
   minor_allele <- names(geno_count[geno_count == min(geno_count)])[1]
   
-  # Count the minor alleles across samples at the two nucleotide positions
-  xa_result <- (geno_in[, 1] == minor_allele) + (geno_in[, 2] == minor_allele)
+  # Estimate the frequency of the minor allele of a genotype spanning the two nucleotide positions per sample
+  xa_result <- (geno_in[, 1] == minor_allele) + (geno_in[, 2] == minor_allele) # Return an integer vector taking the value 0, 1, or 2 of the sample size length 
   return(xa_result)
 }
