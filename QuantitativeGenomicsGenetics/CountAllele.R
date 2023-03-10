@@ -1,6 +1,6 @@
 # Load the data
 geno_import <- read.csv("./genotype_data.csv", 
-                        header = TRUE, 
+                        header = T, 
                         stringsAsFactors = F,
                         row.names = 1)
 
