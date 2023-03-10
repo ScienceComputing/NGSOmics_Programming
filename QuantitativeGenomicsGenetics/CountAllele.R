@@ -47,8 +47,8 @@ xa_converter <- function(geno_in){
 
 # Apply the function `xa_converter()` to each genotype
 xa_matrix <- matrix(NA, nrow = nrow(geno_import), ncol = ncol(geno_import)/2)
-  # What are the rows and columns? ALiu: row: sample; column: nucleotide position
-  # Why divide by 2? ALiu: a genotype spanning two nucleotide positions: A1A2
+  # What are the rows and columns? row: sample; column: nucleotide position
+  # Why divide by 2? a genotype spanning two nucleotide positions: A1A2
 
 for (i in 1:(ncol(geno_import)/2)){
     xa_matrix[, i] <- xa_converter(geno_import[, c(2*i - 1, 2*i)]) # Grab pairs of columns; (1,2), (3,4)...(399,400); Each column of xa_matrix is an integer vector taking the value 0, 1, or 2 of the sample size length 
