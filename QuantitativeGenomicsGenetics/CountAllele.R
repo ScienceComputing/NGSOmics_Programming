@@ -107,3 +107,8 @@ for (i in 1:(ncol(geno_import)/2)){
 
 xa_matrix[1:10, 1:10]
 
+
+# If we have sites with NA's
+turn_xa <- t(xa_matrix)
+turn_xa <- turn_xa[complete.cases(turn_xa),]
+xa_matrix <- t(turn_xa)
