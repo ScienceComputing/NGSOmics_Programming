@@ -14,7 +14,7 @@ keggFind("drug", "immune")
 
 # Get the identifiers of the genes/drugs
 keggFind("genes", "immune") |> names()
-immune.gene.id <- keggFind("gene", "immune") |> names()
+immune.gene.id <- keggFind("genes", "immune") |> names()
 keggFind("drug", "immune") |> names()
 
 # Find all ligands that interact with ATP
