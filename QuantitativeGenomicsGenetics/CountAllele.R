@@ -120,13 +120,13 @@ xd_converter_from_xa = function(xa_matrix) {
   num_genes = ncol(xa_matrix)
   xd = matrix(nrow = nrow(xa_matrix), ncol = ncol(xa_matrix))
   for (j in 1:num_pop) {
-    xd[j, ] = ifelse(abs(xa_matrix[j, ]),-1, 1)
+    xd[j, ] = ifelse(abs(xa_matrix[j, ]), -1, 1)
   }
   return(xd)
 }
 
 xd_converter <- function(geno_in) {
-  xd_result <- ifelse(geno_in[, 1] == geno_in[, 2],-1, 1)
+  xd_result <- ifelse(geno_in[, 1] == geno_in[, 2], -1, 1)
   return(xd_result)
 }
 
