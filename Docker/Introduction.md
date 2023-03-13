@@ -16,3 +16,6 @@ We can run our applications in isolation. On the same physical machine, we can h
 
 ## What are the problems of building virtual machines?
 Each virtual machine needs a full copy of operating system that needs to be licensed, patched, and monitored. Therefore, virtual machines are slow to start, since the entire operating system needs to be loaded. Each virtual machine is resource intensive because it takes the slice of the actual hardware resources such as CPU, memory, and disk space. For example, if the physical machine has a memory of 16 gigabytes, this memory has to be divided between different virtual machines. We can determine how much memory to allocate to each virtual machine. However, as the virtual machine is resource intensive, we are limited by the number of virtual machines to run on a physical machine.
+
+## Docker architecture
+
