@@ -1,5 +1,9 @@
 # Goal: covert the ATCGs into dummy numbers under either additive or dominant genetic model
 
+# Input genotype file: each column represents a specific SNP (column 1 = column 1 = genotype 1, column 2 = genotype 2)
+# Each consecutive pair of rows represent all of the genotype states for an individual for the entire set of SNPs
+# For example, rows 1 and 2 = all of individual 1’s genotypes, rows 3 and 4 = all individual 2’s genotypes
+
 geno.recode <- function(geno.import, maf.lim, error.val = 3) {
   
   # Inputs: geno.col is a vector of genotype where each consecutive pair of two elements in this vector represents one particular genotype for an individual), num.sample is the number of individuals, maf.lim is the threshold of minor allele frequency (MAF)
