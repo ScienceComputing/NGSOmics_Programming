@@ -60,3 +60,6 @@ geno.recode <- function(geno.import, maf.lim, error.val = 3) {
 # geno.import <- data.frame(genotype1 = sample(c("A", "C", "T", "G"), size = 100, replace = T), genotype2 = sample(c("A", "C", "T", "G"), size = 100, replace = T), genotype3 = c("A", rep("C", times = 99)))
 # xa.mat  <- apply(X = geno.import, MARGIN = 2, FUN = xa.convert, num.sample = nrow(geno.import)/2, maf.lim = 0.05)
 # xa.mat <- xa.mat[, apply(xa.mat == 3, 2, sum) == 0]
+
+xa <- geno.recode(geno.import = geno.data, maf.lim = 0.05, error.val = 3)[[1]]
+xd <- geno.recode(geno.import = geno.data, maf.lim = 0.05, error.val = 3)[[2]]
