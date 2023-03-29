@@ -15,7 +15,7 @@ genotype_coder <- function(geno_import, maf_limit, error_value = 3){
   xa_converter <- function(geno_col, numSamples, maf_limit){
     # What alleles are present at this locus?
     geno_count <- table(geno_col) 
-    # If the MAF is less than our limit OR # If the MAF is less than the pre-set threshold OR this locus has less than 2 alleles
+    # If the MAF is less than the pre-set threshold OR this locus has less than 2 alleles (e.g., this site is mono-allelic (has only 1 allele))
     if(min(geno_count)/length(geno_col) <= maf_limit | length(geno_count) < 2){
       # Return a vector of 3's, to be filtered out later.
       return(rep(error_value, numSamples)) 
