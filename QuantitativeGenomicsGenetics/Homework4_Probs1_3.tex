@@ -1,0 +1,397 @@
+\documentclass[letterpaper, 11pt]{article}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\usepackage{setspace}
+\usepackage{paralist}
+\usepackage{amsmath}
+\usepackage{epsfig,psfrag}
+\usepackage{color}
+\usepackage{bm}
+\usepackage{mathtools}
+
+\newenvironment{sysmatrix}[1]
+ {\left(\begin{array}{@{}#1@{}}}
+ {\end{array}\right)}
+\newcommand{\ro}[1]{%
+  \xrightarrow{\mathmakebox[\rowidth]{#1}}%
+}
+\newlength{\rowidth}% row operation width
+\AtBeginDocument{\setlength{\rowidth}{3em}}
+
+\renewcommand{\labelenumi}{(\theenumi)}
+
+\pdfpagewidth 8.5in
+\pdfpageheight 11in
+
+\setlength\topmargin{0in}
+\setlength\leftmargin{0in}
+\setlength\headheight{0in}
+\setlength\headsep{0in}
+\setlength\textheight{9in}
+\setlength\textwidth{6.5in}
+\setlength\oddsidemargin{0in}
+\setlength\evensidemargin{0in}
+\setlength\parindent{0in}
+\setlength\parskip{0.13in} 
+ 
+\title{Quantitative Genomics and Genetics - Spring 2023 \\
+BTRY 4830/6830; PBSB 5201.01}
+\author{Anni Liu (ali4006@med.cornell.edu) \\ \\ \\ Homework 4, version 1 - posted March 14  } 
+\date{Assigned March 14; Due 11:59PM March 27}                                           % Activate to display a given date or no date
+
+\begin{document}
+
+\vspace{-20in}
+
+\maketitle
+\section*{Problem 1 (Easy)}
+
+Consider the (slightly idealized) genetics behind behind one of Mendel's famous experiments with pea plants (look Mendel up on wikipedia if you are new to genetics), where for two alleles $A_1$ and $A_2$ the phenotype of a pea is guaranteed to be `yellow' if the genotype is either $A_1A_1$ or $A_1A_2$ and guaranteed to be `green' if the genotype is $A_2A_2$.  If you were to code a random variable for this system $Y($yellow$) = 1$ and $Y($green$) = 0$ and used a (genetic) linear regression to model this case, what would be the true values of the parameters $\beta_\mu$, $\beta_a$, $\beta_d$, and $\sigma^2_\epsilon$? \\
+
+\textcolor{blue}{Answer: \\
+Assume we code the random variable $X_a$ and $X_d$ as: \\
+$X_a(A_1A_1) = -1, X_a(A_1A_2) = 0, X_a(A_2A_2) = 1$\\ 
+$X_d(A_1A_1) = -1, X_d(A_1A_2) = 1, X_d(A_2A_2) = -1$\\\\
+Since our linear regression model is expressed as $Y = \beta_\mu + X_a\beta_a + X_d\beta_d + \epsilon$, we learn from the question contexts that:
+\begin{align*}
+\beta_\mu + (-1)\beta_a + (-1)\beta_d = 1 \\
+\beta_\mu + (0)\beta_a + (1)\beta_d = 1\\
+\beta_\mu + (1)\beta_a + (-1)\beta_d = 0 
+\end{align*}
+From the above three equations, we can derive that $\beta_\mu = \frac{3}{4}, \beta_a = -\frac{1}{2}, \beta_d = \frac{1}{4}$. These are the true values of the parameters $\beta_\mu$, $\beta_a$, and $\beta_d$.\\\\
+In terms of $\sigma^2_\epsilon$, because we use a (genetic) linear regression to model this case, we assume the error term $\epsilon$ follows $\mathcal{N}(0, \sigma^2_\epsilon)$. Since we only have 3 point values of $Y$ fixed at the specific combination of $X_a$ and $X_d$ without the variation, that is 1, 1, and 0, the true value of $\sigma^2_\epsilon$ approaches 0. $\sigma^2_\epsilon$ is not exactly 0 because the probability density function of a normal distribution $f(x) = \frac{1}{\sigma\sqrt{2\pi}} e^{-\frac{(x-\mu)^2}{2\sigma^2}}$ requires that $\sigma^2$ cannot be 0.
+}\\\\
+\textcolor{blue}{P.S. There are other mathematical ways to estimate the true values of $\beta_\mu$, $\beta_a$, and $\beta_d$.\\
+In the first way, we initially express our linear regression model $Y = \beta_\mu + X_a\beta_a + X_d\beta_d + \epsilon$ in the matrix notation as follows: \\
+\begin{center}
+\begin{bmatrix}
+    1 & X_a(A_1A_1) & X_d(A_1A_1) \\
+    1 & X_a(A_1A_2) & X_d(A_1A_2) \\
+    1 & X_a(A_2A_2) & X_d(A_2A_2)
+\end{bmatrix}
+\begin{bmatrix}
+    \beta_\mu \\
+    \beta_a \\
+    \beta_d
+\end{bmatrix}
+=
+\begin{bmatrix}
+    1 & -1 & -1 \\
+    1 & 0 & 1 \\
+    1 & 1 & -1
+\end{bmatrix}
+\begin{bmatrix}
+    \beta_\mu \\
+    \beta_a \\
+    \beta_d
+\end{bmatrix}
+= 
+\begin{bmatrix}
+    1 \\
+    1 \\
+    0
+\end{bmatrix}
+\end{center}
+$\because \bm{X\beta} = \bm{Y} \therefore \bm{X}^{-1}\bm{X\beta} = \bm{X}^{-1}\bm{Y}\\
+\because \bm{X^{-1}X} = \bm{I} \therefore \bm{X}^{-1}\bm{X\beta} = \bm{I\beta} = \bm{\beta} = \bm{X}^{-1}\bm{Y}$\\\\
+Then we can use row operations manually or use inv() in MATLAB to derive the $\bm{X}^{-1}$. Here I manually perform the row operations.}\\
+
+\textcolor{blue}{
+\begin{alignat*}{2}
+\begin{sysmatrix}{rrr|rrr}
+ 1 & -1 & -1 & 1 & 0 & 0 \\
+ 1 & 0 & 1 & 0 & 1 & 0 \\
+ 1 & 1 & -1 & 0 & 0 & 1 \\
+\end{sysmatrix}
+&\!\begin{aligned}
+&\ro{r_2-r_1}\\
+&\ro{r_3-r_1}
+\end{aligned}
+\begin{sysmatrix}{rrr|rrr}
+1 & -1 & -1 & 1 & 0 & 0 \\
+0 & 1 & 2 & -1 & 1 & 0 \\
+0 & 2 & 0 & -1 & 0 & 1 \\
+\end{sysmatrix}
+&&\ro{r_3 - 2r_2}
+\begin{sysmatrix}{rrr|rrr}
+1 & -1 & -1 & 1 & 0 & 0 \\
+0 & 1 & 2 & -1 & 1 & 0 \\
+0 & 0 & -4 & 1 & -2 & 1 \\
+\end{sysmatrix}
+\\
+&\!\begin{aligned}
+&\ro{r_1+r_2}\\
+&\ro{2r_2+r_3}
+\end{aligned}
+\begin{sysmatrix}{rrr|rrr}
+1 & 0 & 1 & 0 & 1 & 0 \\
+0 & 2 & 0 & -1 & 0 & 1 \\
+0 & 0 & -4 & 1 & -2 & 1 \\
+\end{sysmatrix}
+&&\ro{4r_1+r_3}
+\begin{sysmatrix}{rrr|rrr}
+4 & 0 & 0 & 1 & 2 & 1 \\
+0 & 2 & 0 & -1 & 0 & 1 \\
+0 & 0 & -4 & 1 & -2 & 1 \\
+\end{sysmatrix}\\
+&\!\begin{aligned}
+&\ro{\frac{1}{4}r_1}\\
+&\ro{\frac{1}{2}r_2}\\
+&\ro{-\frac{1}{4}r_3}\\
+\end{aligned}
+\begin{sysmatrix}{rrr|rrr}
+1 & 0 & 0 & \frac{1}{4} & \frac{1}{2} & \frac{1}{4} \\
+0 & 1 & 0 & -\frac{1}{2} & 0 & \frac{1}{2} \\
+0 & 0 & 1 & -\frac{1}{4} & \frac{1}{2} & -\frac{1}{4} \\
+\end{sysmatrix}\\
+\end{alignat*}}
+\textcolor{blue}{
+\begin{center}
+$\bm{X}^{-1}$
+=
+\begin{bmatrix}
+    \frac{1}{4} & \frac{1}{2} & \frac{1}{4} \\
+    -\frac{1}{2} & 0 & \frac{1}{2} \\
+    -\frac{1}{4} & \frac{1}{2} & -\frac{1}{4}
+\end{bmatrix}\\
+$\bm{\beta}$ = 
+\begin{bmatrix}
+    \frac{1}{4} & \frac{1}{2} & \frac{1}{4} \\
+    -\frac{1}{2} & 0 & \frac{1}{2} \\
+    -\frac{1}{4} & \frac{1}{2} & -\frac{1}{4}
+\end{bmatrix}
+\begin{bmatrix}
+    1 \\
+    1 \\
+    0
+\end{bmatrix}
+=
+\begin{bmatrix}
+    \frac{3}{4} \\
+    -\frac{1}{2} \\
+    \frac{1}{4}
+\end{bmatrix}
+\end{center}
+}\\
+
+\textcolor{blue}{
+In the second way, we can perform the Gaussian elimination to transform the system of linear equations to an equivalent upper triangular system of linear equations and then use the backward substitution to solve this upper triangular system, giving the true values of $\beta_\mu$, $\beta_a$, and $\beta_d$.
+}\\
+
+\section*{Problem 2 (Medium)}
+
+
+\textit{Note that some of the answers to questions below will require coding in R, some require written answers, and some require both (make sure you answer all parts of all questions!).  You are welcome (and encouraged!) to use Rmarkdown and if you do, please submit your .Rmd script and a pdf for this problem (i.e., you may also use Rmarkdown for the entire assignment!).  Please note that you do not need to repeat code for each part (i.e., if you write a single block of code that generates the answers for some or all of the parts, that is fine, but do please label your output that answers each question!!).  For answers requiring code, do make sure your R code used to generate your answers is in an easy to run format.  Also, please label any figures so it is easy to discern what the figure is showing.  NOTE: there will be penalties for R code / scripts that fail to compile and / or run easily and similarly, penalties for answers that are not easy to decipher (i.e., please make sure your answers are presented in a clear manner)!}
+\\
+\\
+Consider the data in the files (`QG23 - hw4\_phenotypes.txt'; `QG23 - hw4\_genotypes.txt') of the scaled height phenotypes and SNP genotype data (respectively) collected in a GWAS.  Note that in the `phenotypes' file the column lists the individuals in order (1st entry is the phenotype for individual 1, the nth is for individual $n$).  Also note that for each of the SNPs, there are two total alleles, i.e. two letters for each SNP and there are three possible states per SNP genotype: two homozygotes and a heterozygote.  In the ``genotypes'' file, each column represents a specific SNP (column 1 = genotype 1, column 2 = genotype 2) and each consecutive pair of rows represent all of the genotype states for an individual for the entire set of SNPs (rows 1 and 2 = all of individual 1's genotypes, rows 3 and 4 = all individual 2's genotypes).  Also note that the genotypes in the file are listed in order along the genome such that the first genotype is `genotype 1' and the last is `genotype \textit{N}'.
+  
+\begin{itemize}
+
+\item[a.]  Write code that inputs the phenotype, plus an (additional) line of code that calculates the number of samples $n$ and report the number $n$ (NOTE: you do not have to output the phenotypes (!!) just provide the R code and report the value for $n$.
+
+\item[b.]  Write code that produces a histogram of your phenotype data (NOTE: provide the R code and the histogram).
+
+\item[c.] Write code that inputs the genotype data plus a line of code that outputs the number of genotypes \textit{N} and sample size \textit{n} and report these numbers (NOTE: that you do not have to output the genotypes (!!) just provide the R code and report the value for \textit{N} and $n$ you obtained from these data).
+
+\item[d.] Write code that converts your genotype data input in part [c] into two new matrices, the first a matrix where each genotype is converted to the appropriate $X_a$ value and the second where each genotype is converted to the appropriate $X_d$ value (NOTE: that you do not have to output the matrices (!!) just provide the R code that will create the matrices if we run it).
+
+\item[e.] Write code to calculate $MLE(\hat{\beta}) = [\hat{\beta}_\mu, \hat{\beta}_a, \hat{\beta}_d]$ for each genotype in the dataset, an F-statistic for each genotype, and a p-value for each genotype using the R function pf(F-statistic, df1, df2, lower.tail = FALSE).   PLEASE NOTE (!!): that you may NOT use an existing R function for ANY of these calculations other than the calculation of the p-value (=you must write code that calculates each component except the p-value) and NOTE: you do not have to output anything (!!) just provide the R code.
+
+\item[f.] Write code to produce a Manhattan plot (i.e., genotypes in order on the x-axis and -log(p-values) on the y-axis.  PLEASE NOTE (!!): do NOT use an R function (=write your own code to produce the Manhattan plot) but DO provide your code AND your Manhattan plot.
+
+\item[g.] Write code to produce a Quantile-Quantile (QQ) plot for your p-values PLEASE NOTE (!!): do NOT use an R function (=write your own code to produce the Manhattan plot) but DO provide your code AND your QQ plot.
+
+\item[h.] Do you consider the QQ plot to indicate that you have `good' model fit in this case (and can therefore interpret the results of your analysis)?  Explain your reasoning using no more than two sentences.
+
+\item[i.] Write code that uses a Bonferroni correction to produce an overall study controlled Type I error of 0.05 to assess whether to reject the null hypothesis for each genotype, where your code also outputs the number of each genotype for which you rejected the null (remember: the genotypes are provided in order along the genome!).  Report the numbers of all genotypes for which you rejected the null.
+
+\item[j.] Assuming the set of genotypes for which you rejected the null hypothesis in part [i] do indeed indicate the positions of causal genotypes in the genome, how many causal genotypes do you think these significant genotypes are indicating overall?  Explain your reasoning using no more than two sentences. 
+
+\end{itemize}
+
+\section*{Problem 3 (Difficult)}
+
+In your introductory statistics class, you were likely introduced to the simple linear regression:
+\begin{center}
+$Y = \beta_{0} + X\beta_1 + \epsilon$
+\end{center}
+\begin{center}
+$\epsilon \sim N(0, \sigma^2)$
+\end{center}
+You also were probably told that the following equation is a maximum likelihood estimator (which is the same as the least squares estimator in this case!) of the slope parameter:
+\begin{equation}
+\hat{\beta_1} = \frac{\mathrm{Cov}(y,x)}{\mathrm{Var}(x)}
+\end{equation}
+We have been introduced to the following form of the maximum likelihood estimator (least squares) for all $\beta$ parameters of a multiple regression: 
+\begin{equation}
+MLE(\hat{\beta}) = (\mathbf{x}^{\textrm{T}}\mathbf{x})^{-1} \mathbf{x}^{\mathrm{T}} \mathbf{y}
+\end{equation}
+For the simple regression model with parameters $\beta = [\beta_0, \beta_1]$, show that equation (2) can be re-written such that the element $\beta_1$ of the output vector has the form of equation (1).
+\\
+\\
+HINT: note that while in general, there is not a simple way to calculate the inverse of an arbitrary $n$ by $n$ matrix, for a 2x2 matrix there is a simple relationship:
+Next using the formula for the inverse of a 2x2 matrix:
+\[
+ \begin{bmatrix}
+    a & b  \\
+    c & d \\
+  \end{bmatrix} ^ {-1}
+  =
+  \frac{1}{ad - bc}
+  \begin{bmatrix}
+    d & -b \\
+    -c & a \\
+  \end{bmatrix}
+\]
+which you will need to make use to answer the question.\\
+
+\textcolor{blue}{Answer: \\
+The simple linear regression model ($Y = \beta_{0} + X\beta_1 + \epsilon$) can be rewritten in the matrix notation as follows: \\
+\begin{center}
+\begin{bmatrix}
+    y_1 \\
+    y_2 \\
+    \vdots \\
+    y_n
+\end{bmatrix}
+=
+\begin{bmatrix}
+    1 & x_{1,1} \\
+    1 & x_{2,1} \\
+    \vdots \\
+    1 & x_{n,1}
+\end{bmatrix}
+\begin{bmatrix}
+    \beta_0 \\
+    \beta_1
+\end{bmatrix}
++
+\begin{bmatrix}
+    \epsilon_1 \\
+    \epsilon_2 \\
+    \vdots \\
+    \epsilon_n
+\end{bmatrix}
+\end{center}
+}\\
+
+\textcolor{blue}{
+The transpose of $\mathbf{x}$ can be expressed as: \\
+\begin{center}
+$\mathbf{x}^{\textrm{T}}$
+= 
+\begin{bmatrix}
+    1 & 1 & \cdots & 1 \\
+    x_{1,1} & x_{2,1} & \cdots & x_{n, 1}
+\end{bmatrix}
+\end{center}
+}\\
+
+\textcolor{blue}{
+The multiplication of $\mathbf{x}^{\textrm{T}}$ and $\mathbf{x}$ can be expressed as: \\
+\begin{center}
+$\mathbf{x}^{\textrm{T}}\mathbf{x}$
+= 
+\begin{bmatrix}
+    1 & 1 & \cdots & 1 \\
+    x_{1,1} & x_{2,1} & \cdots & x_{n, 1}
+\end{bmatrix}
+\begin{bmatrix}
+    1 & x_{1,1} \\
+    1 & x_{2,1} \\
+    \vdots & \vdots\\
+    1 & x_{n,1}
+\end{bmatrix}
+=
+\begin{bmatrix}
+    n & \Sigma_{i=1}^{n}x_{i,1} \\
+    \Sigma_{i=1}^{n}x_{i,1} & \Sigma_{i=1}^{n}x^2_{i,1}
+\end{bmatrix}
+\end{center}
+}\\
+
+\textcolor{blue}{
+The inverse of $\mathbf{x}^{\textrm{T}}\mathbf{x}$ can be expressed as: \\
+\begin{center}
+$(\mathbf{x}^{\textrm{T}}\mathbf{x})^{-1}$
+= 
+\begin{bmatrix}
+    n & \Sigma_{i=1}^{n}x_{i,1} \\
+    \Sigma_{i=1}^{n}x_{i,1} & \Sigma_{i=1}^{n}x^2_{i,1}
+\end{bmatrix}$^{-1}$
+=
+$\frac{1}{n\Sigma_{i=1}^{n}x^2_{i,1} - (\Sigma_{i=1}^{n}x_{i,1})(\Sigma_{i=1}^{n}x_{i,1})}$
+\begin{bmatrix}
+    \Sigma_{i=1}^{n}x^2_{i,1} & -\Sigma_{i=1}^{n}x_{i,1}\\
+    -\Sigma_{i=1}^{n}x_{i,1} & n
+\end{bmatrix}
+\end{center}
+}\\
+
+\textcolor{blue}{
+Now, let z = $\frac{1}{n\Sigma_{i=1}^{n}x^2_{i,1} - (\Sigma_{i=1}^{n}x_{i,1})(\Sigma_{i=1}^{n}x_{i,1})}$
+\begin{center}
+$(\mathbf{x}^{\textrm{T}}\mathbf{x})^{-1}\mathbf{x}^{\textrm{T}}$
+= z
+\begin{bmatrix}
+    \Sigma_{i=1}^{n}x^2_{i,1} & -\Sigma_{i=1}^{n}x_{i,1}\\
+    -\Sigma_{i=1}^{n}x_{i,1} & n
+\end{bmatrix}
+\begin{bmatrix}
+    1 & 1 & \cdots & 1 \\
+    x_{1,1} & x_{2,1} & \cdots & x_{n, 1}
+\end{bmatrix}
+\\
+= z
+\begin{bmatrix}
+    \Sigma_{i=1}^{n}x^2_{i,1} - x_{1,1}\Sigma_{i=1}^{n}x_{i,1} & \Sigma_{i=1}^{n}x^2_{i,1} - x_{2,1}\Sigma_{i=1}^{n}x_{i,1} & \cdots & \Sigma_{i=1}^{n}x^2_{i,1} - x_{n,1}\Sigma_{i=1}^{n}x_{i,1} \\
+    -\Sigma_{i=1}^{n}x_{i,1} + nx_{1,1} & -\Sigma_{i=1}^{n}x_{i,1} + nx_{2,1} & \cdots & -\Sigma_{i=1}^{n}x_{i,1} + nx_{n,1}
+\end{bmatrix}
+\end{center}
+}\\
+
+\textcolor{blue}{
+\begin{center}
+$(\mathbf{x}^{\textrm{T}}\mathbf{x})^{-1}\mathbf{x}^{\textrm{T}}\mathbf{y}$
+\\
+= z
+\begin{bmatrix}
+    \Sigma_{i=1}^{n}x^2_{i,1} - x_{1,1}\Sigma_{i=1}^{n}x_{i,1} & \Sigma_{i=1}^{n}x^2_{i,1} - x_{2,1}\Sigma_{i=1}^{n}x_{i,1} & \cdots & \Sigma_{i=1}^{n}x^2_{i,1} - x_{n,1}\Sigma_{i=1}^{n}x_{i,1} \\
+    -\Sigma_{i=1}^{n}x_{i,1} + nx_{1,1} & -\Sigma_{i=1}^{n}x_{i,1} + nx_{2,1} & \cdots & -\Sigma_{i=1}^{n}x_{i,1} + nx_{n,1}
+\end{bmatrix}
+\begin{bmatrix}
+    y_1 \\
+    y_2 \\
+    \vdots \\
+    y_n
+\end{bmatrix}
+\\
+= z
+\begin{bmatrix}
+    (\Sigma_{i=1}^{n}x^2_{i,1} - x_{1,1}\Sigma_{i=1}^{n}x_{i,1})y_1 + (\Sigma_{i=1}^{n}x^2_{i,1} - x_{2,1}\Sigma_{i=1}^{n}x_{i,1})y_2 + \cdots + (\Sigma_{i=1}^{n}x^2_{i,1} - x_{n,1}\Sigma_{i=1}^{n}x_{i,1})y_n \\
+    (-\Sigma_{i=1}^{n}x_{i,1} + nx_{1,1})y_1 + (-\Sigma_{i=1}^{n}x_{i,1} + nx_{2,1})y_2 + \cdots + (-\Sigma_{i=1}^{n}x_{i,1} + nx_{n,1})y_n
+\end{bmatrix}
+\end{center}
+}\\
+
+\textcolor{blue}{
+From the above resulting matrix of $(\mathbf{x}^{\textrm{T}}\mathbf{x})^{-1}\mathbf{x}^{\textrm{T}}\mathbf{y}$, we learn that $\beta_1$ = $z((-\Sigma_{i=1}^{n}x_{i,1} + nx_{1,1})y_1 + (-\Sigma_{i=1}^{n}x_{i,1} + nx_{2,1})y_2 + \cdots + (-\Sigma_{i=1}^{n}x_{i,1} + nx_{n,1})y_n)$. The right side of z can be further expressed as: \\
+$nx_{1,1}y_1 - y_1\Sigma_{i=1}^{n}x_{i,1} + nx_{2,1}y_2 - y_2\Sigma_{i=1}^{n}x_{i,1} + \cdots + nx_{n,1}y_n - y_n\Sigma_{i=1}^{n}x_{i,1}$ = $n(x_{1,1}y_1 + x_{2,1}y_2 + \cdots + x_{n,1}y_n) - \Sigma_{i=1}^{n}x_{i,1}(y_1 + y_2 + \cdots + y_n)$ = $n\Sigma_{i=1}^{n}x_{i,1}y_{i} - (\Sigma_{i=1}^{n}x_{i,1})(\Sigma_{i=1}^{n}y_i)$
+}\\
+
+\textcolor{blue}{
+Therefore, $\beta_1$ = z($n\Sigma_{i=1}^{n}x_{i,1}y_{i} - (\Sigma_{i=1}^{n}x_{i,1})(\Sigma_{i=1}^{n}y_i)$) = $\frac{n\Sigma_{i=1}^{n}x_{i,1}y_{i} - (\Sigma_{i=1}^{n}x_{i,1})(\Sigma_{i=1}^{n}y_i)}{n\Sigma_{i=1}^{n}x^2_{i,1} - (\Sigma_{i=1}^{n}x_{i,1})(\Sigma_{i=1}^{n}x_{i,1})}$
+}\\
+
+\textcolor{blue}{
+Now, let us divide both the numerator and denominator of the rightmost side of the above equation by $n^{2}$:\\\\
+$\frac{\frac{\Sigma_{i=1}^{n}x_{i,1}y_{i}}{n} - \frac{\Sigma_{i=1}^{n}x_{i,1}}{n}\frac{\Sigma_{i=1}^{n}y_i}{n}}{\frac{\Sigma_{i=1}^{n}x^2_{i,1}}{n} - \frac{\Sigma_{i=1}^{n}x_{i,1}}{n}\frac{\Sigma_{i=1}^{n}x_{i,1}}{n}}$ \\
+= $\frac{\mathrm{E}(xy) - \mathrm{E}(x)\mathrm{E}(y)}{\mathrm{E}(x^2) - \mathrm{E}(x)\mathrm{E}(x)}$ \\
+= $\frac{\mathrm{Cov}(y, x)}{\mathrm{Var}(x)}$ \\\\
+Therefore, we can conclude that in the simple linear regression, the element $\beta_1$ of the MLE output vector can be rewritten as $\frac{\mathrm{Cov}(y,x)}{\mathrm{Var}(x)}$.
+}\\
+
+\end{document}
