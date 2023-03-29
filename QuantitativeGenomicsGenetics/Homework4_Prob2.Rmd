@@ -1,0 +1,373 @@
+---
+title: "Homework 4 - Problem 2"
+author: "Anni Liu (ali4006@med.cornell.edu)"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output:
+  pdf_document: default
+  html_document:
+    code_folding: show
+---
+
+
+# a
+```{r}
+pheno.data <- read.table("QG23 - hw4_phenotypes.txt", 
+                         sep = "\n", header = F, col.names = "scaled.height")
+
+nrow(pheno.data)
+```
+
+The number of samples `n` is `r nrow(pheno.data)`. 
+
+
+# b
+```{r}
+library(ggplot2)
+ggplot(data = pheno.data, 
+       mapping = aes(x = scaled.height)) + 
+  geom_histogram(bins = 30, fill = "#B31B1B") + 
+  theme_bw() +
+  labs(y = "Frequency", x = "Scaled height", title = "Distribution of scaled heights") + 
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+# c
+```{r}
+geno.data <- read.table("QG23 - hw4_genotypes.txt", sep = " ", header = F)
+names(geno.data) <- paste0("geno", 1:ncol(geno.data))
+
+c(ncol(geno.data), nrow(geno.data)/2)
+```
+
+The number of genotypes `N` is `r ncol(geno.data)` and the sample size `n` is `r nrow(geno.data)/2`.
+
+
+# d
+## First way: modify the genotype_coder function in the lab 7
+```{r}
+geno.recode <- function(geno.import, maf.lim, error.val = 3) {
+  
+  # Inputs: geno.col is a vector of genotype where each consecutive pair of two elements 
+  # in this vector represents one particular genotype for an individual;
+  # num.sample is the number of individuals;
+  # maf.lim is the threshold of minor allele frequency (MAF)
+  xa.convert <- function(geno.col, num.sample, maf.lim) {
+    
+    # Frequencies of alleles at this locus
+    geno.count <- table(geno.col)
+    
+    # If the MAF is less than the pre-set threshold OR this locus has less than 2 alleles
+    if (min(geno.count) / length(geno.col) <= maf.lim | length(geno.count) < 2) {
+      
+      # Return a vector of 3's, to be filtered out later
+      return(rep(error.val, num.sample))
+      
+    }
+    
+    # Otherwise, figure out which is the minor allele, and grab the first element 
+    # in case we end up with a tie
+    minor.allele <- names(geno.count[geno.count == min(geno.count)])
+    
+    # geno.col[seq(1, num.sample*2 - 1, 2)]: 1st allele in a genotype across individuals;
+    # geno.col[seq(2, num.sample*2, 2)]: 2nd allele in a genotype across individuals;
+    # The conditional gives a Boolean (T/F) but the vector operation (+) converts it to (1/0);
+    # For example, an individual with TT where T is the minor allele would have TRUE + TRUE = 2; 
+    # an individual with AT where T is the minor allele would have FALSE + TRUE = 1
+    xa <- (geno.col[seq(1, num.sample*2 - 1, 2)] == minor.allele) + 
+      (geno.col[seq(2, num.sample*2, 2)] == minor.allele)
+    # xa originally takes the value of 0, 1, 2; 
+    # now we rescale it so that it takes the value of -1, 0, or 1
+    xa <- xa - 1
+    
+    return(xa)
+  }
+  
+  # Apply the xa.convert function to each column of geno.import 
+  # with num.sample = nrow(geno.import)/2, and maf.limit = 0.05; 
+  # this returns a matrix of xa dummy variable coding for all genotypes;
+  # and the row number of this matrix is the number of individuals
+  xa.mat  <- apply(X = geno.import, MARGIN = 2, FUN = xa.convert, 
+                   num.sample = nrow(geno.import)/2, maf.lim = maf.lim)
+  
+  # Filter out any columns that show the error value 3
+  xa.mat <- xa.mat[, xa.mat[1, ] != error.val] 
+  # A complicated way: xa.mat <- xa.mat[, apply(xa.mat == 3, 2, sum) == 0]
+  
+  # Rescale xa.mat so that it takes the value of -1 or 1
+  xd.mat <- 1 - 2 * abs(xa.mat)
+  
+  # Return a list containing both the xa and xd dummy variable coding for our genotype data
+  return(list(xa.mat, xd.mat))
+}
+
+# Additional part: test the function xa.convert
+# Example 1
+# geno.import <- data.frame(genotype1 = c("T", "A", "A", "A"), 
+#                           genotype2 = c("T", "A", "A", "A"), 
+#                           genotype3 = c("T", "T", "T", "T"))
+# xa.mat  <- apply(X = geno.import, MARGIN = 2, FUN = xa.convert, 
+#                  num.sample = nrow(geno.import)/2, maf.lim = 0.05)
+# xa.mat
+#      genotype1 genotype2 genotype3
+# [1,]         0         0         3
+# [2,]        -1        -1         3
+# xa.mat <- xa.mat[, apply(xa.mat == 3, 2, sum) == 0]
+# xa.mat
+#      genotype1 genotype2
+# [1,]         0         0
+# [2,]        -1        -1
+# Example 2
+# geno.import <- data.frame(genotype1 = sample(c("A", "C", "T", "G"), size = 100, replace = T), 
+#                           genotype2 = sample(c("A", "C", "T", "G"), size = 100, replace = T), 
+#                           genotype3 = c("A", rep("C", times = 99)))
+# xa.mat  <- apply(X = geno.import, MARGIN = 2, FUN = xa.convert,
+#                  num.sample = nrow(geno.import)/2, maf.lim = 0.05)
+# xa.mat <- xa.mat[, apply(xa.mat == 3, 2, sum) == 0]
+```
+
+
+## Second way: re-organize the genotype data to fit the input data format of the genotype_coder function in the lab 7
+```{r}
+# Load required libraries
+easypackages::libraries("tidyverse", "stringr") |> suppressPackageStartupMessages()
+
+# Load genotype data into R
+geno_import <- read.delim(file = "QG23 - hw4_genotypes.txt",
+                          header = F,
+                          sep = " ")
+
+# Split genotype table to get even numbered and odd numbered rows
+evenNumbRowsGenotypes <- geno_import[seq(2, nrow(geno_import), 2),]
+oddNumbRowsGenotypes <- geno_import[seq(1, nrow(geno_import), 2),]
+# oddNumbRowsGenotypes[1:10,1:6] 
+
+# Create a function to create alleles (2 bases) from genotypes
+transformGeno <- function(x, y) {
+  genoOut <- paste0(x, y)
+}
+
+# Make alleles per loci for each individual
+mGenotype <- mapply(transformGeno, oddNumbRowsGenotypes, evenNumbRowsGenotypes)
+
+# Rename columns as "genotypes"
+colnames(mGenotype) <- paste0("genotype", seq(ncol(mGenotype))) 
+# mGenotype[1:10,1:6] 
+
+analysisReady_genotype_df <- mGenotype %>% as.data.frame() %>% 
+  mutate(across(everything(), ~ str_split(.x, "", simplify = T))) %>% 
+  as.matrix() %>% as.data.frame()
+# dim(analysisReady_genotype_df) 
+# analysisReady_genotype_df[1:10, 1:6] 
+
+genotype_coder <- function(geno_import, maf_limit, error_value = 3) {
+  # This line stacks the two columns of the current SNP into one double long vector
+  geno_input = mapply(FUN = c, 
+                      geno_import[, seq(1, ncol(geno_import), 2)], 
+                      geno_import[, seq(2, ncol(geno_import), 2)])
+  
+  # Arguments: geno_col: the vector of alleles from the last line, numSamples: number of rows
+  xa_converter <- function(geno_col, numSamples, maf_limit) {
+    # What alleles are present at this locus?
+    geno_count <- table(geno_col)
+    # If the MAF is less than our limit OR this site has fewer than 2 alleles
+    if (min(geno_count) / length(geno_col) <= maf_limit |
+        length(geno_count) < 2) {
+      # Return a vector of 3's, to be filtered out later
+      return(rep(error_value, numSamples))
+    }
+    # Otherwise determine our minor allele
+    minor_allele <- names(geno_count[geno_count == min(geno_count)])
+    # geno_col[1:numSamples]: each individuals 1st genome
+    # geno_col[(numSamples+1):length(geno_col)]: each individuals 2nd genome
+    # the conditional results in a boolean (T/F) but the vector operation (+) converts it to (1/0)
+    # e.g., an individual with AA where A is the minor allele would have True + True = 2
+    xa <- (geno_col[1:numSamples] == minor_allele) + 
+      (geno_col[(numSamples + 1):length(geno_col)] == minor_allele)
+    # We want our dummy variable coding centered on 1 so take 0, 1 ,2 and minus 1
+    xa <- xa - 1
+    return(xa)
+  }
+  
+  # Take our input, apply our new xa_converter function to the input by column (2), 
+  # with numSamples = nrow(data), and maf_limit = maf_limit
+  xa_mat  <- apply(geno_input, 2, xa_converter, 
+                   numSamples = nrow(geno_import), maf_limit = maf_limit)
+  
+  # Filter out any columns that have the set error value 3
+  xa_mat <- xa_mat[, xa_mat[1, ] != error_value]
+  
+  # To get our Xd dominance dummy variable coding, use the algebra below
+  xd_mat <- 1 - 2 * abs(xa_mat)
+  
+  # Return both the Xa and Xd dummy variable coding for our input matrix/data
+  return(list(xa_mat, xd_mat))
+}
+```
+
+
+## Run the function
+```{r}
+## Generate two matrices using the first way
+xa <- geno.recode(geno.import = geno.data, maf.lim = 0, error.val = 3)[[1]]
+xd <- geno.recode(geno.import = geno.data, maf.lim = 0, error.val = 3)[[2]]
+
+## Generate two matrices using the second way
+codes <- genotype_coder(geno_import = analysisReady_genotype_df, maf_limit = 0)
+xa_mat <- codes[[1]]
+xd_mat <- codes[[2]]
+
+## Check if the matrix results of converting each genotype into X_a and into X_d 
+# are consistent between two ways
+# sum(xa != xa_mat)
+# sum(xd != xd_mat)
+```
+
+
+# e
+## First way: create a function on my own
+```{r}
+library(MASS)
+mle.f.p.calculator <- function(pheno.input, xa.input, xd.input){
+    num.sample <- length(xa.input)
+    
+    # Prepare the matrix X
+    X.mat <- cbind(1, xa.input,xd.input)
+    
+    # Estimate the coefficients
+    MLE.beta <- ginv(t(X.mat) %*% X.mat) %*% t(X.mat) %*% pheno.input
+    
+    # Estimate the y
+    y.hat <- X.mat %*% MLE.beta
+    
+    # Estimate SSM, SSE, MSM, MSE, and F-statistic
+    SSM <- sum((y.hat - mean(pheno.input))^2)
+    SSE <- sum((pheno.input - y.hat)^2)
+    df.M <- ncol(X.mat) - 1
+    df.E <- num.sample - ncol(X.mat) 
+    MSM <- SSM / df.M
+    MSE <- SSE / df.E
+    F.statistic <- MSM / MSE
+    
+    # Estimate the p-value
+    p.val <- pf(F.statistic, df.M, df.E, lower.tail = F)
+    
+    return(list(coef = MLE.beta, F.stat = F.statistic, P.stat = p.val))
+}
+
+# Estimate the MLE coefficients, F statistic, abd p value for each genotype
+outcome.list <- vector(mode = "list", length = ncol(xa)) 
+for(i in 1:ncol(xa)){
+  outcome.list[[i]] <- mle.f.p.calculator(pheno.input = pheno.data[, 1], 
+                                          xa.input = xa[, i], 
+                                          xd.input = xd[, i])
+  names(outcome.list)[i] = colnames(xa)[i]
+}
+```
+
+
+## Second way: use the `GWAS_noCovar()` from the Lab 8
+```{r}
+library(data.table) |> suppressPackageStartupMessages()
+GWAS_noCovar <- function(xa_input, xd_input, pheno_input){
+  # (1) Estimate the parameter values (effect sizes) of our x variables given our X & Y matrix
+  n_samples <- length(xa_input)  ## no. of samples
+  X_mx <- cbind(1, xa_input, xd_input)  ## create the matrix of dependent variables (X matrix)
+  MLE_beta <- ginv(t(X_mx) %*% X_mx) %*% t(X_mx) %*% pheno_input  
+  ## Calculate regression betas (effect sizes)
+  
+  # (2.a) Estimate phenotypes (y_hat) given X effect sizes... 
+  # SO THAT we can see how good our model fits the real data (phenotypes)!
+  y_hat <- X_mx %*% MLE_beta
+  # (2.b) See how good our model fits the real data (phenotypes)!
+  SSM <- sum((y_hat - mean(pheno_input))^2) # How far is each predicted y from the sample mean y?
+  SSE <- sum((pheno_input - y_hat)^2)       # How far is each predicted y from the true y?
+  df_M <- ncol(X_mx) - 1  ## no. of betas in full model - no. of betas in intercept-only model
+  df_E <- n_samples - ncol(X_mx)  ## no. of samples - no. of betas in the full model
+  MSM <- SSM / df_M  ## Mean squares of the model
+  MSE <- SSE / df_E  ## Mean squares of the error
+  # (2.c) Quantify how well it fits the data with a test statistic
+  Fstatistic <- MSM / MSE
+  # (2.d) Determine how likely we are to see that test statistic 
+    # Of course this is GIVEN a null model, in this case that there is NO genetic effect
+  pval <- pf(Fstatistic, df_M, df_E,lower.tail = FALSE)
+  return(data.table(f_statistic = Fstatistic, p = pval, model = 'No Covariate'))  
+  ## data.table is just like a data.frame
+}
+
+results <- lapply(1:ncol(xa_mat), 
+                  function(column.counter) {
+                    GWAS_noCovar(xa_input = xa_mat[, column.counter],
+                                 xd_input = xd_mat[, column.counter],
+                                 pheno_input = pheno.data$scaled.height)
+}) %>% 
+  rbindlist() %>% 
+  mutate(index = 1:ncol(xa_mat))
+
+
+## Check if two ways give the same F statistics and p values
+# sum(unlist(lapply(outcome.list, function(x) x["F.stat"])) != results$f_statistic)
+# sum(unlist(lapply(outcome.list, function(x) x["P.stat"])) != results$p)
+```
+
+
+# f - Manhattan plot
+```{r}
+p.vec <- vapply(names(outcome.list), 
+                function (geno) outcome.list[[geno]][["P.stat"]], 
+                FUN.VALUE = double(1))
+# FUN.VALUE: NULL < raw < logical < integer < double < complex < character < list < expression
+Bonferroni.alpha <- 0.05/length(p.vec)
+plot.data <- data.frame(idx = 1:length(p.vec), p.val = p.vec)
+ggplot(data = plot.data, mapping = aes(x = idx, y = -log10(p.val))) + 
+  geom_point() + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#B31B1B", lty = 2) +
+  labs(x = "Genotype index", y = expression(-log[10]~p), 
+       title = "Manhattan plot without covariates") + 
+  theme_bw() + 
+  theme(plot.title = element_text(face = "bold", size = 12, hjust = 0.5))
+```
+
+
+# g - QQ plot
+```{r}
+observed.p <- sort(p.vec)
+expected.p <- qunif(seq(0, 1, length.out = length(observed.p) + 2), min = 0, max = 1)  
+## Generate expected values. Note that we are using length+2
+expected.p <- expected.p[expected.p != 0 & expected.p != 1]  
+## Remove the two extra values since they are 0 and 1
+
+p.df = data.frame(observed = -log10(observed.p),
+                  expected = -log10(expected.p))
+
+ggplot(p.df, aes(x = expected, y = observed)) +
+  geom_point() + 
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot",
+       subtitle = "No covariate") + 
+  theme_bw() + 
+  theme(plot.title = element_text(face = "bold", size = 12, hjust = 0.5))
+```
+
+
+# h
+I think we have "good" model fit in this case, because most of the p-values observed follow a uniform distribution (i.e. they are not in LD with a causal polymorphism so the null hypothesis is correct!) but the few that are in LD with a causal polymorphism will produce significant p-values (extremely low = extremely high -log(p-values)) and these are in the "tail." 
+
+
+# i
+```{r}
+Bonferroni.alpha <- 0.05/length(p.vec)
+Bonferroni.alpha
+num.sig.geno <- sum(p.vec < Bonferroni.alpha)
+num.sig.geno
+# Equivalent
+num.sig.geno2 <- sum(p.adjust(p.vec, method = "bonferroni") < 0.05)
+num.sig.geno2
+```
+
+The Bonferroni-corrected cut-off for p values is `r Bonferroni.alpha`. There are a total of `r num.sig.geno` genotypes for which I reject the null hypothesis.
+
+# j
+These significant genotypes may indicate one or more than one causal genotypes. Rejecting the null hypothesis only helps locate a position in the genome that contains the causal genotype(s), which yet does not determine the exact number of causal genotypes. If the linkage disequilibrium spans further in the same genomic region, there can be more than one causal polymorphisms.
