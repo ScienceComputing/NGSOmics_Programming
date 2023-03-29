@@ -12,7 +12,7 @@ geno.recode <- function(geno.import, maf.lim, error.val = 3) {
     # Frequencies of alleles at this locus
     geno.count <- table(geno.col)
     
-    # If the MAF is less than the pre-set threshold OR this locus has less than 2 alleles
+    # If the MAF is less than the pre-set threshold OR this locus has less than 2 alleles (e.g., this site is mono-allelic (has only 1 allele))
     if (min(geno.count) / length(geno.col) <= maf.lim | length(geno.count) < 2) {
       
       # Return a vector of 3's, to be filtered out later
