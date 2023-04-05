@@ -1,3 +1,8 @@
+# Intro to Kyoto Encyclopedia of Genes and Genomes (KEGG): 
+## KEGG is a collection of manually drawn pathways, which display molecular interaction and reaction networks. 
+## Seven broad categories can be used to classify the diverse biochemical processes encompassed by KEGG pathways.
+## Metabolism; Genetic information processing; Environmental information processing; Cellular processes; Organismal systems; Human diseases; Drug development.
+
 # BiocManager::install("KEGGREST")
 
 library(KEGGREST)
