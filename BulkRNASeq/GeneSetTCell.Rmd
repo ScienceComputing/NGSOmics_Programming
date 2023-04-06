@@ -78,8 +78,11 @@ head(mm_H)
 # *Test gene set enrichment
 * First method - functional enrichment: test any association of our gene set with our group of differentially expressed genes 
 * Second method - Gene Set Enrichment Analysis (GSEA): test any association of our gene set with the `ranking` of all our genes [not merely differentially expressed genes] 
-* Why GSEA?
-* To study gene expression profiles, researchers commonly identify interesting genes that show different levels of expression. The functional enrichment analysis method focuses on these differentially expressed genes, but it may not work well in cases where the difference in expression levels is small but coordinated among related genes. To overcome this limitation, GSEA can be used, which allows for the use of all genes and aggregates the per gene statistics across genes within a gene set to detect small but consistent changes in gene sets. This is important because small but coordinated changes in a group of genes are likely to be relevant to many phenotypic differences.
+  + Why GSEA?
+  + To study gene expression profiles, researchers commonly identify interesting genes that show different levels of expression. 
+  + The functional enrichment analysis method focuses on these differentially expressed genes, but it may not work well in cases where the difference in expression levels is small but coordinated among related genes. 
+  + To overcome this limitation, GSEA can be used, which allows for the use of all genes and aggregates the per gene statistics across genes within a gene set to detect small but consistent changes in gene sets. 
+  + This is important because small but coordinated changes in a group of genes are likely to be relevant to many phenotypic differences.
 
 
 # Functional enrichment
