@@ -150,3 +150,62 @@ myParam <- ScanBamParam(flag = flags,
 # qname: reads name; mapq: quality of alignment; isize: insert size of our fragment
 myParam
 ```
+
+
+## Read properly paired reads
+```{r}
+# Global view of the 2 reads, containing the seqnames, strand, ranges of 2 reads
+atacReads <- readGAlignmentPairs(sortedBAM, param = myParam)
+class(atacReads)
+atacReads[1:2, ]
+
+# Gain information on the first or second read, containing the seqnames, strand, cigar, qwidth, start, end, width, qname, mapq, isize
+read1 <- first(atacReads)
+read2 <- second(atacReads)
+read2[1, ]
+```
+
+
+## Retrieve MapQ scores
+```{r}
+# Do our reads have the high-quality mapping?
+read1MapQ <- mcols(read1)$mapq
+read2MapQ <- mcols(read2)$mapq
+read1MapQ[1:2]
+```
+
+
+## Estimate the MapQ score frequency
+```{r}
+read1MapQFreqs <- table(read1MapQ)
+read2MapQFreqs <- table(read2MapQ)
+```
+
+
+## Plot MapQ scores
+```{r}
+library(ggplot2)
+toPlot <- data.frame(MapQ = c(names(read1MapQFreqs), names(read2MapQFreqs)),
+                     Frequency = c(read1MapQFreqs, read2MapQFreqs),
+                     Read = c(rep("Read1", length(read1MapQFreqs)), 
+                              rep("Read2", length(read2MapQFreqs))))
+toPlot$MapQ <- factor(toPlot$MapQ, 
+                      levels = unique(sort(as.numeric(toPlot$MapQ))))
+ggplot(toPlot, mapping = aes(x = MapQ, y = Frequency, fill = MapQ)) + 
+  geom_bar(stat = "identity") + 
+  facet_grid(~Read)
+```
+
+
+## Retrieve insert sizes 
+```{r}
+insertSizes <- elementMetadata(read1)$isize |> abs() # Or use the mcols to retrieve the insert size
+head(insertSizes)
+```
+
+
+## Plot insert size
+```{r}
+fragLenSizes <- table(insertSizes)
+fragLenSizes[1:5 ]
+```
