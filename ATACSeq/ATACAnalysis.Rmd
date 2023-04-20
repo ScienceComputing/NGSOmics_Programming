@@ -223,3 +223,44 @@ fragLenPlot + scale_y_continuous(trans = "log2") +
   geom_vline(xintercept = c(315, 437),colour="darkblue") +
   geom_vline(xintercept = c(100), colour = "darkgreen") + theme_bw()
 ```
+
+
+## Subset ATACseq reads by insert sizes
+```{r}
+atacReads_NucFree <- atacReads[insertSizes < 100, ]
+atacReads_MonoNuc <- atacReads[insertSizes > 180 & insertSizes < 240, ]
+atacReads_diNuc <- atacReads[insertSizes > 315 & insertSizes < 437, ]
+```
+
+
+## Save the subsetted ATACseq reads as BMA files
+```{r}
+nucFreeRegionBam <- gsub("\\.bam", "_nucFreeRegions\\.bam", sortedBAM)
+monoNucBam <- gsub("\\.bam", "_monoNuc\\.bam", sortedBAM)
+diNucBam <- gsub("\\.bam", "_diNuc\\.bam", sortedBAM)
+
+library(rtracklayer)
+export(object = atacReads_NucFree, con = nucFreeRegionBam, format = "bam") # Save the object atacReads_NucFree with the filename in `nucFreeRegionBam`
+export(object = atacReads_MonoNuc, con = monoNucBam, format = "bam")
+export(object = atacReads_diNuc, con = diNucBam, format = "bam")
+```
+
+
+## Reconstruct the fragment using `GRanges`
+```{r}
+# Show the GAlignmentPairs object with 1 pair
+atacReads[1, ] 
+
+# Show the GRange object with 1 range: collapse read 1 and read2 into one long read
+atacFragments <- granges(atacReads)
+atacFragments[1, ] 
+
+# Identify the non-redundant fraction of the full-length fragments 
+
+# duplicated() returns a logical vector indicating which elements (rows) are duplicates.
+duplicatedFragments <- sum(duplicated(atacFragments))
+totalFragments <- length(atacFragments)
+duplicateRate <- duplicatedFragments/totalFragments
+nonRedundantFraction <- 1 - duplicateRate
+nonRedundantFraction # NRF
+```
