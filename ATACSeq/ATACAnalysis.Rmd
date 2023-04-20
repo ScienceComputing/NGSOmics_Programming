@@ -256,9 +256,7 @@ atacFragments <- granges(atacReads)
 atacFragments[1, ] 
 
 # Identify the non-redundant fraction of the full-length fragments 
-
-# duplicated() returns a logical vector indicating which elements (rows) are duplicates.
-duplicatedFragments <- sum(duplicated(atacFragments))
+duplicatedFragments <- sum(duplicated(atacFragments)) # duplicated() returns a logical vector indicating which elements (rows) are duplicates
 totalFragments <- length(atacFragments)
 duplicateRate <- duplicatedFragments/totalFragments
 nonRedundantFraction <- 1 - duplicateRate
