@@ -206,6 +206,20 @@ head(insertSizes)
 
 ## Plot insert size
 ```{r}
+library(ggplot2)
 fragLenSizes <- table(insertSizes)
 fragLenSizes[1:5 ]
+toPlot <- data.frame(InsertSize = as.numeric(names(fragLenSizes)),
+                     Count = as.numeric(fragLenSizes))
+fragLenPlot <- ggplot(toPlot,aes(x = InsertSize, y = Count)) + geom_line()
+fragLenPlot + theme_bw() 
+
+# Apply the log2 transformation to the counts to clarify the nucleosome patterning 
+fragLenPlot + scale_y_continuous(trans = "log2") + theme_bw()
+
+# Refine the plot
+fragLenPlot + scale_y_continuous(trans = "log2") + 
+  geom_vline(xintercept = c(180, 247),colour = "red") + 
+  geom_vline(xintercept = c(315, 437),colour="darkblue") +
+  geom_vline(xintercept = c(100), colour = "darkgreen") + theme_bw()
 ```
