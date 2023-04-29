@@ -1,0 +1,157 @@
+---
+title: "ATAC-Seq Data Analysis with Human Data - Perform post-alignment processing"
+author: "Anni Liu"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: 
+  html_document:
+    code_folding: show
+---
+
+```{r, shorcut, include=FALSE}
+## RStudio keyboard shortcut
+# Cursor at the beginning of a command line: Ctrl+A
+# Cursor at the end of a command line: Ctrl+E
+# Clear all the code from your console: Ctrl+L
+# Create a pipe operator %>%: Ctrl+Shift+M (Windows) or Cmd+Shift+M (Mac)
+# Create an assignment operator <-: Alt+- (Windows) or Option+-(Mac) 
+# Knit a document (knitr): Ctrl+Shift+K (Windows) or Cmd+Shift+K (Mac)
+# Comment or uncomment current selection: Ctrl+Shift+C (Windows) or Cmd+Shift+C (Mac)
+```
+
+
+# Tutorial
+# Perform post-alignment processing
+## Filter properly paired reads
+```{r}
+library(GenomicAlignments)
+flags <- scanBamFlag(isProperPair = T)
+
+myParam <- ScanBamParam(flag = flags,
+                        what = c("qname", "mapq", "isize"),
+                        which = GRanges("chr20", IRanges(1, 63025520))) # 63025520: length of chromosome 20
+# qname: reads name; mapq: quality of alignment; isize: insert size of our fragment
+myParam
+```
+
+
+## Read properly paired reads
+```{r}
+# Global view of the 2 reads, containing the seqnames, strand, ranges of 2 reads
+atacReads <- readGAlignmentPairs(sortedBAM, param = myParam)
+class(atacReads)
+atacReads[1:2, ]
+
+# Gain information on the first or second read, containing the seqnames, strand, cigar, qwidth, start, end, width, qname, mapq, isize
+read1 <- first(atacReads)
+read2 <- second(atacReads)
+read2[1, ]
+```
+
+
+## Retrieve MapQ scores
+```{r}
+# Do our reads have the high-quality mapping?
+read1MapQ <- mcols(read1)$mapq
+read2MapQ <- mcols(read2)$mapq
+read1MapQ[1:2]
+```
+
+
+## Estimate the MapQ score frequency
+```{r}
+read1MapQFreqs <- table(read1MapQ)
+read2MapQFreqs <- table(read2MapQ)
+```
+
+
+## Plot MapQ scores
+```{r}
+library(ggplot2)
+toPlot <- data.frame(MapQ = c(names(read1MapQFreqs), names(read2MapQFreqs)),
+                     Frequency = c(read1MapQFreqs, read2MapQFreqs),
+                     Read = c(rep("Read1", length(read1MapQFreqs)), 
+                              rep("Read2", length(read2MapQFreqs))))
+toPlot$MapQ <- factor(toPlot$MapQ, 
+                      levels = unique(sort(as.numeric(toPlot$MapQ))))
+ggplot(toPlot, mapping = aes(x = MapQ, y = Frequency, fill = MapQ)) + 
+  geom_bar(stat = "identity") + 
+  facet_grid(~Read)
+```
+
+
+## Retrieve insert sizes 
+```{r}
+insertSizes <- elementMetadata(read1)$isize |> abs() # Or use the mcols to retrieve the insert size
+head(insertSizes)
+```
+
+
+## Plot insert size
+```{r}
+library(ggplot2)
+fragLenSizes <- table(insertSizes)
+fragLenSizes[1:5 ]
+toPlot <- data.frame(InsertSize = as.numeric(names(fragLenSizes)),
+                     Count = as.numeric(fragLenSizes))
+fragLenPlot <- ggplot(toPlot,aes(x = InsertSize, y = Count)) + geom_line()
+fragLenPlot + theme_bw() 
+
+# Apply the log2 transformation to the counts to clarify the nucleosome patterning 
+fragLenPlot + scale_y_continuous(trans = "log2") + theme_bw()
+
+# Refine the plot
+fragLenPlot + scale_y_continuous(trans = "log2") + 
+  geom_vline(xintercept = c(180, 247),colour = "red") + 
+  geom_vline(xintercept = c(315, 437),colour="darkblue") +
+  geom_vline(xintercept = c(100), colour = "darkgreen") + theme_bw()
+```
+
+
+## Subset ATACseq reads by insert sizes
+```{r}
+atacReads_NucFree <- atacReads[insertSizes < 100, ]
+atacReads_MonoNuc <- atacReads[insertSizes > 180 & insertSizes < 240, ]
+atacReads_diNuc <- atacReads[insertSizes > 315 & insertSizes < 437, ]
+```
+
+
+## Save the subsetted ATACseq reads as BMA files
+```{r}
+nucFreeRegionBam <- gsub("\\.bam", "_nucFreeRegions\\.bam", sortedBAM)
+monoNucBam <- gsub("\\.bam", "_monoNuc\\.bam", sortedBAM)
+diNucBam <- gsub("\\.bam", "_diNuc\\.bam", sortedBAM)
+
+library(rtracklayer)
+export(object = atacReads_NucFree, con = nucFreeRegionBam, format = "bam") # Save the object atacReads_NucFree with the filename in `nucFreeRegionBam`
+export(object = atacReads_MonoNuc, con = monoNucBam, format = "bam")
+export(object = atacReads_diNuc, con = diNucBam, format = "bam")
+```
+
+
+## Reconstruct the fragment using `granges`
+```{r}
+# Show the GAlignmentPairs object with 1 pair
+atacReads[1, ] 
+
+# Show the GRange object with 1 range: collapse read 1 and read2 into one long read
+atacFragments <- granges(atacReads)
+atacFragments[1, ] 
+
+# Identify the non-redundant fraction of the full-length fragments 
+
+# duplicated() returns a logical vector indicating which elements (rows) are duplicates.
+duplicatedFragments <- sum(duplicated(atacFragments))
+totalFragments <- length(atacFragments)
+duplicateRate <- duplicatedFragments/totalFragments
+nonRedundantFraction <- 1 - duplicateRate
+nonRedundantFraction # NRF
+```
+
+
+## Construct an open region bigWig
+```{r}
+openRegionRPMBigWig <- gsub("\\.bam","_openRegionRPM\\.bw",sortedBAM)
+myCoverage <- coverage(atacFragments,
+                       weight = (10^6/length(atacFragments)))
+export.bw(myCoverage,openRegionRPMBigWig)
+```
