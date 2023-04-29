@@ -22,7 +22,7 @@ This repository holds various coding practice, learning notes, and assignment so
   
   - [Align the FASTQ files](ATACSeq/AlignFASTQ.Rmd)
   - [Perform post-alignment processing](ATACSeq/PostAlignment.Rmd)
-
+  - [Perform ATACseq quality control using the `{ATACseqQC}`](ATACSeq/ATACseqQC.Rmd)
 <hr>
 
 **[Multimodal data integration](Note_MultimodalDataIntegration.md)**
