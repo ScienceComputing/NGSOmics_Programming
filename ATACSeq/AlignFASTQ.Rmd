@@ -1,0 +1,138 @@
+---
+title: "ATAC-Seq Data Analysis with Human Data - Align the FASTQ files"
+author: "Anni Liu"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: 
+  html_document:
+    code_folding: show
+---
+
+```{r, shorcut, include=FALSE}
+## RStudio keyboard shortcut
+# Cursor at the beginning of a command line: Ctrl+A
+# Cursor at the end of a command line: Ctrl+E
+# Clear all the code from your console: Ctrl+L
+# Create a pipe operator %>%: Ctrl+Shift+M (Windows) or Cmd+Shift+M (Mac)
+# Create an assignment operator <-: Alt+- (Windows) or Option+-(Mac) 
+# Knit a document (knitr): Ctrl+Shift+K (Windows) or Cmd+Shift+K (Mac)
+# Comment or uncomment current selection: Ctrl+Shift+C (Windows) or Cmd+Shift+C (Mac)
+```
+
+
+# Tutorial
+# Align the FASTQ files
+## Create a reference genome
+```{r}
+library(BSgenome.Hsapiens.UCSC.hg19)
+mainChromosomes <- paste0("chr", c(1:21,"X","Y","M"))
+mainChrSeq <- lapply(mainChromosomes,
+                     function(x) BSgenome.Hsapiens.UCSC.hg19[[x]])
+names(mainChrSeq) <- mainChromosomes
+mainChrSeqSet <- DNAStringSet(mainChrSeq)
+Biostrings::writeXStringSet(x = mainChrSeqSet, 
+                            filepath = "BSgenome.Hsapiens.UCSC.hg19.mainChrs.fa")
+```
+
+
+## Build the index
+```{r}
+library(Rsubread)
+buildindex(basename = "BSgenome.Hsapiens.UCSC.hg19.mainChrs",
+           reference = "BSgenome.Hsapiens.UCSC.hg19.mainChrs.fa",
+           indexSplit = TRUE,
+           memory = 1000)
+
+# indexSplit: logical indicating whether the index can be split into multiple blocks. The block size is determined by the value of memory. FALSE by default (ie. a single-block index is generated).
+# memory: a numeric value specifying the amount of memory (in megabytes) used for storing the index during read mapping. 8000 MB by default. Note that this option is ignored when indexSplit is FALSE.
+```
+
+
+## Align **paired-end** sequence reads from Greenleaf
+```{r}
+library(ShortRead)
+read1 <- readFastq(dirPath = "./data/ATACSample_r1.fastq.gz")
+read2 <- readFastq(dirPath = "./data/ATACSample_r2.fastq.gz")
+id(read1)[1]
+# 59 HISEQ:236:HA03EADXX:1:1101:1147:2237 1:Y:0:TAAGGCGACTCTCTAT
+id(read2)[1]
+# 59 HISEQ:236:HA03EADXX:1:1101:1147:2237 2:Y:0:TAAGGCGACTCTCTAT
+```
+
+
+## Align sequence reads using `Rsubread`
+```{r}
+library(Rsubread)
+align(index = "BSgenome.Hsapiens.UCSC.hg19.mainChrs",
+      readfile1 = read1, readfile2 = read2,
+      output_file = "ATAC_50K_2.bam",
+      nthreads = 2, type = 1,
+      unique = TRUE, maxFragLength = 2000)
+# type: a character string or an integer giving the type of sequencing data. Possible values include rna (or 0; RNA-seq data) and dna (or 1; genomic DNA-seq data such as WGS, WES, ChIP-seq data etc.). Character strings are case insensitive.
+```
+
+
+## Alternative: align sequence reads using `Rbowtie2`
+```{r}
+library(Rbowtie2)
+bowtie2_build(references = "BSgenome.Hsapiens.UCSC.hg19.mainChrs.fa",
+              bt2Index = "BSgenome.Hsapiens.UCSC.hg19.mainChrs_bowtie2")
+```
+
+
+## Decompress FASTQ files
+```{r}
+gunzip("./ATAC_Data/ATAC_FQs/SRR891269_1.fastq.gz")
+gunzip("./ATAC_Data/ATAC_FQs/SRR891269_2.fastq.gz")
+```
+
+
+## Create Rbowtie2 index
+```{r}
+library(Rsamtools)
+bowtie2(bt2Index = "BSgenome.Hsapiens.UCSC.hg19.mainChrs_bowtie2",
+        samOutput = "ATAC_50K_2_bowtie2.sam",
+        seq1 = "./ATAC_Data/ATAC_FQs/SRR891269_1.fastq",
+        seq1 = "./ATAC_Data/ATAC_FQs/SRR891269_2.fastq"
+        )
+asBam("ATAC_50K_2_bowtie2.sam") # Convert the output SAM file to a more useable BAM file
+# To save the disk space, we now delete the FASTQ and SAM files, keeping the BAM file
+```
+
+
+## Sort and index
+```{r}
+library(Rsamtools)
+sortedBAM <- file.path(dirname(outBAM),
+                       paste0("Sorted_", basename(outBAM))) # Construct the path to a file from components 
+
+sortBam(outBAM, gsub("\\.bam", "", basename(sortedBAM)))
+indexBam(sortedBAM)
+```
+
+
+## Check the distribution of mapped reads across chromosomes
+```{r}
+library(Rsamtools)
+mappedReads <- idxstatsBam(sortedBAM)
+save(mappedReads, file = "data/pres1_idxstats.RData")
+
+load("data/pres1_idxstats.RData")
+```
+
+```{r data.in.package}
+file.path <- system.file("extdata", "ex1.bam", package = "Rsamtools", mustWork = T)
+indexBam(file.path)
+idxstatsBam(file.path)
+# seqnames: chromosome names; mapped: how many reads are mapped on every chromosome
+```
+
+```{r visual}
+library(ggplot2)
+load("data/pres1_idxstats.RData")
+ggplot(data = mappedReads, 
+       mapping = aes(x = seqnames, y = mapped, fill = seqnames))+
+  geom_bar(stat = "identity") + 
+  geom_text(mapping = aes(label = mapped), vjust = 0, color = "black", size = 3.5)+
+  coord_flip()
+# There are lots of mitochondrial reads
+```
