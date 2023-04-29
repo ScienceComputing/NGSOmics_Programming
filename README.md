@@ -21,6 +21,7 @@ This repository holds various coding practice, learning notes, and assignment so
 **Analyze ATAC-Seq data**
   
   - [Align the FASTQ files](ATACSeq/AlignFASTQ.Rmd)
+  - [Perform post-alignment processing](ATACSeq/PostAlignment.Rmd)
 
 <hr>
 
