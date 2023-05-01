@@ -24,8 +24,8 @@ output:
 ```{r}
 easypackages::libraries("GenomicRanges", "Rsamtools", "rtracklayer", "GenomicAlignments", "ShortRead", "ggplot2")
 
-r1 <- FastqSampler("data/ENCFF175VOD.fastq.gz", n = 10000)
-r2 <- FastqSampler("data/ENCFF447BGX.fastq.gz", n = 10000)
+r1 <- FastqSampler("data/ENCFF175VOD.fastq", n = 10000)
+r2 <- FastqSampler("data/ENCFF447BGX.fastq", n = 10000)
 # FastqSampler() from {ShortRead}; FastqSampler() draws a subsample from a fastq file. yield() is the method used to extract the sample from the FastqSampler instance
 
 set.seed(888)
