@@ -1,0 +1,46 @@
+---
+title: "ATAC-Seq Data Analysis with T-Regulatory Cells"
+author: "Anni Liu"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: 
+  html_document:
+    code_folding: show
+---
+
+```{r, shorcut, include=FALSE}
+## RStudio keyboard shortcut
+# Cursor at the beginning of a command line: Ctrl+A
+# Cursor at the end of a command line: Ctrl+E
+# Clear all the code from your console: Ctrl+L
+# Create a pipe operator %>%: Ctrl+Shift+M (Windows) or Cmd+Shift+M (Mac)
+# Create an assignment operator <-: Alt+- (Windows) or Option+-(Mac) 
+# Knit a document (knitr): Ctrl+Shift+K (Windows) or Cmd+Shift+K (Mac)
+# Comment or uncomment current selection: Ctrl+Shift+C (Windows) or Cmd+Shift+C (Mac)
+```
+
+# Exercise
+# Preprocess ATAC-seq data
+## Read in a random 10000 reads from read 1 and read 2
+```{r}
+easypackages::libraries("GenomicRanges", "Rsamtools", "rtracklayer", "GenomicAlignments", "ShortRead", "ggplot2")
+
+r1 <- FastqSampler("data/ENCFF175VOD.fastq.gz", n = 10000)
+r2 <- FastqSampler("data/ENCFF447BGX.fastq.gz", n = 10000)
+# FastqSampler() from {ShortRead}; FastqSampler() draws a subsample from a fastq file. yield() is the method used to extract the sample from the FastqSampler instance
+
+set.seed(888)
+p1 <- yield(r1)
+set.seed(888)
+p2 <- yield(r2)
+
+all.quality <- quality(p1)
+# quality(x) from {Biostrings}: The quality of the strings.
+quality.boxplot <- as(all.quality, "matrix")
+colnames(quality.boxplot) <- paste0("Cycle", 1:ncol(quality.boxplot))
+boxplot(quality.boxplot, main = "Read 1")
+
+all.quality <- quality(p2)
+quality.boxplot <- as(all.quality, "matrix")
+colnames(quality.boxplot) <- paste0("Cycle", 1:ncol(quality.boxplot))
+boxplot(quality.boxplot, main = "Read 2")
+```
