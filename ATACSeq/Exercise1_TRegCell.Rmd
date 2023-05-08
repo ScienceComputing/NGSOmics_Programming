@@ -44,3 +44,89 @@ quality.boxplot <- as(all.quality, "matrix")
 colnames(quality.boxplot) <- paste0("Cycle", 1:ncol(quality.boxplot))
 boxplot(quality.boxplot, main = "Read 2")
 ```
+
+## Create a line plot of Base frequencies across cycles for read 1 and read 2
+```{r}
+atgc.fr.by.cycle <- alphabetByCycle(sread(p1))
+# sread(p1): returns a DNAStringSet object of length 10000
+# alphabetByCycle: returns the number of occurrences of each nucleotide (e.g., A, T, G, C) across all cycles for the read 1
+class(atgc.fr.by.cycle)
+# [1] "matrix" "array" 
+
+atgc.fr.by.cycle.filtered <-  atgc.fr.by.cycle[c("A", "G", "C", "T", "N"), ]
+
+a.fr.by.cycle.df <-
+  data.frame(Base = "A",
+             Freq = atgc.fr.by.cycle.filtered["A", ],
+             Cycle = 1:max(width(sread(p1))))
+
+c.fr.by.cycle.df <-
+  data.frame(Base = "C",
+             Freq = atgc.fr.by.cycle.filtered["C", ],
+             Cycle = 1:max(width(sread(p1))))
+
+t.fr.by.cycle.df <-
+  data.frame(Base = "T",
+             Freq = atgc.fr.by.cycle.filtered["T", ],
+             Cycle = 1:max(width(sread(p1))))
+
+g.fr.by.cycle.df <-
+  data.frame(Base = "G",
+             Freq = atgc.fr.by.cycle.filtered["G", ],
+             Cycle = 1:max(width(sread(p1))))
+
+n.fr.by.cycle.df <-
+  data.frame(Base = "N",
+             Freq = atgc.fr.by.cycle.filtered["N", ],
+             Cycle = 1:max(width(sread(p1))))
+
+read1.df <-
+  do.call(rbind, lapply(paste0(c("a", "c", "t", "g", "n"), ".fr.by.cycle.df"), get))
+
+## Not write:  
+# myFrameRead1 <- rbind(a.fr.by.cycle.df, c.fr.by.cycle.df, t.fr.by.cycle.df,
+#                       g.fr.by.cycle.df, n.fr.by.cycle.df)
+
+read1.df$Read <- "Read1"
+
+atgc.fr.by.cycle <- alphabetByCycle(sread(p2))
+atgc.fr.by.cycle.filtered <-  atgc.fr.by.cycle[c("A", "G", "C", "T", "N"), ]
+
+a.fr.by.cycle.df <-
+  data.frame(Base = "A",
+             Freq = atgc.fr.by.cycle.filtered["A", ],
+             Cycle = 1:max(width(sread(p2))))
+
+c.fr.by.cycle.df <-
+  data.frame(Base = "C",
+             Freq = atgc.fr.by.cycle.filtered["C", ],
+             Cycle = 1:max(width(sread(p2))))
+
+t.fr.by.cycle.df <-
+  data.frame(Base = "T",
+             Freq = atgc.fr.by.cycle.filtered["T", ],
+             Cycle = 1:max(width(sread(p2))))
+
+g.fr.by.cycle.df <-
+  data.frame(Base = "G",
+             Freq = atgc.fr.by.cycle.filtered["G", ],
+             Cycle = 1:max(width(sread(p2))))
+
+n.fr.by.cycle.df <-
+  data.frame(Base = "N",
+             Freq = atgc.fr.by.cycle.filtered["N", ],
+             Cycle = 1:max(width(sread(p2))))
+
+read2.df <-
+  do.call(rbind, lapply(paste0(c("a", "c", "t", "g", "n"), ".fr.by.cycle.df"), get))
+
+read2.df$Read <- "Read2"
+
+all.df <- rbind(read1.df, read2.df)
+
+ggplot(data = all.df,
+       mapping = aes(x = Cycle, y = Freq, colour = Base)) + 
+  geom_line() +
+  theme_bw() + 
+  facet_grid(~ Read)
+```
