@@ -130,3 +130,46 @@ ggplot(data = all.df,
   theme_bw() + 
   facet_grid(~ Read)
 ```
+
+## Align the reads in hg38 genome and create sorted, indexed BAM file
+```{r}
+# https://genome.ucsc.edu/cgi-bin/hgGateway
+library(BSgenome.Hsapiens.UCSC.hg38)
+
+## Extract each chromosome's sequence
+chr.name <- paste0("chr", c(1:21, "X", "Y", "M"))
+#  [1] "chr1"  "chr2"  "chr3"  "chr4"  "chr5"  "chr6"  "chr7" 
+#  [8] "chr8"  "chr9"  "chr10" "chr11" "chr12" "chr13" "chr14"
+# [15] "chr15" "chr16" "chr17" "chr18" "chr19" "chr20" "chr21"
+# [22] "chrX"  "chrY"  "chrM" 
+main.chr.seq <- lapply(chr.name,
+                       function(x) BSgenome.Hsapiens.UCSC.hg38[[x]])
+names(main.chr.seq) <- chr.name
+
+## Write the DNAStringSet into a FASTA file
+main.chr.seq.set <- DNAStringSet(main.chr.seq)
+writeXStringSet(main.chr.seq.set,
+                "BSgenome.Hsapiens.UCSC.hg38.mainChrs.fa")
+
+library(Rsubread)
+buildindex(basename = "BSgenome.Hsapiens.UCSC.hg38.mainChrs",
+           reference = "BSgenome.Hsapiens.UCSC.hg38.mainChrs.fa", ## a FASTA or gzipped FASTA file containing the sequences of all chromosomes and contigs
+           indexSplit = TRUE,
+           memory = 5000)
+## An index needs to be built before read alignment can be performed. 
+## buildindex() function creates a hash table index for the reference genome, which can then be used by Subread and Subjunc aligners for read alignment.
+
+read1 <- "~/data/ENCFF175VOD.fastq.gz"
+read2 <- "~/data/ENCFF447BGX.fastq.gz"
+outBAM <- "TReg_ATAC.bam"
+
+align("BSgenome.Hsapiens.UCSC.hg38.mainChrs",
+      readfile1 = read1, readfile2 = read2,
+      output_file = outBAM,
+      nthreads = 2, type = 1,
+      unique = TRUE, maxFragLength = 2000)
+
+library(Rsamtools)
+sortBam(outBAM, "Sorted_TReg_ATAC")
+indexBam("Sorted_TReg_ATAC.bam")
+```
