@@ -173,3 +173,33 @@ library(Rsamtools)
 sortBam(outBAM, "Sorted_TReg_ATAC")
 indexBam("Sorted_TReg_ATAC.bam")
 ```
+
+## Using the BAM file retrieved from ENCODE, plot the fragment length distribution for reads chromosome 10 using ggplot2
+```{r}
+library(Rsamtools)
+library(ggplot2)
+library(GenomicAlignments)
+indexBam("data/ENCFF053CGD.bam")
+
+mapped.reads <- idxstatsBam("data/ENCFF053CGD.bam")
+my.param <- ScanBamParam(flag = scanBamFlag(isProperPair = TRUE),
+                         what = c("qname", "mapq", "isize"),
+                         which = GRanges("chr10", IRanges(1, 130694993)))
+# 130694993: length of chromosome 10
+# https://genome.ucsc.edu/cgi-bin/hgTracks?chromInfoPage=
+# qname: reads name; mapq: quality of alignment; isize: insert size of our fragment
+
+pair.reads <- readGAlignmentPairs("data/ENCFF053CGD.bam", param = my.param)
+
+insert.size <- abs(mcols(second(pair.reads))$isize)
+# Or insert.size <- elementMetadata(second(pair.reads))$isize |> abs()
+fr.insert.size <- table(insert.size)
+plot.data <- data.frame(InsertSize = as.numeric(names(fr.insert.size)),
+                        Count = as.numeric(fr.insert.size))
+frag.len.plot <- ggplot(data = plot.data,
+                        mapping = aes(x = InsertSize, y = Count)) + 
+  geom_line() + 
+  scale_y_continuous(trans = "log2") + 
+  theme_minimal()
+frag.len.plot
+```
