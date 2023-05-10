@@ -203,3 +203,38 @@ frag.len.plot <- ggplot(data = plot.data,
   theme_minimal()
 frag.len.plot
 ```
+
+## Create a bar plot of number of fragments within Greenleafs' defined ranges – nucleosome free (< 100bp), mono-nucleosome (180bp-247bp) and di-nucleosome (315bp-437bp)
+```{r}
+atacreads.open <- pair.reads[insert.size < 100, ]
+class(atacreads.open)
+atacreads.mono <- pair.reads[insert.size > 180 & insert.size < 247, ]
+atacreads.di <- pair.reads[insert.size > 315 & insert.size < 437, ]
+
+plot.data <- data.frame(Fraction = c("NucleosomeFree", "MonoNucleosome", "DiNucleosome"),
+                        Total = c(length(atacreads.open),
+                                  length(atacreads.mono),
+                                  length(atacreads.di)))
+
+ggplot(data = plot.data,
+       mapping = aes(x = Fraction, y = Total, fill = Fraction)) + 
+  geom_bar(stat = "identity") + 
+  theme_bw()
+```
+
+## Create a bigwig for the nucleosome free (< 100bp), mono-nucleosome (180bp-247bp) and di-nucleosome (315bp-437bp) fractions and visualise in Integrated Genome Viewer
+```{r}
+library(rtracklayer)
+atacfragments.open <- granges(atacreads.open)
+coverage.open <- coverage(atacfragments.open)
+export.bw(coverage.open, "NucleosomeFree.bw")
+
+export_bw <- function(atacreads = NULL, export_name = NULL) {
+  atacfragments <- granges(atacreads)
+  coverage <- coverage(atacfragments)
+  export.bw(coverage, export_name)
+}
+
+export_bw(atacreads = atacreads.mono, export_name = "MonoNucleosome.bw")
+export_bw(atacreads = atacreads.di, export_name = "DiNucleosome.bw")
+```
