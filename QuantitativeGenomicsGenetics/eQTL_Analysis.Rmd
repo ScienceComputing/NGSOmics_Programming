@@ -1,1 +1,2546 @@
- 
+ ---
+title: "Quantitative Trait Locus (eQTL) Analysis using gEUVADIS Data"
+author: "Anni Liu"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output:
+  pdf_document: 
+    latex_engine: xelatex
+  html_document:
+    code_folding: show
+---
+
+```{r echo=FALSE}
+knitr::opts_chunk$set(
+  # options(scipen = 999, digits = 3),
+  cache = TRUE,
+  error = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  tidy.opts = list(width.cutoff = 60),
+  fig.width = 8,
+  fig.height = 6
+)
+```
+
+# Attach required libraries
+```{r}
+library(ggplot2)
+library(gridExtra)
+library(data.table)
+library(dplyr)
+library(MASS)
+library(gridExtra)
+```
+
+
+# Check the phenotype data
+```{r}
+#------Load the data------
+pheno.data <- read.csv("phenotypes.csv", row.names = 1) ## 1: a single number giving the first column of the table which contains the row names
+# str(pheno.data)
+
+#------Estimate the sample size------
+n <- nrow(pheno.data)
+n
+
+#------Plot the distribution of the phenotype------
+## Create a histogram plotting function
+make.hist <- function(pheno.name, fill.palette) {
+  ggplot(data = pheno.data, 
+         mapping = aes(x = get(pheno.name))) + 
+  geom_histogram(bins = 30, fill = fill.palette) + 
+  theme_bw() +
+  labs(y = "Frequency", 
+       x = "Gene expression", 
+       title = paste0("Histogram of ", pheno.name)) + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+}
+
+## Batch making histograms for all 5 phenotypes
+plot.array <-  mapply(FUN = make.hist, pheno.name = names(pheno.data), 
+                      fill.palette = c("#0073C2FF", "#EFC000FF", "#868686FF", "#CD534CFF", "#7AA6DCFF"), 
+                      SIMPLIFY = F)
+grid.arrange(do.call("arrangeGrob", c(plot.array, ncol = 2)))
+```
+
+Interpret: there are no odd phenotypes or outliers; and all 5 phenotypes are approximately normal
+
+# Check and filter the genotype data
+```{r eval=FALSE}
+#------Load the data------
+geno.data <- read.csv("genotypes.csv", row.names = 1)
+saveRDS(geno.data, "geno.data.RDS") ## Save RDS for fast loading the next time
+geno.data <- readRDS("geno.data.RDS")
+geno.data[1:6, 1:6] ## Take a peak at the first 6 SNP genotypes in the first 6 subjects
+
+#------Check the structure and range of data------
+str(geno.data)
+range(geno.data)
+
+#------Estimate the number of SNPs and sample size------
+N <- ncol(geno.data)
+N ## 50000 SNPs
+n <- nrow(geno.data)
+n ## 344 subjects
+
+#------Load SNP info------
+snp.info <- read.csv("SNP_info.csv")
+## "chromosome" "position" "id"    
+
+#------Spot and remove any individual with >10% missing data across all SNPs------
+ind.rm <- apply(geno.data, 1, function(x) sum(is.na(x))/N > 0.1)
+any(ind.rm) ## any: Given a set of logical vectors, is at least one of the values true?
+## Interpret: there is no individual with >10% missing data across all SNPs
+
+#------Spot and remove any SNP with >5% missing data across all individuals------
+snp.rm <- apply(geno.data, 2, function(x) sum(is.na(x))/n > 0.05)
+any(snp.rm) 
+## Interpret: there is no SNP with >5% missing data across all individuals
+
+#------Spot and remove any SNP with minor allele frequency (MAF) <5%------
+maf.rm <- apply(geno.data, 2, function(x) { (1 - sum(x)/(2*n)) < 0.05 })
+# Or: maf.rm <- apply(geno.data, 2, function(x) { (sum(x)/(2*n)) > 0.95 })
+any(maf.rm)
+## Interpret: there is no SNP with MAF <5% 
+
+saveRDS(geno.data, "geno.data.work.RDS") ## Save RDS for fast loading the next time
+
+#------Convert SNP coded as 0, 1, 2 to xa and xd------
+## 0 -> xa = -1, xd = -1
+## 1 -> xa = 0, xd = 1
+## 2 -> xa = 1, xd = -1
+## Load the SNP data
+geno.data.work <- readRDS("geno.data.work.RDS")
+
+## Calculate xa and xd
+xa <- geno.data.work - 1
+xa.mat <- data.matrix(xa)
+xd.mat <- 1 - 2*abs(xa.mat)
+xa.mat[1:6, 1:6] ## Take a peak at the xa coding of the first 6 SNP genotypes in the first 6 subjects
+xd.mat[1:6, 1:6] ## Take a peak at the xd coding of the first 6 SNP genotypes in the first 6 subjects
+hist(xa.mat) ## Check the distribution of values in xa.mat
+hist(xd.mat) ## Check the distribution of values in xd.mat
+
+## Save xa.mat and xd.mat for fast loading next time
+save(xa.mat, xd.mat, file = "xa.xd.RData")
+
+#------Perform principal component analysis (PCA) to check population structure------
+## Load the covariates information
+covars.data <- read.csv("covars.csv", row.names = 1) 
+
+## Construct PCA model
+pca.result <- prcomp(xa.mat %*% t(xa.mat), center = T, scale. = T) ## dim(xa.mat %*% t(xa.mat)): 344*344
+saveRDS(pca.result, "pca.result.RDS") ## Save for fast loading for the next time
+
+## Visualize PCA using the scatter plot and covariates information
+pca.df <- data.frame(pc1 = pca.result$x[, 1], 
+                     pc2 = pca.result$x[,2], 
+                     pop = covars.data$Population,
+                     sex = covars.data$Sex)
+pca.plot.pop <- ggplot(data = pca.df, mapping = aes(pc1, pc2)) +
+  geom_point(mapping = aes(color = pop)) + 
+  labs(title = "Principal component analysis plot",
+       x = paste0("PC1\nVariation explained: ", summary(pca.result)$importance[2, 1]*100, "%"),
+       y = paste0("PC2\nVariation explained: ", summary(pca.result)$importance[2, 2]*100, "%"),
+       color = "Population") + 
+  scale_color_manual(values = c("#0073C2FF", "#EFC000FF", "#868686FF", "#CD534CFF")) + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+pca.plot.pop
+ggsave("pca.plot.pop.png", plot = pca.plot.pop, device = "png", width = 5, height = 4, units = "in") ## Save the plot
+
+## Look at the loading of each SNP in each principal component
+pca.result$rotation |> View()
+
+#------Perform PCA to check gender structure------
+pca.plot.sex <- ggplot(data = pca.df, mapping = aes(pc1, pc2)) +
+  geom_point(mapping = aes(color = sex)) + 
+  labs(title = "Principal component analysis plot",
+       x = paste0("PC1\nVariation explained: ", summary(pca.result)$importance[2, 1]*100, "%"),
+       y = paste0("PC2\nVariation explained: ", summary(pca.result)$importance[2, 2]*100, "%"),
+       color = "Sex") + 
+  scale_color_manual(values = c("#0073C2FF", "#EFC000FF", "#868686FF", "#CD534CFF")) + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+pca.plot.sex
+ggsave("pca.plot.sex.png", plot = pca.plot.sex, device = "png", width = 5, height = 4, units = "in")
+```
+
+```{r}
+knitr::include_graphics("pca.plot.pop.png")
+```
+
+Interpret: there are 3 distinctively separate clustering in the PCA plot, indicating the existence of population structure with 3 ancestry groups.
+
+```{r}
+knitr::include_graphics("pca.plot.sex.png")
+```
+
+Interpret: there is no apparent distinctively separate clustering in the PCA plot, indicating sex may not distort the relationship between SNPs and mRNA expression.
+
+
+# Perform GWAS analyses and diagnostics
+## Build GWAS-related functions
+```{r}
+#------Define the function to run GWAS without covariate and return p-values------
+pval.calc.GWAS <- function(pheno_input, xa_input, xd_input){
+    n_samples <- length(xa_input) ## Calculate the sample size
+    X_mx <- cbind(1, xa_input, xd_input)
+    
+    MLE_beta <- ginv(t(X_mx) %*% X_mx) %*% t(X_mx) %*% pheno_input ## Calculate the MLE of betas
+    y_hat <- X_mx %*% MLE_beta ## Calculate the predicted y
+  
+    SSM <- sum((y_hat - mean(pheno_input))^2)
+    SSE <- sum((pheno_input - y_hat)^2)
+    df_M <- 2
+    df_E <- n_samples - 3 
+    MSM <- SSM / df_M
+    MSE <- SSE / df_E
+    Fstatistic <- MSM / MSE ## Calculate the F statistic
+    
+    pval <- pf(Fstatistic, df_M, df_E, lower.tail = FALSE) ## Calculate the p value
+    return(pval)
+}
+
+#------Define the function to run GWAS with covariate and return p-values------
+pval.calc.GWAS.covars <- function(pheno_input, xa_input, xd_input, xz_input){
+  n_samples <- length(xa_input) ## Calculate the sample size
+  X_mx <- cbind(rep(1, n_samples), xa_input, xd_input, xz_input) ## Make the X matrix under H1
+  
+  MLE_beta <- ginv(t(X_mx) %*% X_mx) %*% t(X_mx) %*% pheno_input ## Calculate the MLE of betas
+  
+  x_h0 =  cbind(rep(1, n_samples), xz_input) ## Calculate x under H0
+  MLE_h0 = ginv(t(x_h0) %*% x_h0) %*% t(x_h0) %*% pheno_input ## Calculate MLE under h0
+  y_hat_0 = x_h0 %*% MLE_h0 ## Calculate y_hat under H0
+  y_hat_1 = X_mx %*% MLE_beta ## Calculate y_hat under H1
+  
+  SSE_theta_0 = sum((pheno_input - y_hat_0)^2) ## Calculate SSE under H0
+  SSE_theta_1 = sum((pheno_input - y_hat_1)^2) ## Calculate SSE under H1
+  
+  df_M <- 2
+  df_E <- n_samples - 4 
+  
+  numerator <- (SSE_theta_0 - SSE_theta_1) / df_M ## Calculate F statistic
+  denom <- SSE_theta_1 / df_E
+  Fstatistic <- numerator / denom
+  
+  pval <- pf(Fstatistic, df_M, df_E, lower.tail = F) ## Calculate the p value 
+  return(pval)
+}
+
+#------Define the function to run GWAS without covariate and return coefficients of xa------
+coef.calc.GWAS <- function(pheno_input, xa_input, xd_input){
+    n_samples <- length(xa_input) ## Calculate the sample size
+    X_mx <- cbind(1, xa_input, xd_input)
+    
+    MLE_beta <- ginv(t(X_mx) %*% X_mx) %*% t(X_mx) %*% pheno_input ## Calculate the MLE of betas
+    return(MLE_beta[2])
+}
+
+#------Define the function to run GWAS with covariate and return coefficients of xa------
+coef.calc.GWAS.covars <- function(pheno_input, xa_input, xd_input, xz_input){
+  n_samples <- length(xa_input) ## Calculate the sample size
+  X_mx <- cbind(rep(1, n_samples), xa_input, xd_input, xz_input) ## Make the X matrix under H1
+  
+  MLE_beta <- ginv(t(X_mx) %*% X_mx) %*% t(X_mx) %*% pheno_input ## Calculate the MLE of betas
+  return(MLE_beta[2])
+}
+```
+
+
+## Investigate eQTL of gene ERAP2 (`ENSG00000164308.12`) {.tabset}
+### GWAS without covariate
+```{r eval=FALSE}
+## Use the following link to check the gene symbol of ENSG00000164308.12
+## https://useast.ensembl.org/Homo_sapiens/Gene/Summary?g=ENSG00000164308;r=5:96875986-96919703
+
+#------load saved xa and xd matrices------
+load("xa.xd.RData")
+
+#------Re-estimate the number of SNPs------
+N <- ncol(xa.mat)
+N
+
+#------Run GWAS using linear regression without covariate and return the p values and coefficients------
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS(pheno_input = pheno.data[, 1],
+                            xa_input = xa.mat[, SNP.i],
+                            xd_input = xd.mat[, SNP.i]))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS(pheno_input = pheno.data[, 1],
+                            xa_input = xa.mat[, SNP.i],
+                            xd_input = xd.mat[, SNP.i]))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coefs, file = "outcome.ERAP2.nocovars.RData") ## Save the p values and coefficients
+
+#------Make the QQ plot of log-transformed p value------
+load("outcome.ERAP2.nocovars.RData")
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point(color = "#E69F00") +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of ERAP2",
+       subtitle = "No covariate included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+ggsave("./QQPlot/qq.plot.ERAP2.nocovar.png", plot = qq.plot, device = "png", width = 4, height = 4, units = "in")
+
+#------Make the Manhattan plot of log-transformed p value------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point(color = "#E69F00") + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#B31B1B", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of ERAP2", 
+       subtitle = "No covariate included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("./ManPlot/man.plot.ERAP2.nocovar.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+
+# grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Zoom in the Manhattan plot------
+results.zoom <- results[16500:17000, ]
+man.plot <- ggplot(data = results.zoom, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point(color = "#E69F00", alpha = 0.7) + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#B31B1B", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of ERAP2", 
+       subtitle = "No covariate included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("./ManPlot/zoom/manzoom.plot.ERAP2.nocovar.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+```
+
+```{r}
+knitr::include_graphics("./QQPlot/qq.plot.ERAP2.nocovar.png")
+```
+
+Interpret: the QQ plot suggests the acceptable model fit without the covariate, since the plot either shows thatbulk of the p-values are along the 45 degree line and more extreme -log p values leave the line producing a tail, suggesting there is no evidence that most of the SNP markers are in linkage disequilibrium (LD) with causal polymorphisms whereas a few markers are in LD with causal polymorphisms, which matches our expectations for the impact of causal polymorphisms on phenotypes in general.
+
+```{r}
+knitr::include_graphics("./ManPlot/man.plot.ERAP2.nocovar.png")
+```
+
+Interpret: in the Manhattan plot, there is 1 group of SNPs of which p values survive the Bonferroni correction marked as a red line; and these SNPs are close to each other and are neighbored by many non-significant SNPs. Hence, this 1 group represents 1 hit. 
+
+
+```{r}
+knitr::include_graphics("./ManPlot/zoom/manzoom.plot.ERAP2.nocovar.png")
+```
+
+Interpret: when the Manhattan plot is zoomed, the location of at least one causal polymorphism that impacts the expression levels of *ERAP2* may lie between 16700 and 16800. 
+
+```{r}
+#------Estimate the Bonferroni-corrected p value------
+load("outcome.ERAP2.nocovars.RData")
+results$p.adjust <- p.adjust(results$p, method = "bonferroni")
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, p.adjust = results$p.adjust, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+
+### GWAS with the 1st PC as the covariate
+```{r}
+#------Run GWAS using the 1st principal component as the covariate------
+pca.result <- readRDS("pca.result.RDS")
+
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS.covars(pheno_input = pheno.data[, 1],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = pca.result$x[, 1]))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS.covars(pheno_input = pheno.data[, 1],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = pca.result$x[, 1]))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coefs, file = "outcome.ERAP2.PC1.RData")
+
+#------Make the QQ plot------
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of ERAP2",
+       subtitle = "Covariate PC1 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point() + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#0073C2FF", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of ERAP2", 
+       subtitle = "Covariate PC1 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("man.plot.ERAP2.PC1.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Estimate the Bonferroni-corrected p value------
+load("outcome.ERAP2.PC1.RData")
+results$p.adjust <- p.adjust(results$p, method = "bonferroni")
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, p.adjust = results$p.adjust, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+
+### GWAS with the 1st and 2nd PCs as the covariates
+```{r}
+#------Run GWAS using the 1st and 2nd principal components as the covariates------
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS.covars(pheno_input = pheno.data[, 1],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(pca.result$x[, 1], pca.result$x[, 2])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS.covars(pheno_input = pheno.data[, 1],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(pca.result$x[, 1], pca.result$x[, 2])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coefs, file = "outcome.ERAP2.PC12.RData")
+
+#------Make the QQ plot------
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of ERAP2",
+       subtitle = "Covariates PC1 and PC2 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point() + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#0073C2FF", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of ERAP2", 
+       subtitle = "Covariates PC1 and PC2 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("man.plot.ERAP2.PC12.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Estimate the Bonferroni-corrected p value------
+load("outcome.ERAP2.PC12.RData")
+results$p.adjust <- p.adjust(results$p, method = "bonferroni")
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, p.adjust = results$p.adjust, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+
+### GWAS with the sex as the covariate
+```{r}
+#------Run GWAS using the sex as the covariate------
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS.covars(pheno_input = pheno.data[, 1],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = factor(covars.data$Sex)))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS.covars(pheno_input = pheno.data[, 1],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = factor(covars.data$Sex)))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coef, file = "outcome.ERAP2.sex.RData")
+
+#------Make the QQ plot------
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of ERAP2",
+       subtitle = "Covariate sex included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point() + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#0073C2FF", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of ERAP2", 
+       subtitle = "Covariate sex included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("man.plot.ERAP2.sex.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Estimate the Bonferroni-corrected p value------
+load("outcome.ERAP2.sex.RData")
+results$p.adjust <- p.adjust(results$p, method = "bonferroni")
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, p.adjust = results$p.adjust, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+
+### GWAS with the sex and the 1st PC as the covariates
+```{r}
+#------Run GWAS using the sex and 1st PC as the covariates------
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS.covars(pheno_input = pheno.data[, 1],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(factor(covars.data$Sex), pca.result$x[, 1])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS.covars(pheno_input = pheno.data[, 1],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(factor(covars.data$Sex), pca.result$x[, 1])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coefs, file = "outcome.ERAP2.sexPC1.RData")
+
+#------Make the QQ plot------
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of ERAP2",
+       subtitle = "Covariates sex and PC1 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point() + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#0073C2FF", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of ERAP2", 
+       subtitle = "Covariates sex and PC1 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("man.plot.ERAP2.sex.PC1.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Estimate the Bonferroni-corrected p value------
+load("outcome.ERAP2.sexPC1.RData")
+results$p.adjust <- p.adjust(results$p, method = "bonferroni")
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, p.adjust = results$p.adjust, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+
+### GWAS with the sex and the 1st and 2nd PCs as the covariates
+```{r}
+#------Run GWAS using the sex and the 1st and 2nd PCs as the covariate------
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS.covars(pheno_input = pheno.data[, 1],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(factor(covars.data$Sex), pca.result$x[, 1], pca.result$x[, 2])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS.covars(pheno_input = pheno.data[, 1],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(factor(covars.data$Sex), pca.result$x[, 1], pca.result$x[, 2])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coefs, file = "outcome.ERAP2.sexPC12.RData")
+
+#------Make the QQ plot------
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of ERAP2",
+       subtitle = "Covariates sex, PC1, and PC2 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point() + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#0073C2FF", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of ERAP2", 
+       subtitle = "Covariates sex, PC1, and PC2 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("man.plot.ERAP2.sex.PC12.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Estimate the Bonferroni-corrected p value------
+load("outcome.ERAP2.sexPC12.RData")
+results$p.adjust <- p.adjust(results$p, method = "bonferroni")
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, p.adjust = results$p.adjust, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+# {-}
+
+
+## Investigate eQTL of gene PEX6 (`ENSG00000124587.9`) {.tabset}
+### GWAS without covariate
+```{r}
+#------Run GWAS without covariate------
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS(pheno_input = pheno.data[, 2], # New phenotype
+                            xa_input = xa.mat[, SNP.i],
+                            xd_input = xd.mat[, SNP.i]))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS(pheno_input = pheno.data[, 2],
+                            xa_input = xa.mat[, SNP.i],
+                            xd_input = xd.mat[, SNP.i]))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+save(results, coefs, file = "outcome.PEX6.nocovars.RData")
+
+#------Make the QQ plot------
+load("outcome.PEX6.nocovars.RData")
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point(color = "#56B4E9") +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of PEX6",
+       subtitle = "No covariate included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+ggsave("./QQPlot/qq.plot.PEX6.nocovar.png", plot = qq.plot, device = "png", width = 4, height = 4, units = "in")
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point(color = "#56B4E9") + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#B31B1B", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of PEX6", 
+       subtitle = "No covariate included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("./ManPlot/man.plot.PEX6.nocovar.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Zoom in the Manhattan plot------
+results.zoom <- results[19000:19500, ]
+man.plot <- ggplot(data = results.zoom, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point(color = "#56B4E9", alpha = 0.7) + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#B31B1B", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of PEX6", 
+       subtitle = "No covariate included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("./ManPlot/zoom/manzoom.plot.PEX6.nocovar.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+
+#------Estimate the Bonferroni-corrected p value------
+load("outcome.PEX6.nocovars.RData")
+results$p.adjust <- p.adjust(results$p, method = "bonferroni")
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, p.adjust = results$p.adjust, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+
+### GWAS with the 1st PC as the covariate
+```{r}
+#------Run GWAS using the 1st principal component as the covariate------
+pca.result <- readRDS("pca.result.RDS")
+
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS.covars(pheno_input = pheno.data[, 2],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = pca.result$x[, 1]))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS.covars(pheno_input = pheno.data[, 2],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = pca.result$x[, 1]))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coefs, file = "outcome.PEX6.PC1.RData")
+
+#------Make the QQ plot------
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of PEX6",
+       subtitle = "Covariate PC1 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point() + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#0073C2FF", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of PEX6", 
+       subtitle = "Covariate PC1 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("man.plot.PEX6.PC1.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Estimate the Bonferroni-corrected p value------
+load("outcome.PEX6.PC1.RData")
+results$p.adjust <- p.adjust(results$p, method = "bonferroni")
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, p.adjust = results$p.adjust, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+
+### GWAS with the 1st and 2nd PCs as the covariates
+```{r}
+#------Run GWAS using the 1st and 2nd principal components as the covariates------
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS.covars(pheno_input = pheno.data[, 2],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(pca.result$x[, 1], pca.result$x[, 2])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS.covars(pheno_input = pheno.data[, 2],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(pca.result$x[, 1], pca.result$x[, 2])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coefs, file = "outcome.PEX6.PC12.RData")
+
+#------Make the QQ plot------
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of PEX6",
+       subtitle = "Covariates PC1 and PC2 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point() + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#0073C2FF", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of PEX6", 
+       subtitle = "Covariates PC1 and PC2 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("man.plot.PEX6.PC12.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Estimate the Bonferroni-corrected p value------
+load("outcome.PEX6.PC12.RData")
+results$p.adjust <- p.adjust(results$p, method = "bonferroni")
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, p.adjust = results$p.adjust, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+
+### GWAS with the sex as the covariate
+```{r}
+#------Run GWAS using the sex as the covariate------
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS.covars(pheno_input = pheno.data[, 2],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = factor(covars.data$Sex)))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS.covars(pheno_input = pheno.data[, 2],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = factor(covars.data$Sex)))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coefs, file = "outcome.PEX6.sex.RData")
+
+#------Make the QQ plot------
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of PEX6",
+       subtitle = "Covariate sex included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point() + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#0073C2FF", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of PEX6", 
+       subtitle = "Covariate sex included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("man.plot.PEX6.sex.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Estimate the Bonferroni-corrected p value------
+load("outcome.PEX6.sex.RData")
+results$p.adjust <- p.adjust(results$p, method = "bonferroni")
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, p.adjust = results$p.adjust, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+
+### GWAS with the sex and 1st PC as the covariates
+```{r}
+#------Run GWAS using the sex and 1st PC as the covariates------
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS.covars(pheno_input = pheno.data[, 2],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(factor(covars.data$Sex), pca.result$x[, 1])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS.covars(pheno_input = pheno.data[, 2],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(factor(covars.data$Sex), pca.result$x[, 1])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+
+save(results, coefs, file = "outcome.PEX6.sexPC1.RData")
+
+#------Make the QQ plot------
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of PEX6",
+       subtitle = "Covariates sex and PC1 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point() + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#0073C2FF", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of PEX6", 
+       subtitle = "Covariates sex and PC1 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("man.plot.ERAP2.sex.PC1.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Estimate the Bonferroni-corrected p value------
+load("outcome.PEX6.sexPC1.RData")
+results$p.adjust <- p.adjust(results$p, method = "bonferroni")
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, p.adjust = results$p.adjust, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+
+### GWAS with the sex and the 1st and 2nd PCs as the covariates
+```{r}
+#------Run GWAS using the sex and the 1st and 2nd PCs as the covariate------
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS.covars(pheno_input = pheno.data[, 2],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(factor(covars.data$Sex), pca.result$x[, 1], pca.result$x[, 2])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS.covars(pheno_input = pheno.data[, 2],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(factor(covars.data$Sex), pca.result$x[, 1], pca.result$x[, 2])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coefs, file = "outcome.PEX6.sexPC12.RData")
+
+#------Make the QQ plot------
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of PEX6",
+       subtitle = "Covariates sex, PC1, and PC2 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point() + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#0073C2FF", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of PEX6", 
+       subtitle = "Covariates sex, PC1, and PC2 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("man.plot.ERAP2.sex.PC12.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Estimate the Bonferroni-corrected p value------
+load("outcome.PEX6.sexPC12.RData")
+results$p.adjust <- p.adjust(results$p, method = "bonferroni")
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, p.adjust = results$p.adjust, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+# {-}
+
+
+## Investigate eQTL of gene FAHD1 (`ENSG00000180185.7`) {.tabset}
+### GWAS without covariate
+```{r}
+#------Run GWAS without covariate------
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS(pheno_input = pheno.data[, 3], # New phenotype
+                            xa_input = xa.mat[, SNP.i],
+                            xd_input = xd.mat[, SNP.i]))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS(pheno_input = pheno.data[, 3],
+                            xa_input = xa.mat[, SNP.i],
+                            xd_input = xd.mat[, SNP.i]))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coefs, file = "outcome.FAHD1.nocovars.RData")
+
+#------Make the QQ plot------
+load("outcome.FAHD1.nocovars.RData")
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point(color = "#009E73") +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of FAHD1",
+       subtitle = "No covariate included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+ggsave("./QQPlot/qq.plot.FAHD1.nocovar.png", plot = qq.plot, device = "png", width = 4, height = 4, units = "in")
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point(color = "#009E73") + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#B31B1B", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of FAHD1", 
+       subtitle = "No covariate included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("./ManPlot/man.plot.FAHD1.nocovar.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Zoom in the Manhattan plot------
+results.zoom <- results[41750:42250, ]
+man.plot <- ggplot(data = results.zoom, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point(color = "#009E73", alpha = 0.7) + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#B31B1B", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of FAHD1", 
+       subtitle = "No covariate included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("./ManPlot/zoom/manzoom.plot.FAHD1.nocovar.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+
+#------Estimate the Bonferroni-corrected p value------
+load("outcome.FAHD1.nocovars.RData")
+results$p.adjust <- p.adjust(results$p, method = "bonferroni")
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, p.adjust = results$p.adjust, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+
+### GWAS with the 1st principal component as the covariate
+```{r}
+#------Run GWAS using the 1st principal component as the covariate------
+pca.result <- readRDS("pca.result.RDS")
+
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS.covars(pheno_input = pheno.data[, 3],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = pca.result$x[, 1]))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS.covars(pheno_input = pheno.data[, 3],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = pca.result$x[, 1]))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coefs, file = "outcome.FAHD1.PC1.RData")
+
+#------Make the QQ plot------
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of FAHD1",
+       subtitle = "Covariate PC1 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point() + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#0073C2FF", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of FAHD1", 
+       subtitle = "Covariate PC1 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("man.plot.FAHD1.PC1.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Estimate the Bonferroni-corrected p value------
+load("outcome.FAHD1.PC1.RData")
+results$p.adjust <- p.adjust(results$p, method = "bonferroni")
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, p.adjust = results$p.adjust, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+
+### GWAS with the 1st and 2nd principal components as the covariates
+```{r}
+#------Run GWAS using the 1st and 2nd principal components as the covariates------
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS.covars(pheno_input = pheno.data[, 3],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(pca.result$x[, 1], pca.result$x[, 2])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS.covars(pheno_input = pheno.data[, 3],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(pca.result$x[, 1], pca.result$x[, 2])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coefs, file = "outcome.FAHD1.PC12.RData")
+
+#------Make the QQ plot------
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of FAHD1",
+       subtitle = "Covariates PC1 and PC2 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point() + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#0073C2FF", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of FAHD1", 
+       subtitle = "Covariates PC1 and PC2 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("man.plot.FAHD1.PC12.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Estimate the Bonferroni-corrected p value------
+load("outcome.FAHD1.PC12.RData")
+results$p.adjust <- p.adjust(results$p, method = "bonferroni")
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, p.adjust = results$p.adjust, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+
+### GWAS with the sex as the covariate
+```{r}
+#------Run GWAS using the sex as the covariate------
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS.covars(pheno_input = pheno.data[, 3],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = factor(covars.data$Sex)))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS.covars(pheno_input = pheno.data[, 3],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = factor(covars.data$Sex)))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coefs, file = "outcome.FAHD1.sex.RData")
+
+#------Make the QQ plot------
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of FAHD1",
+       subtitle = "Covariate sex included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point() + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#0073C2FF", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of FAHD1", 
+       subtitle = "Covariate sex included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("man.plot.FAHD1.sex.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Estimate the Bonferroni-corrected p value------
+load("outcome.FAHD1.sex.RData")
+results$p.adjust <- p.adjust(results$p, method = "bonferroni")
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, p.adjust = results$p.adjust, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+
+### GWAS with the sex and 1st PC as the covariates
+```{r}
+#------Run GWAS using the sex and 1st PC as the covariates------
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS.covars(pheno_input = pheno.data[, 3],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(factor(covars.data$Sex), pca.result$x[, 1])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS.covars(pheno_input = pheno.data[, 3],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(factor(covars.data$Sex), pca.result$x[, 1])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coefs, file = "outcome.FAHD1.sexPC1.RData")
+
+#------Make the QQ plot------
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of FAHD1",
+       subtitle = "Covariates sex and PC1 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point() + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#0073C2FF", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of FAHD1", 
+       subtitle =  "Covariates sex and PC1 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("man.plot.FAHD1.sex.PC1.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Estimate the Bonferroni-corrected p value------
+load("outcome.FAHD1.sexPC1.RData")
+results$p.adjust <- p.adjust(results$p, method = "bonferroni")
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, p.adjust = results$p.adjust, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+
+### GWAS with the sex and the 1st and 2nd PCs as the covariates
+```{r}
+#------Run GWAS using the sex and the 1st and 2nd PCs as the covariate------
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS.covars(pheno_input = pheno.data[, 3],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(factor(covars.data$Sex), pca.result$x[, 1], pca.result$x[, 2])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS.covars(pheno_input = pheno.data[, 3],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(factor(covars.data$Sex), pca.result$x[, 1], pca.result$x[, 2])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coefs, file = "outcome.FAHD1.sexPC12.RData")
+
+#------Make the QQ plot------
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of FAHD1",
+       subtitle = "Covariates sex, PC1, and PC2 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point() + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#0073C2FF", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of FAHD1", 
+       subtitle =  "Covariates sex, PC1, and PC2 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("man.plot.FAHD1.sex.PC12.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Estimate the Bonferroni-corrected p value------
+load("outcome.FAHD1.sexPC12.RData")
+results$p.adjust <- p.adjust(results$p, method = "bonferroni")
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, p.adjust = results$p.adjust, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+
+# {-}
+
+## Investigate eQTL of gene GFM1 (`ENSG00000168827.9`) {.tabset}
+### GWAS without covariate
+```{r}
+#------Run GWAS without covariate------
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS(pheno_input = pheno.data[, 4], # New phenotype
+                            xa_input = xa.mat[, SNP.i],
+                            xd_input = xd.mat[, SNP.i]))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS(pheno_input = pheno.data[, 4],
+                            xa_input = xa.mat[, SNP.i],
+                            xd_input = xd.mat[, SNP.i]))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coefs, file = "outcome.GFM1.nocovars.RData")
+
+#------Make the QQ plot------
+load("outcome.GFM1.nocovars.RData")
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point(color = "#F0E442") +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of GFM1",
+       subtitle = "No covariate included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+ggsave("./QQPlot/qq.plot.GFM1.nocovar.png", plot = qq.plot, device = "png", width = 4, height = 4, units = "in")
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point(color = "#F0E442") + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#B31B1B", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of GFM1", 
+       subtitle = "No covariate included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("./ManPlot/man.plot.GFM1.nocovar.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+
+### GWAS with the 1st principal component as the covariate
+```{r}
+#------Run GWAS using the 1st principal component as the covariate------
+pca.result <- readRDS("pca.result.RDS")
+
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS.covars(pheno_input = pheno.data[, 4],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = pca.result$x[, 1]))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS.covars(pheno_input = pheno.data[, 4],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = pca.result$x[, 1]))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coefs, file = "outcome.GFM1.PC1.RData")
+
+#------Make the QQ plot------
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of GFM1",
+       subtitle = "Covariate PC1 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point() + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#0073C2FF", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of GFM1", 
+       subtitle = "Covariate PC1 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("man.plot.GFM1.PC1.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+
+### GWAS with the 1st and 2nd principal components as the covariates
+```{r}
+#------Run GWAS using the 1st and 2nd principal components as the covariates------
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS.covars(pheno_input = pheno.data[, 4],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(pca.result$x[, 1], pca.result$x[, 2])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS.covars(pheno_input = pheno.data[, 4],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(pca.result$x[, 1], pca.result$x[, 2])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coefs, file = "outcome.GFM1.PC12.RData")
+
+#------Make the QQ plot------
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of GFM1",
+       subtitle = "Covariates PC1 and PC2 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+ggsave("./QQPlot/qq.plot.GFM1.PC12.png", plot = qq.plot, device = "png", width = 4, height = 4, units = "in")
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point() + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#0073C2FF", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of GFM1", 
+       subtitle = "Covariates PC1 and PC2 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("man.plot.GFM1.PC12.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+
+### GWAS with the sex as the covariate
+```{r}
+#------Run GWAS using the sex as the covariate------
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS.covars(pheno_input = pheno.data[, 4],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = factor(covars.data$Sex)))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS.covars(pheno_input = pheno.data[, 4],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = factor(covars.data$Sex)))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coefs, file = "outcome.GFM1.sex.RData")
+
+#------Make the QQ plot------
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of GFM1",
+       subtitle = "Covariate sex included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point() + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#0073C2FF", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of GFM1", 
+       subtitle = "Covariate sex included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("man.plot.GFM1.sex.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+
+### GWAS with the sex and 1st PC as the covariates
+```{r}
+#------Run GWAS using the sex and 1st PC as the covariates------
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS.covars(pheno_input = pheno.data[, 4],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(factor(covars.data$Sex), pca.result$x[, 1])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS.covars(pheno_input = pheno.data[, 4],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(factor(covars.data$Sex), pca.result$x[, 1])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coefs, file = "outcome.GFM1.sexPC1.RData")
+
+#------Make the QQ plot------
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of GFM1",
+       subtitle = "Covariates sex and PC1 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point() + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#0073C2FF", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of GFM1", 
+       subtitle = "Covariates sex and PC1 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("man.plot.GFM1.sex.PC1.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+
+### GWAS with the sex and the 1st and 2nd PCs as the covariates
+```{r}
+#------Run GWAS using the sex and the 1st and 2nd PCs as the covariate------
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS.covars(pheno_input = pheno.data[, 4],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(factor(covars.data$Sex), pca.result$x[, 1], pca.result$x[, 2])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS.covars(pheno_input = pheno.data[, 4],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(factor(covars.data$Sex), pca.result$x[, 1], pca.result$x[, 2])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coefs, file = "outcome.GFM1.sexPC12.RData")
+
+#------Make the QQ plot------
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of GFM1",
+       subtitle = "Covariates sex, PC1, and PC2 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point() + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#0073C2FF", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of GFM1", 
+       subtitle = "Covariates sex, PC1, and PC2 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("man.plot.GFM1.sex.PC12.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+# {-}
+
+
+## Investigate eQTL of gene MARCHF7 (`ENSG00000136536.9`) {.tabset}
+### GWAS without covariate
+```{r}
+#------Run GWAS without covariate------
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS(pheno_input = pheno.data[, 5], # New phenotype
+                            xa_input = xa.mat[, SNP.i],
+                            xd_input = xd.mat[, SNP.i]))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS(pheno_input = pheno.data[, 5],
+                            xa_input = xa.mat[, SNP.i],
+                            xd_input = xd.mat[, SNP.i]))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coefs, file = "outcome.MARCHF7.nocovars.RData")
+
+#------Make the QQ plot------
+load("outcome.MARCHF7.nocovars.RData")
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of MARCHF7",
+       subtitle = "No covariate included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+ggsave("./QQPlot/qq.plot.MARCHF7.nocovar.png", plot = qq.plot, device = "png", width = 4, height = 4, units = "in")
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point() + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#B31B1B", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of MARCHF7", 
+       subtitle = "No covariate included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("./ManPlot/man.plot.MARCHF7.nocovar.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+
+### GWAS with the 1st principal component as the covariate
+```{r}
+#------Run GWAS using the 1st principal component as the covariate------
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS.covars(pheno_input = pheno.data[, 5],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = pca.result$x[, 1]))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS.covars(pheno_input = pheno.data[, 5],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = pca.result$x[, 1]))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coefs, file = "outcome.MARCHF7.PC1.RData")
+
+#------Make the QQ plot------
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of MARCHF7",
+       subtitle = "Covariate PC1 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point() + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#0073C2FF", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of MARCHF7", 
+       subtitle = "Covariate PC1 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("man.plot.MARCHF7.PC1.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+
+### GWAS with the 1st and 2nd principal components as the covariates
+```{r}
+#------Run GWAS using the 1st and 2nd principal components as the covariates------
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS.covars(pheno_input = pheno.data[, 5],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(pca.result$x[, 1], pca.result$x[, 2])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS.covars(pheno_input = pheno.data[, 5],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(pca.result$x[, 1], pca.result$x[, 2])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coefs, file = "outcome.MARCHF7.PC12.RData")
+
+#------Make the QQ plot------
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of MARCHF7",
+       subtitle = "Covariates PC1 and PC2 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+ggsave("./QQPlot/qq.plot.MARCHF7.PC12.png", plot = qq.plot, device = "png", width = 4, height = 4, units = "in")
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point() + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#0073C2FF", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of MARCHF7", 
+       subtitle = "Covariates PC1 and PC2 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("man.plot.MARCHF7.PC12.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+
+### GWAS with the sex as the covariate
+```{r}
+#------Run GWAS using the sex as the covariate------
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS.covars(pheno_input = pheno.data[, 5],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = factor(covars.data$Sex)))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS.covars(pheno_input = pheno.data[, 5],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = factor(covars.data$Sex)))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coefs, file = "outcome.MARCHF7.sex.RData")
+
+#------Make the QQ plot------
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of MARCHF7",
+       subtitle = "Covariate sex included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point() + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#0073C2FF", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of MARCHF7", 
+       subtitle = "Covariate sex included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("man.plot.MARCHF7.sex.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+
+### GWAS with the sex and 1st PC as the covariates
+```{r}
+#------Run GWAS using the sex and 1st PC as the covariates------
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS.covars(pheno_input = pheno.data[, 5],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(factor(covars.data$Sex), pca.result$x[, 1])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS.covars(pheno_input = pheno.data[, 5],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(factor(covars.data$Sex), pca.result$x[, 1])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coefs, file = "outcome.MARCHF7.sexPC1.RData")
+
+#------Make the QQ plot------
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of MARCHF7",
+       subtitle = "Covariates sex and PC1 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point() + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#0073C2FF", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of MARCHF7", 
+       subtitle = "Covariates sex and PC1 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("man.plot.MARCHF7.sex.PC1.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+
+### GWAS with the sex and the 1st and 2nd PCs as the covariates
+```{r}
+#------Run GWAS using the sex and the 1st and 2nd PCs as the covariate------
+results <- lapply(1:N, function(SNP.i){
+  data.table(pval.calc.GWAS.covars(pheno_input = pheno.data[, 5],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(factor(covars.data$Sex), pca.result$x[, 1], pca.result$x[, 2])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(p = V1, index = 1:N)
+
+coefs <- lapply(1:N, function(SNP.i){
+  data.table(coef.calc.GWAS.covars(pheno_input = pheno.data[, 5],
+                                   xa_input = xa.mat[, SNP.i],
+                                   xd_input = xd.mat[, SNP.i],
+                                   xz_input = cbind(factor(covars.data$Sex), pca.result$x[, 1], pca.result$x[, 2])))
+}) %>% 
+  rbindlist() %>% 
+  mutate(coef = V1, index = 1:N)
+
+save(results, coefs, file = "outcome.MARCHF7.sexPC12.RData")
+
+#------Make the QQ plot------
+observed_pvals <- sort(results$p)
+expected_pvals <- qunif(seq(0, 1, length.out = length(observed_pvals) + 2), min = 0, max = 1) 
+expected_pvals = expected_pvals[expected_pvals != 0 & expected_pvals != 1]  
+
+p_df <- data.frame(observed = -log10(observed_pvals),
+                   expected = -log10(expected_pvals))
+
+qq.plot <- ggplot(data = p_df, 
+                  mapping = aes(x = expected, y = observed)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "#B31B1B") +
+  labs(x = expression(-log[10]~expected~p),
+       y = expression(-log[10]~observed~p),
+       title = "GWAS QQ plot of MARCHF7",
+       subtitle = "Covariates sex, PC1, and PC2 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+qq.plot
+
+## Interpret: 
+
+#------Make the Manhattan plot------
+Bonferroni.alpha <- 0.05/N
+man.plot <- ggplot(data = results, 
+                   mapping = aes(x = index, y = -log10(p))) +
+  geom_point() + 
+  geom_hline(yintercept = -log10(Bonferroni.alpha), color = "#0073C2FF", lty = 2) +
+  labs(x = "Index",
+       y = expression(-log[10]~p), 
+       title = "GWAS Manhattan plot of MARCHF7", 
+       subtitle = "Covariates sex, PC1, and PC2 included") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5, face = "bold")) 
+man.plot
+ggsave("man.plot.MARCHF7.sex.PC12.png", plot = man.plot, device = "png", width = 4, height = 4, units = "in")
+## Interpret: ...compare significant hits among different GWAS analyses with different statistical covariate sets
+
+grid.arrange(man.plot, qq.plot, ncol = 2)
+
+#------Extract effect sizes and p values of SNP genotypes------
+coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+coef.p[order(coef.p$p, decreasing = F),  ] |> head(3) |> View()
+```
+
+
+# {-}
+
+# Estimate the SNPs that consistently show the significant associations with the expression of ERAP2, PEX6, and FAHD1, respectively, after Bonferroni correction, regardless of the covariate setting
+```{r}
+covars.vec <- c("nocovars", "PC1", "PC12", "sex", "sexPC1", "sexPC12")
+sig.snp <- NULL
+for (covars.i in covars.vec) {
+  load(sprintf("outcome.ERAP2.%s.RData", covars.i))
+  results$p.adjust <- p.adjust(results$p, method = "bonferroni")
+  coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, p.adjust = results$p.adjust, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+  sig.snp <- c(coef.p[p.adjust<0.05]$snp.id, sig.snp)
+}
+sig.snp.ERAP2 <- unique(sig.snp)
+
+sig.snp <- NULL
+for (covars.i in covars.vec) {
+  load(sprintf("outcome.PEX6.%s.RData", covars.i))
+  results$p.adjust <- p.adjust(results$p, method = "bonferroni")
+  coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, p.adjust = results$p.adjust, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+  sig.snp <- c(coef.p[p.adjust<0.05]$snp.id, sig.snp)
+}
+sig.snp.PEX6 <- unique(sig.snp)
+
+sig.snp <- NULL
+for (covars.i in covars.vec) {
+  load(sprintf("outcome.FAHD1.%s.RData", covars.i))
+  results$p.adjust <- p.adjust(results$p, method = "bonferroni")
+  coef.p <- data.table(index = coefs$index, coef = coefs$coef, p = results$p, p.adjust = results$p.adjust, chromosome = snp.info$chromosome, snp.position = snp.info$position, snp.id = snp.info$id)
+  sig.snp <- c(coef.p[p.adjust<0.05]$snp.id, sig.snp)
+}
+sig.snp.FAHD1 <- unique(sig.snp)
+```
+
+
+# Extract the information of minor allele frequency of the top significant SNPs
+```{r}
+geno.data.work <- readRDS("geno.data.work.RDS")
+MAF.calc <- function(geno.col) {
+  A2.fr <- sum(geno.col)/(2*nrow(geno.data.work)) ## Notice the denominator
+  A1.fr <- 1 - A2.fr
+  maf <- min(A2.fr, A1.fr)
+  return(maf)
+}
+
+## ERAP2
+round(MAF.calc(geno.data.work["rs7726445"])*100, 2)
+round(MAF.calc(geno.data.work["rs7731592"])*100, 2)
+round(MAF.calc(geno.data.work["rs2161548"])*100, 2)
+
+## PEX6
+round(MAF.calc(geno.data.work["rs1129187"])*100, 2)
+round(MAF.calc(geno.data.work["rs10948061"])*100, 2)
+
+## FAHD1
+round(MAF.calc(geno.data.work["rs11644748"])*100, 2)
+round(MAF.calc(geno.data.work["rs140254902"])*100, 2)
+round(MAF.calc(geno.data.work["rs9652776"])*100, 2)
+```
