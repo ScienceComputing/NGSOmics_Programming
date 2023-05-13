@@ -1,0 +1,110 @@
+---
+title: "ATAC-Seq Data Analysis with Human Data - Evaluate Transcriptional Start Site Signal"
+author: "Anni Liu"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: 
+  html_document:
+    code_folding: show
+---
+
+```{r, shorcut, include=FALSE}
+## RStudio keyboard shortcut
+# Cursor at the beginning of a command line: Ctrl+A
+# Cursor at the end of a command line: Ctrl+E
+# Clear all the code from your console: Ctrl+L
+# Create a pipe operator %>%: Ctrl+Shift+M (Windows) or Cmd+Shift+M (Mac)
+# Create an assignment operator <-: Alt+- (Windows) or Option+-(Mac) 
+# Knit a document (knitr): Ctrl+Shift+K (Windows) or Cmd+Shift+K (Mac)
+# Comment or uncomment current selection: Ctrl+Shift+C (Windows) or Cmd+Shift+C (Mac)
+```
+
+
+# Tutorial
+# Evaluate transcriptional start site (TSS) signal
+## Plot signal over TSS regions using `soGGi`
+```{r}
+# Attach required packages
+# BiocManager::install("soGGi")
+library(soGGi) |> suppressPackageStartupMessages()
+
+# BiocManager::install("TxDb.Hsapiens.UCSC.hg19.knownGene")
+library(TxDb.Hsapiens.UCSC.hg19.knownGene) |> suppressPackageStartupMessages()
+
+# bio_pkgs <- c("soGGi", "TxDb.Hsapiens.UCSC.hg19.knownGene")
+# BiocManager::install(bio_pkgs)
+
+# View TxDb.Hsapiens.UCSC.hg19.knownGene
+TxDb.Hsapiens.UCSC.hg19.knownGene
+``` 
+
+## Extract gene locations (TSS to TSS) 
+```{r}
+genesLocations <- genes(TxDb.Hsapiens.UCSC.hg19.knownGene)
+# 403 genes were dropped because they have exons located on both
+# strands of the same reference sequence or on more than one
+# reference sequence, so cannot be represented by a single genomic
+# range.
+genesLocations
+# ranges denote the start and end positions of a gene, not considering the intron and exon
+```
+
+## Extract the start position of every gene (TSS)
+```{r}
+tssLocations <- resize(genesLocations, fix = "start", width = 1)
+tssLocations
+# resize knows if the strand is negative, it will use the second value in IRanges as the start position; and if the strand is positive, it will use the first value in IRanges as the start positions
+```
+
+## Limit the TSS location to the main chromosomes
+```{r}
+mainChromosomes <- paste0("chr", c(1:21, "X", "Y", "M"))
+myIndex <- match(seqnames(tssLocations), mainChromosomes)
+# match returns the position of each element in seqnames(tssLocations) in the character vector mainChromosomes
+myIndex
+# NA: chr22 in seqnames(tssLocations) does not have the matched counterpart in mainChromosomes
+
+tssLocations <- tssLocations[!is.na(as.numeric(myIndex))]
+tssLocations
+seqnames(tssLocations)
+seqlevels(tssLocations) <- mainChromosomes
+# seqlevels() sets the levels of the seqnames
+```
+
+
+## Visualize signal over TSS regions using `{soGGi}`
+```{r}
+library(Rsamtools)
+sortedBAM <- "./data/Sorted_ATAC_50K_2.bam" # A sorted BAM file where the ATAC-seq data is aligned
+allSignal <- regionPlot(bamFile = sortedBAM, testRanges = tssLocations)
+allSignal
+```
+
+## Select only nucleosome free signal (< 100 base-pairs): minFragmentLength = 0, maxFragmentLength = 100
+```{r}
+nucFree <- regionPlot(bamFile = sortedBAM, 
+                      testRanges = tssLocations, 
+                      style = "point", # Type of plot
+                      format = "bam", # Use the bam file
+                      paired = T, 
+                      minFragmentLength = 0, 
+                      maxFragmentLength = 100, 
+                      forceFragment = 50) # forceFragment: visualization purpose
+class(nucFree)
+plotRegion(nucFree)
+# We see the signal peak for our nucleosome free region in the region over TSS
+```
+
+## Select only mono-nucleosome signal: minFragmentLength = 180, maxFragmentLength = 240
+```{r}
+monoNuc <- regionPlot(bamFile = sortedBAM, 
+                      testRanges = tssLocations, 
+                      style = "point", # Type of plot
+                      format = "bam", # Use the bam file
+                      paired = T, 
+                      minFragmentLength = 180, 
+                      maxFragmentLength = 240, 
+                      forceFragment = 80) # forceFragment: visualization purpose
+class(monoNuc)
+plotRegion(monoNuc)
+# We see the expected +1 nucleosome signal peak and other nucleosome signal peaks
+```
