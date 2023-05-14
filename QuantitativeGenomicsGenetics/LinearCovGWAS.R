@@ -60,13 +60,13 @@ pval_calculator_w_covars <- function(pheno_input, xa_input, xd_input, xz_input){
   y_hat_0 = x_h0 %*% MLE_h0 
   y_hat_1 = X_mx%*% MLE_beta 
   
-  SSE_theta_0 = sum((pheno_input-y_hat_0)^2) 
-  SSE_theta_1 = sum((pheno_input-y_hat_1)^2) 
+  SSE_theta_0 = sum((pheno_input - y_hat_0)^2) 
+  SSE_theta_1 = sum((pheno_input - y_hat_1)^2) 
   
   df_M <- 2
   df_E <- n_samples - 4 
   
-  numerator <- (SSE_theta_0-SSE_theta_1) / df_M 
+  numerator <- (SSE_theta_0 - SSE_theta_1) / df_M 
   denom <- SSE_theta_1 / df_E
   Fstatistic <- numerator / denom
   
