@@ -24,6 +24,9 @@ This repository holds various coding practice, learning notes, and assignment so
   - [Perform post-alignment processing](ATACSeq/PostAlignment.Rmd)
   - [Perform ATACseq quality control using ATACseqQC](ATACSeq/ATACseqQC.Rmd)
   - [Evaluate transcriptional start site signal](ATACSeq/EvaluateTSS.Rmd)
+  - [Call peaks with quality control](ATACSeq/CallPeak.Rmd)
+
+
 <hr>
 
 **[Multimodal data integration](Note_MultimodalDataIntegration.md)**
