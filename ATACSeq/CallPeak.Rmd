@@ -101,7 +101,7 @@ blkList <- import.bed("./data/ENCFF001TDO.bed.gz")
 openRegionPeaks <- "./data/Sorted_ATAC_50K_2_Small_Paired_peaks.narrowPeak/Sorted_ATAC_50K_2_Small_Paired_peaks.narrowPeak"
 qcRes <- ChIPQCsample("./data/Sorted_ATAC_50K_2_openRegions.bam",
                       peaks = openRegionPeaks,
-                      annotation ="hg19",
+                      annotation = "hg19",
                       chromosomes = "chr20",
                       blacklist = blkList,
                       verboseT = FALSE)
@@ -115,7 +115,7 @@ myMetrics[c("RiBL%", "RiP%")]
 
 # Calculate numbers of duplicated reads 
 flgCounts <- flagtagcounts(qcRes)
-DupRate <- flgCounts["DuplicateByChIPQC"]/flgCounts["Mapped"] * 100
+DupRate <- flgCounts["DuplicateByChIPQC"] / flgCounts["Mapped"] * 100
 ```
 
 
