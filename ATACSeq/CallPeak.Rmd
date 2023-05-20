@@ -1,0 +1,129 @@
+---
+title: "ATAC-Seq Data Analysis with Human Data - Call Peaks with Quality Control"
+author: "Anni Liu"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: 
+  html_document:
+    code_folding: show
+---
+
+```{r, shorcut, include=FALSE}
+## RStudio keyboard shortcut
+# Cursor at the beginning of a command line: Ctrl+A
+# Cursor at the end of a command line: Ctrl+E
+# Clear all the code from your console: Ctrl+L
+# Create a pipe operator %>%: Ctrl+Shift+M (Windows) or Cmd+Shift+M (Mac)
+# Create an assignment operator <-: Alt+- (Windows) or Option+-(Mac) 
+# Knit a document (knitr): Ctrl+Shift+K (Windows) or Cmd+Shift+K (Mac)
+# Comment or uncomment current selection: Ctrl+Shift+C (Windows) or Cmd+Shift+C (Mac)
+```
+
+# Peak calling
+## Install MACS2 with Herper
+```{r}
+library(Herper)
+salmon_paths <- install_CondaTools(tools = "macs2", env = "ATACseq_analysis")
+# * Using Miniconda at: /Users/anniliu/Library/r-miniconda
+# * The environment 'ATACseq_analysis' does not currently exist.
+# * Creating the environment 'ATACseq_analysis' and installing tools
+## pathToMiniConda: Path to miniconda installation
+## updateEnv: Update existing package's conda environment if already installed
+salmon_paths
+# $pathToConda
+# [1] "/Users/anniliu/Library/r-miniconda/bin/conda"
+# 
+# $environment
+# [1] "ATACseq_analysis"
+# 
+# $pathToEnvBin
+# [1] "/Users/anniliu/Library/r-miniconda/envs/ATACseq_analysis/bin"
+```
+
+
+## Nucleosome free peak calling from single-end sequencing
+```{r}
+# Reference: https://pypi.org/project/MACS2/
+# https://hbctraining.github.io/Intro-to-ChIPseq/lessons/05_peak_calling_macs.html
+with_CondaEnv("ATACseq_analysis",
+              system2(command = "macs2",
+                      args = c("callpeak",
+                               "-t", "singleEnd.bam",
+                               "--nomodel",
+                               "--shift", "-100",
+                               "--extsize", "200",
+                               "--format", "BAM",
+                               "-g", "hs"),
+                      stdout = T))
+# -g: mappable genome size which is defined as the genome size which can be sequenced; some precompiled values provided.
+# stdout: where output to ‘stdout’ should be sent. Possible values are "", to the R console (the default), NULL or FALSE (discard output), TRUE (capture the output in a character vector) or a character string naming a file.
+```
+
+
+## Nucleosome occupied peak calling from single-end sequencing
+```{r}
+with_CondaEnv("ATACseq_analysis",
+              system2(command = "macs2", 
+                      args = c("callpeak", 
+                               "-t", "singleEnd.bam",
+                               "--nomodel",
+                               "--shift", "-37", # Notice
+                               "--extsize", "73", # Notice
+                               "--format", "BAM",
+                               "-g", "hs"),
+                      stdout = T))
+```
+
+
+## Nucleosome free peak calling from paired-end sequencing
+```{r}
+# Reference: https://pypi.org/project/MACS2/
+with_CondaEnv("ATACseq_analysis",
+              system2(command = "macs2",
+                      args = c("callpeak",
+                               "-t", "/Users/anniliu/Library/r-miniconda/envs/ATACseq_analysis/data/Sorted_ATAC_50K_2.bam", # Nucleosome free region BMA file
+                               "--outdir", "/Users/anniliu/Library/r-miniconda/envs/ATACseq_analysis/data/Sorted_ATAC_50K_2_Small_Paired_peaks.narrowPeak/",
+                               "--format", "BAMPE",
+                               "--name", "pairedEndPeakName",
+                               "-g", "hs"),
+                      stdout = T))
+```
+
+
+# Quality control
+```{r}
+library(ChIPQC)
+library(rtracklayer)
+library(DT)
+library(dplyr)
+library(tidyr)
+
+blkList <- import.bed("./data/ENCFF001TDO.bed.gz")
+openRegionPeaks <- "./data/Sorted_ATAC_50K_2_Small_Paired_peaks.narrowPeak/Sorted_ATAC_50K_2_Small_Paired_peaks.narrowPeak"
+qcRes <- ChIPQCsample("./data/Sorted_ATAC_50K_2_openRegions.bam",
+                      peaks = openRegionPeaks,
+                      annotation ="hg19",
+                      chromosomes = "chr20",
+                      blacklist = blkList,
+                      verboseT = FALSE)
+```
+
+
+```{r}
+# Calculate reads in peaks and reads in blacklist
+myMetrics <- QCmetrics(qcRes)
+myMetrics[c("RiBL%", "RiP%")]
+
+# Calculate numbers of duplicated reads 
+flgCounts <- flagtagcounts(qcRes)
+DupRate <- flgCounts["DuplicateByChIPQC"]/flgCounts["Mapped"] * 100
+```
+
+
+```{r}
+# Remove blacklisted peaks
+MacsCalls <- granges(qcRes[seqnames(qcRes) %in% "chr20"])
+data.frame(Blacklisted = sum(MacsCalls %over% blkList),
+           Not_Blacklisted = sum(!MacsCalls %over% blkList))
+save(MacsCalls,file = "data/MacsCall_pres2.RData")
+```
+
