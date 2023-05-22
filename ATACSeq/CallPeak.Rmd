@@ -127,3 +127,21 @@ data.frame(Blacklisted = sum(MacsCalls %over% blkList),
 save(MacsCalls,file = "data/MacsCall_pres2.RData")
 ```
 
+
+# Annotation
+## Annotate peaks
+```{r}
+library(ChIPseeker)
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+MacsCalls_Anno <- annotatePeak(MacsCalls, TxDb.Hsapiens.UCSC.hg19.knownGene)
+```
+
+
+## Annotate nucleosome free regions
+```{r}
+MacsGR_Anno <- as.GRanges(MacsCalls_Anno)
+
+# Subset the peaks on nucleosome free regions to those landing in TSS regions (+/-500)
+MacsGR_TSS <- MacsGR_Anno[abs(MacsGR_Anno$distanceToTSS) < 500]
+MacsGR_TSS[1, ]
+```
