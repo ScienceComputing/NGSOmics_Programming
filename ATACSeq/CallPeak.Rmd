@@ -145,3 +145,16 @@ MacsGR_Anno <- as.GRanges(MacsCalls_Anno)
 MacsGR_TSS <- MacsGR_Anno[abs(MacsGR_Anno$distanceToTSS) < 500]
 MacsGR_TSS[1, ]
 ```
+
+
+# Functional analysis of peaks
+```{r}
+if (!require("rGREAT", quietly = TRUE)) { BiocManager::install("rGREAT"); library(rGREAT) } else { library(rGREAT) }
+great_Job <- submitGreatJob(MacsCalls, species = "hg19")
+availableCategories(great_Job)
+
+great_ResultTable <- getEnrichmentTables(great_Job)
+names(great_ResultTable)
+
+great_ResultTable[["GO Biological Process"]][1:4, ]
+```
