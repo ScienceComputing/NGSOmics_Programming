@@ -4,7 +4,7 @@ author: "Anni Liu"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: 
   html_document:
-    code_folding: show
+    code_folding: show 
 ---
 
 ```{r, shorcut, include=FALSE}
