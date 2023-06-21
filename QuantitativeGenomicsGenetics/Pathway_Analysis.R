@@ -1,6 +1,9 @@
+##------Attach libraries------
 library(clusterProfiler)
 library(data.table)
 library(ggplot2)
+
+##------Load data------
 data(geneList, package = "DOSE")
 geneList |> head()
 # 4312     8318    10874    55143    55388      991 
@@ -32,6 +35,7 @@ head(ggo)
 # GO:0009975 GO:0009975                          cyclase activity     0     0/207        
 
 ##------Translate biological ID------
+## !!!Notice that For GO analysis, user don’t need to convert ID, all ID type provided by OrgDb can be used in groupGO, enrichGO and gseGO by specifying keyType parameter.
 ## Ref: https://yulab-smu.top/biomedical-knowledge-mining-book/useful-utilities.html#id-convert
 ## Example
 library(org.Hs.eg.db)
@@ -43,6 +47,7 @@ keytypes(org.Hs.eg.db)
 ## [21] "PMID"         "PROSITE"      "REFSEQ"       "SYMBOL"       "UCSCKG"      
 ## [26] "UNIPROT"
 
+# bitr()
 x <- "ENSG00000211445"
 ids <- bitr(x, fromType = "ENSEMBL", 
             toType = c("ENTREZID", "SYMBOL"), 
@@ -52,15 +57,34 @@ ids <- bitr(x, fromType = "ENSEMBL",
 # ENSEMBL ENTREZID SYMBOL
 # 1 ENSG00000211445     2878   GPX3
 
+# setReadable()
+## Situation: The readable parameter is not available for enrichment analysis of KEGG or using user’s own annotation.
+## Translating gene IDs to gene symbols is partly supported using the setReadable function if and only if there is an OrgDb available. 
+
+library(org.Hs.eg.db)
+de <- names(geneList)[1:100]
+x <- enrichKEGG(de)
+## The geneID column is ENTREZID
+head(x, 3)
+
+y <- setReadable(x, OrgDb = org.Hs.eg.db, keyType="ENTREZID")
+## The geneID column is translated to symbol
+head(y, 3)
+
+
 ##------GO over-representation analysis - enrichGO()------
 ego <- enrichGO(gene          = gene.id,
                 universe      = names(geneList),
                 OrgDb         = "org.Hs.eg.db",
+                keyType       = "ENTREZID",
                 ont           = "MF",
                 pAdjustMethod = "BH",
                 pvalueCutoff  = 0.01,
                 qvalueCutoff  = 0.05,
                 readable      = TRUE)
+# The universe setting the background gene universe for testing
+# If user do not explicitly setting this parameter, enrichDO() will set the universe to all human genes that have DO annotation
+
 head(ego)
 #                   ID                 Description GeneRatio   BgRatio       pvalue     p.adjust       qvalue
 # GO:0008017 GO:0008017         microtubule binding    18/190 200/11755 3.623923e-09 1.674252e-06 1.583082e-06
@@ -176,8 +200,8 @@ mkk2@result |> View()
 
 ##------Visualize enriched KEGG pathways------
 browseKEGG(mkk, "M00938") # pathway ID
-# Explore selected KEGG pathway. 
-# Differentially expressed genes that are enriched in the selected pathway will be highlighted.
+# Explore selected KEGG pathway
+# Differentially expressed genes that are enriched in the selected pathway will be highlighted
 
 
 # The following example illustrates how to visualize the “hsa04110” pathway, which was enriched in our previous analysis.
@@ -187,3 +211,117 @@ hsa04110 <- pathview(gene.data  = geneList,
                      species    = "hsa",
                      limit      = list(gene = max(abs(geneList)), cpd = 1))
 hsa04110
+
+
+##------WikiPathways over-representation analysis - enrichWP()------
+# Ref: https://yulab-smu.top/biomedical-knowledge-mining-book/wikipathways-analysis.html
+# List supported organisms
+get_wp_organisms()
+
+WP.ora <- enrichWP(gene.id, 
+                   organism = "Homo sapiens",
+                   pvalueCutoff = 0.05,
+                   pAdjustMethod = "BH",
+                   universe = NULL,
+                   minGSSize = 10,
+                   maxGSSize = 500,
+                   qvalueCutoff = 0.2) 
+WP.ora@result |> View()
+
+##------WikiPathways gene set enrichment analysis - enrichWP()------
+WP.gse <- gseWP(geneList, 
+                organism = "Homo sapiens",
+                exponent = 1,
+                minGSSize = 10,
+                maxGSSize = 500,
+                eps = 1e-10,
+                pvalueCutoff = 0.05,
+                pAdjustMethod = "BH",
+                by = "fgsea")
+WP.gse@result |> View()
+
+
+##------Reactome enrichment analysis - enrichPathway()------
+# Input gene ID should be Entrez gene ID
+library(ReactomePA)
+library(org.Hs.eg.db)
+R.ora <- enrichPathway(gene = gene.id, pvalueCutoff = 0.05, readable = TRUE)
+R.ora@result |> View()
+
+
+##------Reactome pathway gene set enrichment analysis - gsePathway()------
+R.gse <- gsePathway(geneList, 
+                    pvalueCutoff = 0.2,
+                    pAdjustMethod = "BH", 
+                    verbose = FALSE)
+R.gse@result |> View()
+
+
+##------Visualize enriched Reactome pathways------
+viewPathway(pathName = "E2F mediated regulation of DNA replication", # R.gse@result$Description
+            organism = "human",
+            readable = TRUE, 
+            foldChange = geneList)
+
+
+##------Disease over-representation analysis - enrichDO()------
+library(DOSE)
+DO.ora <- enrichDO(gene = gene.id,
+                   ont = "DO",
+                   pvalueCutoff = 0.05,
+                   pAdjustMethod = "BH",
+                   universe = names(geneList),
+                   minGSSize = 5, # Minimal size of each geneSet 
+                   maxGSSize = 500, # Maximal size of each geneSet 
+                   qvalueCutoff = 0.05,
+                   readable = T)
+DO.ora@result |> View()
+# The enrichDO() function requires an entrezgene ID vector as input, 
+# mostly is the differential gene list of gene expression profile studies
+# pvalueCutoff setting the cutoff value of p value and adjusted p value
+# The universe setting the background gene universe for testing
+# If user do not explicitly setting this parameter, enrichDO() will set the universe to all human genes that have DO annotation
+
+##------Disease gene set enrichment analysis - gseDO()------
+DO.gse <- gseDO(geneList = geneList, # A ranked gene list 
+                minGSSize     = 120,
+                pvalueCutoff  = 0.2,
+                pAdjustMethod = "BH",
+                verbose       = FALSE,
+                eps = 0)
+DO.gse@result |> View()
+
+##------Over-representation analysis for the network of cancer gene - enrichNCG()------
+# DOSE supports analyzing gene list and determine whether they are enriched in genes known to be mutated in a given cancer type
+gene.id.2 <- names(geneList)[abs(geneList) < 3]
+NCG.ora <- enrichNCG(gene = gene.id.2, readable = T) 
+NCG.ora@result |> View()
+
+##------Gene set enrichment analysis for the network of cancer gene - gseNCG()------
+NCG.gse <- gseNCG(geneList = geneList,
+                  pvalueCutoff  = 0.5,
+                  pAdjustMethod = "BH",
+                  verbose       = FALSE) 
+NCG.gse <- setReadable(x = NCG.gse, OrgDb = "org.Hs.eg.db") # No readable parameter
+NCG.gse@result |> View()
+
+##------Over-representation analysis for the disease gene network - enrichDGN()------
+DGN.ora <- enrichDGN(gene = gene.id, readable = T) 
+DGN.ora@result |> View()
+
+##------Gene set enrichment analysis for the disease gene network - gseDGN()------
+DGN.gse <- gseDGN(geneList = geneList,
+                  pvalueCutoff  = 0.2,
+                  pAdjustMethod = "BH",
+                  verbose       = FALSE,
+                  eps = 0)
+DGN.gse <- setReadable(x = DGN.gse, OrgDb = "org.Hs.eg.db") # No readable parameter
+DGN.gse@result |> View()
+
+##------Over-representation analysis for the disease SNP network - enrichDGNv()------
+snp <- c("rs1401296", "rs9315050", "rs5498", "rs1524668", "rs147377392",
+         "rs841", "rs909253", "rs7193343", "rs3918232", "rs3760396",
+         "rs2231137", "rs10947803", "rs17222919", "rs386602276", "rs11053646",
+         "rs1805192", "rs139564723", "rs2230806", "rs20417", "rs966221")
+DGNv.ora <- enrichDGNv(snp)
+DGNv.ora@result |> View()
