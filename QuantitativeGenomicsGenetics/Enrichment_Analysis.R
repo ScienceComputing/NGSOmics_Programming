@@ -1,3 +1,7 @@
+###########################################################################################
+##  Enrichment analysis (over-representation analysis and gene set enrichment analysis)  ##
+###########################################################################################
+
 ##------Attach libraries------
 library(clusterProfiler)
 library(data.table)
