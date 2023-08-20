@@ -1,4 +1,4 @@
-#####Estimate the coverage#####
+#####Estimate the coverage of NGS#####
 # C: coverage; G: haploid genome length (bp); L: read length (bp); N: number of reads
 
 G <- 3.05*(10^9) # Human genome size
