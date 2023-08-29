@@ -9,12 +9,12 @@ library(scater)
 library(uwot)
 library(rtracklayer)
 box::use(rtracklayer[rt_import = import,...])
+library(BiocFileCache)
 
 #####Store primary experimental data#####
 # Fill the assays slot
 # Download the data
 # setwd("~/SingleCellRNASeq/Bioconductor")
-library(BiocFileCache)
 bfc <- BiocFileCache("raw_data", ask = F)
 calero.counts <- bfcrpath(x = bfc, rnames = "https://www.ebi.ac.uk/biostudies/files/E-MTAB-5522/counts_Calero_20160113.tsv")
 # BFC1 
@@ -132,7 +132,6 @@ mcols(gene.data) # Access the column data using mcols()
 colnames(mcols(gene.data)) # Extract the column name
 gene.related.cols <- grep("gene_", colnames(mcols(gene.data))) # Extract names of gene-related columns
 mcols(gene.data) <- mcols(gene.data)[,gene.related.cols] # Extract gene-related columns
-mcols(gene.data) <- mcols(gene.data)[,is.gene.related]
 rowRanges(sce) <- gene.data[rownames(sce)]
 
 # Access the first 10 elements in the rowRanges slot
