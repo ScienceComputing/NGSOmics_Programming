@@ -235,11 +235,11 @@ head(b.val)
 par(mfrow=c(1,2))
 densityPlot(b.val, sampGroups=sample.info$Sample_Group, main="Beta values", 
             legend=F, xlab="Beta values")
-legend("top", legend = levels(factor(sample.info$Sample_Group)), 
+legend("top", legend=levels(factor(sample.info$Sample_Group)), 
        text.col=brewer.pal(8,"Dark2"))
 densityPlot(m.val, sampGroups=sample.info$Sample_Group, main="M-values", 
             legend=F, xlab="M values")
-legend("topleft", legend = levels(factor(sample.info$Sample_Group)), 
+legend("topleft", legend=levels(factor(sample.info$Sample_Group)), 
        text.col=brewer.pal(8,"Dark2"))
 
 # Next step, we will perform the probe-wise analysis, where we test each individual CpG probe for differential methylation in terms of the comparisons of interest, and estimate the p-values and moderated t-statistics for each CpG probe.
