@@ -52,9 +52,17 @@ m.val.annotate <- cpg.annotate(object = m.val, datatype = "array", what = "M",
                                analysis.type = "differential", design = design, 
                                contrasts = T, cont.matrix = cont.mat, 
                                coef = "naive - rTreg", arraytype = "450K")
+# cpg.annotate {DMRcate}
 str(m.val.annotate)
 
+# Compute a kernel estimate against a null comparison to identify significantly differentially (or variable) methylated regions
 dmrs <- dmrcate(m.val.annotate, lambda=1000, C=2)
+# C: scaling factor for bandwidth. Gaussian kernel is calculated where lambda/C = sigma. 
+# Empirical testing has demonstrated that for both Illumina and bisulfite sequencing data, achieving near-optimal prediction of sequencing-derived DMRs is possible when the value of lambda is set to 1000 and the parameter C is approximately 2. In other words, a Gaussian kernel with a standard deviation of 500 base pairs provides an effective approach.
+# Cannot be < 0.2.
+# lambda: Gaussian kernel bandwidth for smoothed-function estimation. Also informs DMR bookend definition; gaps >= lambda between significant CpG sites will be in separate DMRs. Support is truncated at 5*lambda. Default is 1000 nucleotides. 
+# The values of lambda and C should be chosen with care. For array data, we currently recommend that half a kilobase represent 1 standard deviation of support (lambda=1000 and C=2). 
+# If lambda is too small or C too large then the kernel estimator will not have enough support to significantly differentiate the weighted estimate from the null distribution. If lambda is too large then dmrcate will report very long DMRs spanning multiple gene loci, and the large amount of support will likely give Type I errors. If you are concerned about Type I errors we highly recommend using the default value of pcutoff, although this will return no DMRs if no DM CpGs are returned by limma/DSS either.
 results.ranges <- extractRanges(dmrs)
 results.ranges
 
@@ -67,4 +75,9 @@ cols <- groups[as.character(factor(sample.info$Sample_Group))]
 par(mfrow=c(1,1))
 DMR.plot(ranges = results.ranges, dmr = 2, CpGs = b.val, phen.col = cols, 
          what = "Beta", arraytype = "450K", genome = "hg19")
+# dmr: index of ranges (one integer only) indicating which DMR to be plotted
+# This plot shows (1) the location of the differentially methylated region in the genome, 
+# (2) the position of any genes that are nearby, 
+# (3) the base pair positions of the CpG probes, 
+# (4) the methylation levels of the individual samples as a heatmap and the mean methylation levels for the various sample groups in the experiment.
 
