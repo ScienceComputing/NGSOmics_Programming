@@ -62,7 +62,7 @@ docker run hello-docker
 # It doesn't matter which directory we are in because this image contains all the files for running our application 
 ```
 
-# Push the image into the Docker Hub
+## Push the image into the Docker Hub
 ```
 docker tag hello-docker:latest XYZ/hello-docker:latest
 docker push XYZ/hello-docker:latest
