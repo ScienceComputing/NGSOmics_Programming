@@ -1,0 +1,50 @@
+---
+title: "Perform gene ontology testing using DNA methylation data"
+format: revealjs
+editor: visual
+---
+
+## Research questions
+
+Which gene pathways are over-represented for differentially methylated CpGs?
+
+## Select CpG sitest that show adjusted p-values < 0.05 (< 5% FDR)
+
+```{r}
+sig.CpGs <- dmps$Name[dmps$adj.P.Val<0.05]
+sig.CpGs[1:10] # Show the first 6 significant CpG site names
+length(sig.CpGs) # How many significant CpG sites do we find?
+```
+
+## Retrieve all the CpG sites tested in the analysis to establish the background
+
+```{r}
+all.CpGs <- dmps$Name # Show all the CpG site names used in our analysis
+length(all.CpGs) # What is the total number of CpG sites do we test?
+```
+
+## Visulize the bias and perform the GO enrichment analysis
+Genes containing a greater number of CpGs are more likely to be recognized as differentially methylated when contrasted with genes having fewer CpGs.
+
+Usually, we deem GO categories with false discovery rates of under 5% as statistically significant. In cases where there are no categories meeting this level of significance, it can be beneficial to examine the top 5 or 10 highly ranked GO categories to acquire a better understanding of the biological system.
+
+```{r}
+par(mfrow=c(1,1))
+gst <- gometh(sig.cpg=sig.CpGs, all.cpg=all.CpGs, plot.bias=T)
+topGSA(gst, number=10) # Extract the top 10 most significant enriched pathways
+```
+
+## Specify the gene set to be tested
+
+`gsameth()`: Given a user specified list of gene sets to test, gsameth tests whether significantly differentially methylated CpG sites are enriched in these gene sets.
+
+```{r}
+file.path <- paste(data.dir,"human_c2_v5.rdata",sep="/")
+load(file.path) # Load the curated genesets (C2) from the Broad Institute Molecular signatures database; gene identifiers must be Entrez Gene IDs
+gsa <- gsameth(sig.cpg=sig.CpGs, all.cpg=all.CpGs, collection=Hs.c2) # Perform the enrichment analysis
+topGSA(gsa, number=10) # Extract the top 10 most significant enriched pathways
+```
+
+## Caveat
+Gene set testing offers valuable insights into potential biological pathways impacted by abnormal methylation. However, it's crucial to avoid excessive interpretation of the outcomes. The primary goal of gene set testing is to provide initial biological insights, which should ideally be confirmed through subsequent laboratory experiments. It's important to remember that we're not directly observing gene-level activities as we would in RNA-Seq experiments. Instead, we've taken **an additional step to link CpGs with genes.**
+
