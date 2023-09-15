@@ -21,8 +21,8 @@ library(Gviz)
 library(stringr)
 
 #####Load sample and intensity data#####
-# This is a 450k methylation dataset (GSE49667), 
-# which contains 10 samples in total: there are 4 different sorted T-cell types (naive, rTreg, act_naive, act_rTreg), collected from 3 different individuals (M28, M29, M30).
+# Here we use a 450k methylation dataset (GSE49667),
+# which contains 10 samples in total: 4 different sorted T-cell types (naive, rTreg, act_naive, act_rTreg), which were collected from 3 different individuals (M28, M29, M30).
 data.dir <- system.file("extdata", package = "methylationArrayAnalysis")
 list.files(data.dir, recursive = T)
 
@@ -107,7 +107,6 @@ densityPlot(getBeta(norm.set), sampGroups=sample.info$Sample_Group,
 legend("topleft", legend = levels(factor(sample.info$Sample_Group)), 
        text.col=brewer.pal(8,"Dark2"))
 
-
 #####Explorative data analysis#####
 # Make multi-dimensional scaling (MDS) plots to examine the relationships between the samples in an experiment
 # Samples that are more similar to each other cluster together, and samples that are very different are further apart on the plot
@@ -166,7 +165,7 @@ table(probe.keep)
 norm.set.filter <- norm.set[probe.keep,]
 norm.set.filter
 
-#####Optional section#####
+#####Optional removal on SEX#####
 # If the data includes males and females, remove probes on the sex chromosomes
 probe.keep <- !(featureNames(norm.set) %in% anndata.450k$Name[anndata.450k$chr %in% c("chrX","chrY")])
 table(probe.keep)
@@ -180,7 +179,7 @@ norm.set.filter
 xReactiveProbes <- read.csv(file=paste(data.dir,
                                        "48639-non-specific-probes-Illumina450k.csv",
                                        sep="/"), stringsAsFactors=F)
-probe.keep <- !(featureNames(norm.set.filter) %in% xReactiveProbes$norm.set.filter)
+probe.keep <- !(featureNames(norm.set.filter) %in% xReactiveProbes$TargetID)
 table(probe.keep)
 norm.set.filter <- norm.set.filter[probe.keep,]
 norm.set.filter
