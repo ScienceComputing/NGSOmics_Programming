@@ -1,6 +1,6 @@
 # Quantitative biology
 
-This repository holds various coding practice, learning notes, and assignment solutions based on the materials from various computational biology/bioinformatics courses, workshops, technical manuals, academic articles, and others. 
+This repository holds various coding practice, learning notes, assignment/competition solutions based on the materials from various computational biology/bioinformatics courses, workshops, technical manuals, academic articles, and others. 
 
 **Analyze bulk RNA-Seq data**
 
@@ -15,6 +15,7 @@ This repository holds various coding practice, learning notes, and assignment so
 
   - [Use Seurat workflow](SingleCellRNASeq/SeuratSkinCell.Rmd)
   - [Use bioconductor packages to orchestrate single cell RNA-Seq data analysis](SingleCellRNASeq/BioconductorSkinCell.Rmd)
+  - Single cell perturbations
 
 <hr>
 
