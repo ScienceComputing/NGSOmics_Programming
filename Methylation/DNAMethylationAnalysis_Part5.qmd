@@ -1,0 +1,143 @@
+---
+title: "Examine the differential variability"
+format: revealjs
+editor: visual
+---
+
+## Research question
+
+Are there any CpG sites that exhibit **consistent** methylation in one group while showing **variability** in methylation in another group?"
+
+## Load the data
+
+```{r}
+file.dir <- file.path(data.dir,"ageData.RData")
+load(file.dir)
+```
+
+## Calculate detection p-values
+
+```{r}
+age.det.p <- detectionP(age.rgSet)
+```
+
+## Normalize the data
+
+```{r}
+age.norm.set <- preprocessQuantile(age.rgSet)
+```
+
+## Add sex information to sample information
+
+`getSex()` estimates samples sex based on methylation data.
+
+```{r}
+age.sample.info <- age.targets
+age.sample.info$Sex <- getSex(age.norm.set)$predictedSex
+```
+
+## Make sure that the probes maintain the same order in both the `norm.set` and `det.p objects`
+
+```{r}
+age.det.p.order <- age.det.p[match(featureNames(age.norm.set),rownames(age.det.p)),] # featureNames() and rownames() retrieve the cg names
+dim(age.det.p)
+dim(age.det.p.order)
+```
+
+## Remove poor quality probes
+
+```{r}
+probe.keep <- rowSums(age.det.p.order < 0.01) == ncol(age.norm.set) 
+table(probe.keep)
+age.norm.set.filter <- age.norm.set[probe.keep,]
+dim(age.norm.set)
+dim(age.norm.set.filter)
+```
+
+## Remove probes with SNPs at CpG or single base extension (SBE) site
+
+```{r}
+age.norm.set.filter.snp <- dropLociWithSnps(age.norm.set.filter)
+dim(age.norm.set.filter.snp)
+```
+
+## Remove cross-reactive probes
+
+```{r}
+x.reactive.probes <- read.csv(file=paste(data.dir,
+                              "48639-non-specific-probes-Illumina450k.csv",
+                              sep="/"), stringsAsFactors=F)
+probe.keep <- !(featureNames(age.norm.set.filter.snp) %in% x.reactive.probes$TargetID)
+table(probe.keep)
+age.norm.set.filter.snp.cr <- age.norm.set.filter.snp[probe.keep,]
+dim(age.norm.set.filter.snp.cr)
+```
+
+## Examine the effect of removing sex chromosome probes on the data
+
+It's clear that prior to the elimination of sex chromosome probes, the sample clustering was primarily determined by sex in the second principal component. However, once the sex chromosome probes were removed, age became the predominant factor contributing to the variation in the data in the first principal component, and the samples of males and females ceased to exhibit distinct clusters.
+
+```{r}
+probe.keep <- !(featureNames(age.norm.set.filter.snp.cr) %in% anndata.450k$Name[anndata.450k$chr %in% c("chrX","chrY")])
+
+age.pal <- brewer.pal(8,"Set1")
+par(mfrow=c(1,2))
+
+plotMDS(x=getM(age.norm.set.filter.snp.cr), top=1000, gene.selection="common", 
+        col=age.pal[factor(age.sample.info$Sample_Group)], labels=age.sample.info$Sex, 
+        main="With Sex CHR Probes")
+# top	- number of top genes used to calculate pairwise distances.
+# gene.selection - character, "pairwise" to choose the top genes separately for each pairwise comparison between the samples or "common" to select the same genes for all comparisons.
+# This function uses multidimensional scaling (MDS) to produce a principal coordinate (PCoA) or principal component (PCA) plot showing the relationships between the expression profiles represented by the columns of x. If gene.selection = "common", or if the top is equal to or greater than the number of rows of x, then a PCA plot is constructed from the top genes with largest standard deviations across the samples.
+# If gene.section = "pairwise" and top is less than nrow(x) then a PCoA plot is produced and distances on the plot represent the leading log2-fold-changes. The leading log-fold-change between a pair of samples is defined as the root-mean-square average of the top largest log2-fold-changes between those two samples. The PCA and PCoA plots produced by gene.selection="common" and gene.selection="pairwise", respectively, use similar distance measures but the PCA plot uses the same genes throughout whereas the PCoA plot potentially selects different genes to distinguish each pair of samples. The pairwise choice is the default. It potentially gives better resolution than a PCA plot if different molecular pathways are relevant for distinguishing different pairs of samples.
+legend("topleft", legend=levels(factor(age.sample.info$Sample_Group)), 
+       text.col=age.pal)
+
+plotMDS(getM(age.norm.set.filter.snp.cr[probe.keep,]), top=1000, gene.selection="common", 
+        col=age.pal[factor(age.sample.info$Sample_Group)], labels=age.sample.info$Sex, 
+        main="Without Sex CHR Probes")
+legend("top", legend=levels(factor(age.sample.info$Sample_Group)),
+       text.col=age.pal)
+```
+
+```{r}
+# Remove sex chromosome probes from data
+age.norm.set.filter.snp.cr.sex <- age.norm.set.filter.snp.cr[probe.keep,]
+```
+
+## Test for differentially variable CpGs 
+
+```{r}
+# Obtain M-values for analysis
+age.m.val <- getM(age.norm.set.filter.snp.cr.sex)
+
+design <- model.matrix(~factor(age.sample.info$Sample_Group)) 
+
+# Fit the model for differential variability
+# Specify the intercept and age as the grouping factor
+model.var <- varFit(age.m.val, design=design, coef=c(1,2))
+
+# Output the summary of differential variability
+summary(decideTests(model.var))
+
+# Show the top 5 differentially variable CpGs between old vs newborns
+top5.dv <- topVar(fit=model.var, coef=2, number=5)
+# coef: Column number or column name specifying which coefficient of the linear model fit is of interest. It should be the same coefficient that the differential variability testing was performed on. Default is last column of fit object.
+top5.dv
+```
+
+
+## Visualize sample-wise beta values for the differentially variable CpGs
+
+Ensure the significant results are not driven by artifacts or outliers. 
+
+```{r}
+# Obtain beta values for ageing data
+age.b.val <- getBeta(age.norm.set.filter.snp.cr.sex)
+
+par(mfrow=c(2,2))
+sapply(rownames(top5.dv)[1:4], function(cpg){
+  plotCpg(age.b.val, cpg=cpg, pheno=age.sample.info$Sample_Group, 
+          ylab = "Beta values")
+})
+```
