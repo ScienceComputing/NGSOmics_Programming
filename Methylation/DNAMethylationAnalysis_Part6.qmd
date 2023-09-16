@@ -1,0 +1,41 @@
+---
+title: "Estimate the cell type composition"
+format: revealjs
+editor: visual
+---
+
+## Research question
+
+Are the methylation levels confounded by the cell type composition?
+
+## Estimate cell counts
+```{r}
+library(FlowSorted.Blood.450k)
+pData(age.rgSet)$Slide <- as.numeric(pData(age.rgSet)$Slide) # Make sure the "Slide" column in the rgSet phenotype data contains numerical values to prevent encountering an error when estimating cell counts with estimateCellCounts()
+
+cell.counts <- estimateCellCounts(age.rgSet)
+```
+
+## Visualize cell type proportions by age
+
+If we're dealing with samples obtained from a population of mixed cells, like blood, it's a good idea to examine the possibility of any relationship between variations in the proportions of different cell types and the variable you're studying (e.g., age group).
+
+```{r}
+par(mfrow=c(1,1))
+age.pal <- brewer.pal(8,"Set1")
+
+counts.newborn = cell.counts[age.sample.info$Sample_Group=="NewBorns",]
+counts.old = cell.counts[age.sample.info$Sample_Group=="OLD",]
+boxplot(counts.newborn, at=0:5*3 + 1, xlim=c(0, 18), 
+        ylim=range(counts.newborn, counts.old), xaxt="n", 
+        col=age.pal[1], main="", ylab="Cell type proportion")
+# at - numeric vector giving the locations where the boxplots should be drawn, particularly when add = TRUE; defaults to 1:n where n is the number of boxes.
+# xaxt - A character which specifies the x axis type. Specifying "n" suppresses plotting of the axis.
+boxplot(counts.old, at=0:5*3 + 2, xaxt="n", add=T, col=age.pal[2])
+axis(1, at=0:5*3 + 1.5, labels=colnames(counts.newborn), tick=T)
+# colnames(counts.newborn) # [1] "CD8T"  "CD4T"  "NK"    "Bcell" "Mono"  "Gran" 
+legend("topleft", legend=c("NewBorns","OLD"), fill=age.pal)
+```
+
+The above plot illustrates a significant association between variations in blood cell type proportions and age within this methylation dataset. Conducting cell composition estimation can be helpful to spot the potential confounding issues when analyzing a dataset comprising various cell types.
+
