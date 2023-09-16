@@ -1,4 +1,7 @@
-# We now perform the probe-wise analysis, where we test each individual CpG probe for differential methylation in terms of the comparisons of interest (e.g., different cell types in this case), and estimate the p-values and moderated t-statistics for each CpG probe.
+# We now perform the probe-wise analysis.
+
+#####Research question#####
+# Are there any differences in mean methylation for each individual CpG probe between the comparison group of interest (e.g., different cell types in this case)?
 
 #####Probe-wise differential methylation analysis#####
 #####Set up comparisons of interest#####
@@ -39,7 +42,10 @@ head(dmps)
 # Save the results
 write.table(dmps, file="dmps.csv", sep=",", row.names=F)
 
-#####Plot sample-wise beta values for the top differentially methylated CpG sites#####
+#####Visualize sample-wise beta values for the top differentially methylated CpG sites#####
+# Why we make this plot?
+# To check if the significant results are driven by artifacts or outliers. 
+# It is easier to interpret methylation levels on the beta value scale (β=M/(M+U)).
 par(mfrow=c(2,2))
 sapply(rownames(dmps)[1:4], function(cpg){
   plotCpg(b.val, cpg=cpg, pheno=sample.info$Sample_Group, ylab = "Beta values")
@@ -62,7 +68,7 @@ dmrs <- dmrcate(m.val.annotate, lambda=1000, C=2)
 # Cannot be < 0.2.
 # lambda: Gaussian kernel bandwidth for smoothed-function estimation. Also informs DMR bookend definition; gaps >= lambda between significant CpG sites will be in separate DMRs. Support is truncated at 5*lambda. Default is 1000 nucleotides. 
 # The values of lambda and C should be chosen with care. For array data, we currently recommend that half a kilobase represent 1 standard deviation of support (lambda=1000 and C=2). 
-# If lambda is too small or C too large then the kernel estimator will not have enough support to significantly differentiate the weighted estimate from the null distribution. If lambda is too large then dmrcate will report very long DMRs spanning multiple gene loci, and the large amount of support will likely give Type I errors. If you are concerned about Type I errors we highly recommend using the default value of pcutoff, although this will return no DMRs if no DM CpGs are returned by limma/DSS either.
+# If lambda is too small or C too large, then the kernel estimator will not have enough support to significantly differentiate the weighted estimate from the null distribution. If lambda is too large then dmrcate will report very long DMRs spanning multiple gene loci, and the large amount of support will likely give Type I errors. If you are concerned about Type I errors we highly recommend using the default value of pcutoff, although this will return no DMRs if no DM CpGs are returned by limma/DSS either.
 results.ranges <- extractRanges(dmrs)
 results.ranges
 
@@ -76,7 +82,8 @@ par(mfrow=c(1,1))
 DMR.plot(ranges = results.ranges, dmr = 2, CpGs = b.val, phen.col = cols, 
          what = "Beta", arraytype = "450K", genome = "hg19")
 # dmr: index of ranges (one integer only) indicating which DMR to be plotted
-# This plot shows (1) the location of the differentially methylated region in the genome, 
+# This plot shows:
+# (1) the location of the differentially methylated region in the genome, 
 # (2) the position of any genes that are nearby, 
 # (3) the base pair positions of the CpG probes, 
 # (4) the methylation levels of the individual samples as a heatmap and the mean methylation levels for the various sample groups in the experiment.
