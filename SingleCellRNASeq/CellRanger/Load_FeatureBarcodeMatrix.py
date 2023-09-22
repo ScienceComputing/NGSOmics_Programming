@@ -28,7 +28,7 @@ barcode_path = os.path.join(mat_path, "barcodes.tsv.gz")
 barcode = [row[0] for row in csv.reader(gzip.open(barcode_path, mode="rt"), delimiter="\t")]
 print(barcode)
 
-# A more elegant code to load the feature-barcode matrix:
+# Here is a more elegant coding solution for loading the feature-barcode matrix:
 # Define MEX directory
 mat_path = "./data/CTRL/"
 
@@ -60,7 +60,7 @@ count_mat.insert(loc=0, column="feature_id", value=feature_id) # new "feature_id
 count_mat.insert(loc=0, column="gene", value=gene_symbol)
 count_mat.insert(loc=0, column="feature_type", value=feature_type)
 
-# I'm going to show the information on each of the columns, such as the data type and number of missing values
+# Show the information on each of the columns, such as the data type and number of missing values
 count_mat.info()
 # <class 'pandas.core.frame.DataFrame'>
 # RangeIndex: 27998 entries, 0 to 27997
