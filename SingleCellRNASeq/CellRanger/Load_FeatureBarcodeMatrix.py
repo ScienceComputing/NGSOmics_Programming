@@ -1,3 +1,4 @@
+# 1
 import scipy.io, csv, gzip, os, pandas as pd
 print(os.getcwd()) # https://github.com/microsoft/vscode-python/issues/12173
 mat_path = "./data/CTRL/"
@@ -27,15 +28,39 @@ barcode_path = os.path.join(mat_path, "barcodes.tsv.gz")
 barcode = [row[0] for row in csv.reader(gzip.open(barcode_path, mode="rt"), delimiter="\t")]
 print(barcode)
 
+# A more elegant code to load the feature-barcode matrix:
+# Define MEX directory
+mat_path = "./data/CTRL/"
+
+# Define paths to metadata files
+feature_path = os.path.join(mat_path, "features.tsv.gz")
+barcode_path = os.path.join(mat_path, "barcodes.tsv.gz")
+
+# Read the matrix data in Matrix Market format
+mat = scipy.io.mmread(os.path.join(mat_path, "matrix.mtx.gz"))
+
+# Read metadata about features (transcripts)
+# https://docs.python.org/3/library/csv.html
+with gzip.open(feature_path, mode="rt") as feature_file:
+    feature_data = csv.reader(feature_file, delimiter="\t")
+    feature_id = [row[0] for row in feature_data]
+    gene_symbol = [row[1] for row in feature_data]
+    feature_type = [row[2] for row in feature_data]
+
+# Read the list of barcodes (cell identifiers)
+with gzip.open(barcode_path, mode="rt") as barcode_file:
+    barcode = [row[0] for row in csv.reader(barcode_file, delimiter="\t")]
+
+# 2
 # Covert the sparse feature-barcode matrix to the pandas DataFrame and label rows and columns
-# Each element of the matrix is the number of UMIs associated with a feature (row) and a barcode (column)
+# Notice that each element of the matrix is the number of UMIs associated with a feature (row) and a barcode (column)
 count_mat = pd.DataFrame.sparse.from_spmatrix(mat)
 count_mat.columns = barcode # Assign the new column names
 count_mat.insert(loc=0, column="feature_id", value=feature_id) # new "feature_id" column will be inserted as the first column in the DataFrame
 count_mat.insert(loc=0, column="gene", value=gene_symbol)
 count_mat.insert(loc=0, column="feature_type", value=feature_type)
 
-# This shows information on each of the columns, such as the data type and number of missing values
+# I'm going to show the information on each of the columns, such as the data type and number of missing values
 count_mat.info()
 # <class 'pandas.core.frame.DataFrame'>
 # RangeIndex: 27998 entries, 0 to 27997
@@ -43,8 +68,10 @@ count_mat.info()
 # dtypes: Sparse[int64, 0](737280), object(2)
 # memory usage: 244.0+ MB
     
-# View matrix
+# View the pandas DataFrame
 print(count_mat.head())
 # Save the pandas DataFrame as a CSV
 count_mat.to_csv("mex_matrix.csv", index=False)
+
+# TD: PySpark
 
