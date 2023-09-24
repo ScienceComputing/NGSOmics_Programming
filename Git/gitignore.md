@@ -11,21 +11,25 @@ scRNA_draft.*
 ```
 The pattern `scRNA_draft.*` matches any file or directory whose name begins with `scRNA_draft.`.
 
+
 ```
 /scRNA_draft.*
 ```
 The pattern `scRNA_draft.*` matches any file or directory whose name begins with `scRNA_draft.`, such as `scRNA_draft.qmd`, but not `code/scRNA_draft.qmd`.
+
 
 ```
 /scRNA
 ```
 The pattern `scRNA` will match a directory `scRNA` and paths underneath it, but will not match a regular file or a symbolic link  for `scRNA`.
 
+
 ```
 /scRNA/code_experiment
 scRNA/code_experiment
 ```
 The leading slash is not relevant if there is already a middle slash in the pattern.
+
 
 ```
 scRNA/*
