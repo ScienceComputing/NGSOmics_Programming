@@ -27,11 +27,14 @@ txg fastqs upload --project-id hHCuUsZhQJeSSSD90699s6gg scRNA/data/Neuron*
 
 # Now, we'are going to fetch the information and upload the snRNA-seq data (SRR17380406) from one human brain sample
 # This data comes from the recent Nature paper: molecular features driving cellular complexity of human brain evolution
+# We can use the NCBI SRA Toolkit to download the target FASTQ.gz data (https://www.ncbi.nlm.nih.gov/sra/?term=SRR17380406)
+prefetch SRR17380406 --max-size u
+fasterq-dump SRR17380406 --split-files -e 20 # Here we use 20 threads to speed up the downloading of this large-size file
+
+# Alternatively, ffq can be used to download the SRR accession file
 ffq SRR17380406
 ffq --ftp SRR17380406 | jq -r '.[] | .url' | xargs curl -O
-# Or we can use the NCBI SRA Toolkit to download the target FASTQ.gz data
-prefetch SRR17380406 --max-size u
-fasterq-dump SRR17380406 -e 20 # Here we use 20 threads to speed up the downloading of this large-size file
+fasterq-dump SRR17380406 --split-files -e 20
 
 # We put this fastq.gz file onto the 10x Genomics clouding analytics platform
 txg fastqs upload --project-id hHCuUsZhQJeSSSD90699s6gg scRNA/data/HumanBrain_S1_L001_R1_001.fastq.gz
