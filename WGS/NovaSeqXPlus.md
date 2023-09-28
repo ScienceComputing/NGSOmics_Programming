@@ -1,3 +1,15 @@
-- XLEAP-SBS Chemistry
-- Dual flow cell processing up to 16T
-- 
+- XLEAP-SBS Chemistry with novel polymerase
+  - faster incorporation
+  - higher accuracy: large majority of bases have quality scores >= 40
+  - more stable to thermal stress, stable in liquid
+- Dual flow cell (FC) processing up to 16T
+- 25B flow cell
+  - handle 26 billion reads
+  - run time: 48 hours
+  - 64 genomes per FC (8 per lane)
+  - output per FC: 3T
+- 10B flow cell
+  - handle 10 billion reads
+  - cycles: 100
+  - run time: 18 hours
+  - cells per FC: 400000 cells (25K reads per cell)
