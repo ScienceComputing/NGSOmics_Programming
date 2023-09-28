@@ -1,0 +1,3 @@
+- XLEAP-SBS Chemistry
+- Dual flow cell processing up to 16T
+- 
