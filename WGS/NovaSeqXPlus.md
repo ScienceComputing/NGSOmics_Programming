@@ -8,8 +8,9 @@
   - run time: 48 hours
   - 64 genomes per FC (8 per lane)
   - output per FC: 3T
-- 10B flow cell
+- 10B flow cell (for single cell projects)
   - handle 10 billion reads
   - cycles: 100
   - run time: 18 hours
   - cells per FC: 400000 cells (25K reads per cell)
+- Accurate (*F1 score*) secondary analysis with DRAGEN graph (https://support.illumina.com/content/dam/illumina-support/help/Illumina_DRAGEN_Bio_IT_Platform_v3_7_1000000141465/Content/In/Informatics/DRAGEN/GraphMapper_fDG.htm) and machine learning 
