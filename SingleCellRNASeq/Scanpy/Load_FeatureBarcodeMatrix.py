@@ -9,7 +9,7 @@ import pandas as pd
 sc.settings.set_figure_params(dpi=300, facecolor='white')
 sc.settings.verbosity = 3
 sc.logging.print_header()
-outcome_path = '../preprocessed_data/pbmc.h5ad'
+outcome_path = '../preprocessed_data/pbmc_v0.h5ad'
 
 adata_pbmc = sc.read_10x_mtx(
     '../scRNA_data/filtered_gene_bc_matrices/hg19/',  # Specify the directory that contains the .mtx feature-barcode matrix
@@ -23,3 +23,5 @@ adata_pbmc.var_names_make_unique()
 adata_pbmc
 # AnnData object with n_obs × n_vars = 2700 × 32738
 #    var: 'gene_ids'
+
+adata_pbmc.write(outcome_path)
