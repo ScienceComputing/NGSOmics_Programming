@@ -12,7 +12,8 @@ This repository houses various coding practice, learning notes, assignment/compe
 <hr>
 
 **Analyze single cell RNA-Seq data**
-- 
+
+- Perform the sequence alignment (*under construction*)
 - Now, we have the feature-barcode matrices at hand.
   - [Use Seurat workflow](SingleCellRNASeq/SeuratSkinCell.Rmd)
   - [Use Bioconductor packages to orchestrate single cell RNA-Seq data analysis](SingleCellRNASeq/BioconductorSkinCell.Rmd)
@@ -26,7 +27,7 @@ This repository houses various coding practice, learning notes, assignment/compe
   
   - [Align the FASTQ files](ATACSeq/AlignFASTQ.Rmd)
   - [Perform post-alignment processing](ATACSeq/PostAlignment.Rmd)
-  - [Perform ATACseq quality control using ATACseqQC](ATACSeq/ATACseqQC.Rmd)
+  - [Perform ATACseq quality assurance using ATACseqQC](ATACSeq/ATACseqQC.Rmd)
   - [Evaluate the transcriptional start site signal](ATACSeq/EvaluateTSS.Rmd)
   - [Call peaks with quality control](ATACSeq/CallPeak.Rmd)
 
