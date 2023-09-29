@@ -12,12 +12,13 @@ This repository houses various coding practice, learning notes, assignment/compe
 <hr>
 
 **Analyze single cell RNA-Seq data**
-
+- 
+- Now, we have the feature-barcode matrices at hand.
   - [Use Seurat workflow](SingleCellRNASeq/SeuratSkinCell.Rmd)
   - [Use Bioconductor packages to orchestrate single cell RNA-Seq data analysis](SingleCellRNASeq/BioconductorSkinCell.Rmd)
   - [Use Scanpy workflow](SingleCellRNASeq/Scanpy)
-  - Single cell perturbations
-  - Spatial transcriptomics
+  - Single cell perturbations (*under construction*)
+  - Spatial transcriptomics (*under construction*)
 
 <hr>
 
