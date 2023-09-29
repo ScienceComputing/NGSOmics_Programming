@@ -14,7 +14,8 @@ This repository houses various coding practice, learning notes, assignment/compe
 **Analyze single cell RNA-Seq data**
 
   - [Use Seurat workflow](SingleCellRNASeq/SeuratSkinCell.Rmd)
-  - [Use bioconductor packages to orchestrate single cell RNA-Seq data analysis](SingleCellRNASeq/BioconductorSkinCell.Rmd)
+  - [Use Bioconductor packages to orchestrate single cell RNA-Seq data analysis](SingleCellRNASeq/BioconductorSkinCell.Rmd)
+  - [Use Scanpy workflow](SingleCellRNASeq/Scanpy)
   - Single cell perturbations
   - Spatial transcriptomics
 
