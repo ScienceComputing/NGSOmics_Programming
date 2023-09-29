@@ -27,7 +27,7 @@ This repository houses various coding practice, learning notes, assignment/compe
   
   - [Align the FASTQ files](ATACSeq/AlignFASTQ.Rmd)
   - [Perform post-alignment processing](ATACSeq/PostAlignment.Rmd)
-  - [Perform ATACseq quality assurance using ATACseqQC](ATACSeq/ATACseqQC.Rmd)
+  - [Perform ATAC-Seq quality assurance using ATACseqQC](ATACSeq/ATACseqQC.Rmd)
   - [Evaluate the transcriptional start site signal](ATACSeq/EvaluateTSS.Rmd)
   - [Call peaks with quality control](ATACSeq/CallPeak.Rmd)
 
