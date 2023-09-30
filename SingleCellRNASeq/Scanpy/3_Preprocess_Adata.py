@@ -5,8 +5,8 @@ import anndata as ad
 import numpy as np
 import pandas as pd
 
-outcome_path = '../scRNA_data/preprocessed_data/pbmc_v0.h5ad'
-adata_pbmc = ad.read_h5ad(outcome_path)
+outcome_path = '../scRNA_data/preprocessed_data/'
+adata_pbmc = ad.read_h5ad(outcome_path + 'pbmc_v0.h5ad')
 
 # Display the genes that contribute the largest proportion of counts within each individual cell, spanning all the cells.
 sc.pl.highest_expr_genes(adata_pbmc, n_top=30)
@@ -94,3 +94,38 @@ adata_pbmc[:,:].to_df()
 # TTTCTACTTCCTCG-1         0.0         0.0            0.0            0.0  ...    0.000000    0.000000      0.0       0.0
 # TTTGCATGAGAGGC-1         0.0         0.0            0.0            0.0  ...    0.000000    2.378132      0.0       0.0
 # TTTGCATGCCTCAC-1         0.0         0.0            0.0            0.0  ...    0.000000    0.000000      0.0       0.0
+
+# Identify the highly variable genes
+adata_pbmc[:,:].to_df().describe()
+#         AL627309.1   AP006222.2  ...      PNRC2-1     SRSF10-1
+# count  2638.000000  2638.000000  ...  2638.000000  2638.000000
+# mean      0.005436     0.001847  ...     0.066251     0.040642
+# std       0.093517     0.055012  ...     0.324988     0.255053
+# min       0.000000     0.000000  ...     0.000000     0.000000
+# 25%       0.000000     0.000000  ...     0.000000     0.000000
+# 50%       0.000000     0.000000  ...     0.000000     0.000000
+# 75%       0.000000     0.000000  ...     0.000000     0.000000
+# max       1.882199     1.828519  ...     2.867758     2.498723
+sc.pp.highly_variable_genes(adata_pbmc, min_mean=0.0125, max_mean=3, min_disp=0.5)
+sc.pl.highly_variable_genes(adata_pbmc)
+
+# Attach the .raw attribute of adata_pbmc to the normalized and logarithmized raw count for differential testing and visualizations of gene expression
+adata_pbmc.raw = adata_pbmc
+adata_pbmc.raw
+# <anndata._core.raw.Raw object at 0x14df5c400>
+# adata_pbmc.raw.to_adata() # Return to the AnnData
+adata_pbmc.shape
+# (2638, 13714)
+adata_pbmc.write(outcome_path + 'pbmc_raw.h5ad')
+
+# Select highly variable genes
+adata_pbmc_filter = adata_pbmc[:, adata_pbmc.var.highly_variable]
+adata_pbmc_filter.shape
+# (2638, 1838) # So we remove (13714 - 1838) non highly variable genes
+
+# Regress out effects of total counts per cell and the percentage of mitochondrial genes expressed
+sc.pp.regress_out(adata_pbmc_filter, ['total_counts', 'pct_counts_mt'])
+
+# Normalize each gene's variance to a unit scale, and truncate any values that surpass 10 standard deviations.
+sc.pp.scale(adata_pbmc_filter, max_value=10)
+adata_pbmc_filter.write(outcome_path + 'pbmc_filter.h5ad')
