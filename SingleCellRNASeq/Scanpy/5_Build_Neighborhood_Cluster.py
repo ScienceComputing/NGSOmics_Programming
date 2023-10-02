@@ -21,7 +21,18 @@ adata_pbmc_pca
 
 # Let's embed the neighborhood graph using 2-D UMAP
 # pip3 install leidenalg
-sc.tl.leiden(adata_pbmc_pca)
+sc.tl.leiden(adata_pbmc_pca) # Leiden clustering directly clusters the neighborhood graph of cells
 sc.tl.paga(adata_pbmc_pca, groups='leiden') # Key for categorical in adata.obs. Default: The first present key of 'leiden' or 'louvain'
-sc.pl.paga(adata_pbmc_pca, plot=False) 
-sc.tl.umap(adata_pbmc_pca, init_pos='paga')
+sc.pl.paga(adata_pbmc_pca, plot=False) # plot=True, if we want to show the coarse-grained graph
+sc.tl.umap(adata_pbmc_pca, init_pos='paga') # init_pos: Use the positions from paga() to initialize the low dimensional embeding
+sc.tl.umap(adata_pbmc_pca)
+sc.pl.umap(adata_pbmc_pca, color=['CST3', 'NKG7', 'PPBP'])
+sc.pl.umap(adata_pbmc_pca, color=['CST3', 'NKG7', 'PPBP'], use_raw=False) # Plot the scaled and corrected gene expression under the treatment 1), 2), 3)
+# 1) select highly variable genes
+# 2) regress out effects of total counts per cell and the percentage of mitochondrial genes expressed
+# 3) normalize each gene's variance to a unit scale, and truncate any values that surpass 10 standard deviations
+
+# Let's plot the clustering
+sc.pl.umap(adata_pbmc_pca, color=['leiden', 'CST3', 'NKG7'])
+
+adata_pbmc_pca.write(outcome_path + 'pbmc_leiden.h5ad') # Save the results
