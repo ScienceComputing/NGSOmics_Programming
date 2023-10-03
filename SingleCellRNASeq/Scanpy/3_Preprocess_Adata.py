@@ -17,7 +17,8 @@ sc.pp.filter_genes(adata_pbmc, min_cells=3) # We set 3 as the minimum number of 
 
 # Compute the distribution of mitochondrial genes
 adata_pbmc.var['mt'] = adata_pbmc.var_names.str.startswith('MT-') # adata_pbmc = sc.read_10x_mtx(..., var_names='gene_symbols', ...)
-sc.pp.calculate_qc_metrics(adata_pbmc, qc_vars=['mt'], percent_top=None, log1p=False, inplace=True)
+sc.pp.calculate_qc_metrics(adata_pbmc, qc_vars=['mt'], percent_top=None, log1p=False, inplace=True) 
+# inplace: whether to place calculated metrics in adata’s .obs and .var
 adata_pbmc.var
 #                       gene_ids  n_cells     mt  n_cells_by_counts  mean_counts  pct_dropout_by_counts  total_counts
 # AL627309.1     ENSG00000237683        9  False                  9     0.003333              99.666667           9.0
