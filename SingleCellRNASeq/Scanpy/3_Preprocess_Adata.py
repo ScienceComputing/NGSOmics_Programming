@@ -16,7 +16,9 @@ sc.pp.filter_cells(adata_pbmc, min_genes=200) # We set 200 as the minimum number
 sc.pp.filter_genes(adata_pbmc, min_cells=3) # We set 3 as the minimum number of barcodes expressed required for a gene to pass filtering
 
 # Compute the distribution of mitochondrial genes
-adata_pbmc.var['mt'] = adata_pbmc.var_names.str.startswith('MT-') # adata_pbmc = sc.read_10x_mtx(..., var_names='gene_symbols', ...)
+adata_pbmc.var['mt'] = adata_pbmc.var_names.str.startswith('MT-') 
+# adata_pbmc = sc.read_10x_mtx(..., var_names='gene_symbols', ...)
+# for mouse datasets, the prefix of mitochondrial genes is typically lower case: mt-
 sc.pp.calculate_qc_metrics(adata_pbmc, qc_vars=['mt'], percent_top=None, log1p=False, inplace=True) 
 # inplace: whether to place calculated metrics in adata’s .obs and .var
 adata_pbmc.var
