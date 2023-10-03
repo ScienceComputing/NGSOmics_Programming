@@ -17,6 +17,6 @@ sc.pl.pca(adata_pbmc_filter, color='CTSS')
 
 # Let's view the contribution of each PC to the total variance in the data. 
 # We reply on this information to decide how many PCs is going to be used to compute the neighborhood relations of cells
-sc.pl.pca_variance_ratio(adata_pbmc_filter, log=True)
+sc.pl.pca_variance_ratio(adata_pbmc_filter, log=True) # log: whether plot on logarithmic scale
 
 adata_pbmc_filter.write(outcome_path + 'pbmc_pca.h5ad')
