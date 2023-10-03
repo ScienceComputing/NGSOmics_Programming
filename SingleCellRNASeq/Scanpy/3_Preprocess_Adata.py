@@ -8,7 +8,7 @@ import pandas as pd
 outcome_path = '../scRNA_data/preprocessed_data/'
 adata_pbmc = ad.read_h5ad(outcome_path + 'pbmc_v0.h5ad')
 
-# Display the genes that contribute the largest proportion of counts within each individual cell, spanning all the cells.
+# Display the genes that contribute the largest proportion of total counts within each individual cell, spanning all the cells.
 sc.pl.highest_expr_genes(adata_pbmc, n_top=30)
 
 # Let's perform the basic quality control
