@@ -38,7 +38,7 @@ marker_genes = ['IL7R', 'CD79A', 'MS4A1', 'CD8A', 'CD8B',
                 'CST3', 'PPBP']
 
 # Show the names of top 10 ranked genes per cluster 0, 1, …, 12 in a dataframe
-adata_pbmc_wilcoxon = sc.read(outcome_path + 'pbmc_wilcoxon.h5ad')
+adata_pbmc_wilcoxon = sc.read(outcome_path + 'pbmc_wilcoxon.h5ad') # > start
 pd.DataFrame(adata_pbmc_wilcoxon.uns['rank_genes_groups']['names']).head(10)
 #         0         1       2      3       4       5       6       7      8      9      10        11     12
 # 0     LYZ      CD74   RPS12  RPS12    LDHB    IL32    LST1    NKG7   CCL5   CCL5     LTB  HLA-DPA1    PF4
@@ -93,3 +93,18 @@ sc.pl.rank_genes_groups_violin(adata_pbmc_wilcoxon, groups='0', n_genes=10)
 sc.pl.violin(adata_pbmc_wilcoxon, ['LYZ', 'S100A9', 'S100A8'], groupby='leiden')
 
 # Mark the cell types
+new_cluster_names = [
+    'CD4 T', 'CD14 Monocytes',
+    'B', 'CD8 T', 'NK', 
+    'FCGR3A Monocytes', 'Dendritic', 'Megakaryocytes']
+adata_pbmc_wilcoxon.obs.leiden
+adata_pbmc_wilcoxon.rename_categories('leiden', new_cluster_names)
+
+# Annotate the cell types in the 2D UMAP
+sc.pl.umap(adata_pbmc_wilcoxon, color='leiden', legend_loc='on data', title='', frameon=False, save='.pdf')
+
+# Visualize the mean expression and fraction of cells in each cluster annotated with the cell type, per marker gene
+sc.pl.dotplot(adata_pbmc_wilcoxon, marker_genes, groupby='leiden')
+
+adata_pbmc_wilcoxon
+adata_pbmc_wilcoxon.write(outcome_path + 'pbmc_marker.h5ad', compression='gzip')
