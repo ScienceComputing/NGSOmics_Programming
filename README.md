@@ -13,7 +13,9 @@ This repository houses various coding practice, learning notes, assignment/compe
 
 **Analyze single cell RNA-Seq data**
 
-- Perform the sequence alignment (*under construction*)
+- Perform the sequence alignment and generate the count matrix
+  - Use the kb-python package
+  - Use the Cell Ranger pipeline (*under construction*)
 - We have the feature-barcode matrices at hand.
   - Use Seurat workflow to perform [quality assurance, clustering, and marker gene detection](SingleCellRNASeq/SeuratSkinCell.Rmd)
   - Use Bioconductor packages to [orchestrate single cell RNA-Seq data analysis](SingleCellRNASeq/BioconductorSkinCell.Rmd)
