@@ -16,7 +16,7 @@ This repository houses various coding practice, learning notes, assignment/compe
 - Perform the sequence alignment and generate the count matrix
   - Use kb-python package
   - Use Cell Ranger pipeline (*under construction*)
-- We have the feature-barcode matrices at hand.
+- After having the feature-barcode matrices at hand, we can ... 
   - Use Seurat workflow to perform [quality assurance, clustering, and marker gene detection](SingleCellRNASeq/SeuratSkinCell.Rmd)
   - Use Bioconductor packages to [orchestrate single cell RNA-Seq data analysis](SingleCellRNASeq/BioconductorSkinCell.Rmd)
   - Use Scanpy workflow to perform [preprocessing, cell clustering, marker gene detection](SingleCellRNASeq/Scanpy/PBMC), and [trajectory inference](SingleCellRNASeq/Scanpy/Bone_Marrow)
