@@ -2,15 +2,6 @@
 
 This repository houses various coding practice, learning notes, assignment/competition solutions based on the materials from various computational biology/bioinformatics courses, workshops, technical manuals, academic articles, and others. 
 
-**Analyze bulk RNA-Seq data**
-
-  - [Align and count the reads](BulkRNASeq/AlignmentCountingTCell.Rmd)
-  - [Perform differential gene expression analysis](BulkRNASeq/DEAnalysisTCell.Rmd)
-  - [Perform principal component analysis, heatmap, and clustering](BulkRNASeq/PCAHeatmapClusteringTissue.Rmd)
-  - [Perform gene set enrichment analysis](BulkRNASeq/GeneSetTCell.Rmd)
-
-<hr>
-
 **Analyze single cell RNA-Seq data**
 
 - As our inputs are `fastq` files, we can ...
@@ -24,6 +15,16 @@ This repository houses various coding practice, learning notes, assignment/compe
   - Spatial transcriptomics (*under construction*)
 
 <hr>
+
+**Analyze bulk RNA-Seq data**
+
+  - [Align and count the reads](BulkRNASeq/AlignmentCountingTCell.Rmd)
+  - [Perform differential gene expression analysis](BulkRNASeq/DEAnalysisTCell.Rmd)
+  - [Perform principal component analysis, heatmap, and clustering](BulkRNASeq/PCAHeatmapClusteringTissue.Rmd)
+  - [Perform gene set enrichment analysis](BulkRNASeq/GeneSetTCell.Rmd)
+
+<hr>
+
 
 **Analyze ATAC-Seq data**
   
