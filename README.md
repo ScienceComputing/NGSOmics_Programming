@@ -15,9 +15,9 @@ This repository houses various coding practice, learning notes, assignment/compe
 
 - Perform the sequence alignment (*under construction*)
 - We have the feature-barcode matrices at hand.
-  - [Use Seurat workflow to perform quality assurance, clustering, and marker gene detection](SingleCellRNASeq/SeuratSkinCell.Rmd)
-  - [Use Bioconductor packages to orchestrate single cell RNA-Seq data analysis](SingleCellRNASeq/BioconductorSkinCell.Rmd)
-  - [Use Scanpy workflow to perform preprocessing, cell clustering, marker gene detection, and trajectory inference](SingleCellRNASeq/Scanpy)
+  - Use Seurat workflow to perform [quality assurance, clustering, and marker gene detection](SingleCellRNASeq/SeuratSkinCell.Rmd)
+  - Use Bioconductor packages to [orchestrate single cell RNA-Seq data analysis](SingleCellRNASeq/BioconductorSkinCell.Rmd)
+  - Use Scanpy workflow to perform [preprocessing, cell clustering, marker gene detection](SingleCellRNASeq/Scanpy/PBMC), and [trajectory inference](SingleCellRNASeq/Scanpy/Bone_Marrow)
   - Single cell perturbations (*under construction*)
   - Spatial transcriptomics (*under construction*)
 
