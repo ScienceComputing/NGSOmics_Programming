@@ -19,7 +19,6 @@ output:
 ```
 
 
-# Tutorial
 # Load data
 ```{r}
 # BiocManager::install("DropletUtils")
@@ -389,7 +388,7 @@ plotExplanatoryVariables(vars)
 ```
 
 
-# Exercise
+# More ...
 # Load the `sce` object
 ```{r}
 library(DropletUtils)
