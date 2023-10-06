@@ -19,7 +19,6 @@ output:
 ```
 
 
-# Tutorial
 # Wrangle with raw RNAseq FASTQ data
 ```{r}
 # Install and attach libraries
