@@ -41,7 +41,7 @@ This repository houses various coding practice, learning notes, assignment/compe
 
 ## Conceptual aspect
 
-[**High-level scientific idea**]()
+[**High-level scientific idea**](HighLevelIdea_MultiOmics.md)
 
 
 
