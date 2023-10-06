@@ -18,8 +18,6 @@ output:
 # Comment or uncomment current selection: Ctrl+Shift+C (Windows) or Cmd+Shift+C (Mac)
 ```
 
-
-# Tutorial
 # Load `Cell Ranger` results into `Seurat` object
 ```{r}
 # install.packages("Seurat")
@@ -270,7 +268,7 @@ saveRDS(obj_rm, "scSeq_Seurat_clean.rds")
 ```
 
 
-# *Excercise
+# More ...
 ## Manipulate data with Seurat
 ```{r}
 library(Seurat)
