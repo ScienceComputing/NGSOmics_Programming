@@ -19,7 +19,6 @@ output:
 ```
 
 
-# Tutorial
 # Align the FASTQ files
 ## Create a reference genome
 ```{r}
