@@ -18,7 +18,6 @@ output:
 # Comment or uncomment current selection: Ctrl+Shift+C (Windows) or Cmd+Shift+C (Mac)
 ```
 
-# Exercise
 # Preprocess ATAC-seq data
 ## Read in a random 10000 reads from read 1 and read 2
 ```{r}
