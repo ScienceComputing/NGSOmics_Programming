@@ -19,7 +19,6 @@ output:
 ```
 
 
-# Tutorial
 # Evaluate transcriptional start site (TSS) signal
 ## Plot signal over TSS regions using `soGGi`
 ```{r}
