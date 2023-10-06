@@ -6,7 +6,7 @@ This repository houses various coding practice, learning notes, assignment/compe
 
 - As our inputs are `fastq` files, we can ...
   - Use kb-python package to perform [psuedo sequence alignment and generate the count matrix](SingleCellRNASeq/kb-python)
-  - Use Cell Ranger pipelines to perform sequence alignment and generate the count matrix (*under construction*)
+  - Use Cell Ranger pipelines to perform sequence alignment and generate the count matrix
 - After having the `feature-barcode matrices` at hand, we can ... 
   - Use Seurat workflow to perform [quality assurance, clustering, and marker gene detection](SingleCellRNASeq/SeuratSkinCell.Rmd)
   - Use Bioconductor packages to [orchestrate single cell RNA-Seq data analysis](SingleCellRNASeq/BioconductorSkinCell.Rmd)
