@@ -1,4 +1,4 @@
-# Quantitative biology
+# Quantitative Biology
 
 This repository houses various coding practice, learning notes, assignment/competition solutions based on the materials from various computational biology/bioinformatics courses, workshops, technical manuals, academic articles, and others. 
 
