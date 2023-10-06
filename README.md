@@ -2,6 +2,8 @@
 
 This repository houses various coding practice, learning notes, assignment/competition solutions based on the materials from various computational biology/bioinformatics courses, workshops, technical manuals, academic articles, and others. 
 
+## Technical aspect
+
 **Analyze single cell RNA-Seq data**
 
 - As our inputs are `fastq` files, we can ...
@@ -36,4 +38,10 @@ This repository houses various coding practice, learning notes, assignment/compe
 
 
 <hr>
+
+## Conceptual aspect
+
+[**High-level scientific idea**]()
+
+
 
