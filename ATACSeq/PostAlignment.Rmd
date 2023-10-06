@@ -19,7 +19,6 @@ output:
 ```
 
 
-# Tutorial
 # Perform post-alignment processing
 ## Filter properly paired reads
 ```{r}
