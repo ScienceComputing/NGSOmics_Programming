@@ -1,8 +1,8 @@
 import os
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 import scanpy as sc
-import pertpy as pt
-import scgen
+import pertpy as pt 
+import scgen # pip install git+https://github.com/theislab/scgen.git
 
 adata = pt.dt.kang_2018()
 sc.pp.log1p(adata)
