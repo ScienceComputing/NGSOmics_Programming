@@ -11,7 +11,7 @@ This repository houses various coding practice, learning notes, assignment/compe
   - Use Seurat workflow to perform [quality assurance, clustering, and marker gene detection](SingleCellRNASeq/SeuratSkinCell.Rmd)
   - Use Bioconductor packages to [orchestrate single cell RNA-Seq data analysis](SingleCellRNASeq/BioconductorSkinCell.Rmd)
   - Use Scanpy workflow to perform [preprocessing, cell clustering, marker gene detection](SingleCellRNASeq/Scanpy/PBMC), and [trajectory inference](SingleCellRNASeq/Scanpy/Bone_Marrow)
-  - Use scGen to model the perturbation responses  
+  - Use scGen to model the [perturbation responses](SingleCellRNASeq/Perturbation/scGen)  
   - Spatial transcriptomics (*under construction*)
 
 <hr>
