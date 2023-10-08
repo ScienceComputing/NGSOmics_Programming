@@ -1,7 +1,14 @@
+# pip install anndata==0.9.2
+# pip install git+https://github.com/theislab/scgen.git
+# pip install pertpy
+# pip install scanpy
+# pip install numba
+# pip install llvmlite
+
 import os
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 import scanpy as sc
-import pertpy as pt 
+import pertpy as pt
 import scgen # pip install git+https://github.com/theislab/scgen.git
 
 adata = pt.dt.kang_2018()
@@ -50,5 +57,4 @@ adata_train = adata[~((adata.obs["cell_type"] == "CD4 T cells") & (adata.obs["co
 # ~ is the logical NOT operator, which negates the combined condition. It returns True for rows that do not satisfy the combined condition.
 
 cd4_train_stim = adata[((adata.obs["cell_type"] == "CD4 T cells") & (adata.obs["condition"] == "stimulated"))].copy()
-
-scgen.SCGEN.setup_anndata(adata_train, batch_key="condition", labels_key="cell_type")
+cd4_train_stim.to_df() # View the cell x gene count matrix in CD4+T cells with perturbations
