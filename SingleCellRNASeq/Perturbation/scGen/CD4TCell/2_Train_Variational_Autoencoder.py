@@ -24,3 +24,27 @@ early_stopping: which enables the model to stop the training if its results are 
 
 # Visualize the representation of data learned by the model using UMAP
 adata_train.obsm["scgen"] = model.get_latent_representation() # get_latent_representation() returns a 100-dimensional vector for each cell
+adata_train
+adata_train.obsm["scgen"]
+# array([[ -7.4319363 ,   6.0347595 ,   4.360623  , ...,  -4.1190267 ,
+#           0.4719472 ,   5.999382  ],
+#        [ -2.1332135 ,   0.66588956,  -1.8832861 , ...,   3.388834  ,
+#          -0.79437214,  -1.1460924 ],
+#        [  6.881926  ,  -0.81465465,  -2.5517473 , ...,   3.8420978 ,
+#           3.7350404 ,  -7.246197  ],
+#        ...,
+#        [ -1.1007156 ,   1.9041696 ,   0.51787966, ...,   6.500449  ,
+#          -1.1392326 ,   3.870847  ],
+#        [ -4.348127  ,  -3.089072  ,   1.0366997 , ...,   4.119344  ,
+#          -1.5113178 ,  -0.7055234 ],
+#        [-10.115226  ,   4.760014  ,   4.996005  , ...,  -9.193241  ,
+#           3.9584777 ,   4.2281528 ]], dtype=float32)
+
+# Retrive the latent space of gene expression learned by the encoder for each cell
+adata_train.obsm["scgen"] = model.get_latent_representation() # get_latent_representation() returns a 100-dimensional vector for each cell
+adata_train.obsm["scgen"].shape
+
+# Visualize the learned representation of the gene expression space by the model
+sc.pp.neighbors(adata_train, use_rep="scgen") # use_rep="scgen" : here we use the latent space leaned by the encoder as the compressed representation of the gene expression space 
+sc.tl.umap(adata_train)
+sc.pl.umap(adata_train, color=["condition", "cell_type"], wspace=0.4, frameon=False)
