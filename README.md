@@ -1,6 +1,6 @@
 # Quantitative Biology (Under Active Construction)
 
-This repository houses various coding practice, learning notes, assignment/competition solutions based on the materials from various computational biology/bioinformatics courses, workshops, technical manuals, academic articles, and others. 
+This repository houses coding practice, assignment/competition solutions based on the materials from a variety of computational biology/bioinformatics courses, workshops, technical manuals, academic articles, and others. 
 
 ## Technical aspect
 
