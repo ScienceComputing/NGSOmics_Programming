@@ -1,8 +1,10 @@
-# Quantitative Biology (Under Active Construction)
+# Quantitative Biology
 
 This repository houses coding practice, assignment/competition solutions based on the materials from a variety of computational biology/bioinformatics courses, workshops, technical manuals, academic articles, and others. 
 
 ## Technical aspect
+**Analyze proteomics data**
+*Under Active Construction*
 
 **Analyze single cell RNA-Seq data**
 
@@ -14,7 +16,6 @@ This repository houses coding practice, assignment/competition solutions based o
   - Use Bioconductor packages to [orchestrate single cell RNA-Seq data analysis](SingleCellRNASeq/BioconductorSkinCell.Rmd)
   - Use Scanpy workflow to perform [preprocessing, cell clustering, marker gene detection](SingleCellRNASeq/Scanpy/PBMC), and [trajectory inference](SingleCellRNASeq/Scanpy/Bone_Marrow)
   - Use scGen to model the [perturbation responses](SingleCellRNASeq/Perturbation/scGen)  
-  - Spatial transcriptomics
 
 <hr>
 
