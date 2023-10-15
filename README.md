@@ -4,7 +4,10 @@ This repository houses coding practice, assignment/competition solutions based o
 
 ## Technical aspect
 **Analyze proteomics data**
+
 *Under Active Construction*
+
+<hr>
 
 **Analyze single cell RNA-Seq data**
 
