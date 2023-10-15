@@ -4,10 +4,6 @@ import spectrum_utils.plot as sup
 import spectrum_utils.spectrum as sus
 import matplotlib.pyplot as plt
 
-import matplotlib.pyplot as plt
-import spectrum_utils.plot as sup
-import spectrum_utils.spectrum as sus
-
 # Read into a spectrum from public data repositories by its Universal Spectrum Identifier.
 # https://www.psidev.info/usi 
 usi_id = "mzspec:PXD000966:CPTAC_CompRef_00_iTRAQ_05_2Feb12_Cougar_11-10-09.mzML:scan:12298:[iTRAQ4plex]-LHFFM[Oxidation]PGFAPLTSR/3"
