@@ -3,12 +3,6 @@
 This repository houses coding practice, assignment/competition solutions based on the materials from a variety of computational biology/bioinformatics courses, workshops, technical manuals, academic articles, and others. 
 
 ## Technical aspect
-**Analyze proteomics data**
-
-*Under Active Construction*
-- A quick start from [loading an online spectrum, performing peak quality control, annotating peaks, to visulizing the annotated peaks](Proteomics/spectrum_utils/0_Quick_Start.py)
-<hr>
-
 **Analyze single cell RNA-Seq data**
 
 - As our inputs are `fastq` files, we can ...
@@ -40,6 +34,12 @@ This repository houses coding practice, assignment/competition solutions based o
   - [Evaluate the transcriptional start site signal](ATACSeq/EvaluateTSS.Rmd)
   - [Call peaks with quality control](ATACSeq/CallPeak.Rmd)
 
+<hr>
+
+**Analyze proteomics data**
+
+*Under Active Construction*
+- A quick start from [loading an online spectrum, performing peak quality control, annotating peaks, to visulizing the annotated peaks](Proteomics/spectrum_utils/0_Quick_Start.py)
 
 <hr>
 
