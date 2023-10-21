@@ -13,3 +13,5 @@ zcat HumanBrain_S1_L001_R1_001.fastq.gz | wc -l
 zcat HumanBrain_S1_L001_R1_001.fastq.gz | fastqc stdin --outdir=../report/
 
 zcat *fastq.gz | fastqc stdin --outdir=../report/
+
+cat *trimmed.fastq | fastqc stdin --outdir=../report/
