@@ -17,6 +17,7 @@ bcl2fastq --use-bases-mask=Y26,I8,Y98 \
 # --use-bases-mask: specify the number of cycles to use in each read and how to use them
 # y = read, i = index, n = ignore; the default values are assumed from the RunInfo.xml file 
 # Usage for all cycles: --use-bases-mask=Y*,I*,Y*
+# Y26,I8,Y98: consider 26 bases for the first read, 8 bases for the index read, and 98 bases for the second read
 # -R ${FLOWCELL_DIR}: specify the directory that contains a flow cell's Data folder
 # --output-dir=${OUTPUT_DIR}: specify the directory that we want to output the converted FASTQs to
 # --interop-dir=${INTEROP_DIR}: specify the directory where InterOp files are located. InterOp files contain various run metrics.
