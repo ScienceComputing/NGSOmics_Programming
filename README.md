@@ -3,7 +3,7 @@
 This repository houses coding practice, assignment/competition solutions based on the materials from a variety of computational biology/bioinformatics courses, workshops, technical manuals, academic articles, and others. 
 
 ## Technical aspect
-**Analyze single cell RNA-Seq data**
+**Analyze single cell RNA-seq data**
 - If we are given raw `bcl` files, we need to [convert them to fastq files](FastQC/bcl_to_fastq.sh)
 - As our inputs are `fastq` files, we can ...
   - Run FastQC to [evaluate sequence quality and content](FastQC)
@@ -19,7 +19,7 @@ This repository houses coding practice, assignment/competition solutions based o
 
 <hr>
 
-**Analyze bulk RNA-Seq data**
+**Analyze bulk RNA-seq data**
 
   - [Align and count the reads](BulkRNASeq/AlignmentCountingTCell.Rmd)
   - [Perform differential gene expression analysis](BulkRNASeq/DEAnalysisTCell.Rmd)
@@ -29,7 +29,7 @@ This repository houses coding practice, assignment/competition solutions based o
 <hr>
 
 
-**Analyze ATAC-Seq data**
+**Analyze ATAC-seq data**
   
   - [Align the FASTQ files](ATACSeq/AlignFASTQ.Rmd)
   - [Perform post-alignment processing](ATACSeq/PostAlignment.Rmd)
