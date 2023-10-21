@@ -3,4 +3,4 @@
 
 cd report
 mkdir trimmed_results
-trim_galore --illumina --paired -o trimmed_results ../data/file_trimmed_1.fastq ../data/file_trimmed_2.fastq
+trim_galore --illumina --paired -o trimmed_results ../data/file_1_trimmed.fastq ../data/file_2_trimmed.fastq
