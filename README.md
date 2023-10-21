@@ -7,6 +7,7 @@ This repository houses coding practice, assignment/competition solutions based o
 - If we are given raw `bcl` files, we need to [convert them to fastq files](FastQC/bcl_to_fastq.sh)
 - As our inputs are `fastq` files, we can ...
   - Run FastQC to [evaluate sequence quality and content](FastQC)
+  - Use Trim Galore to [trim reads](FastQC/Trim_Read) if we spot low-quality base calls
   - Use kb-python package to perform [psuedo sequence alignment and generate the count matrix](SingleCellRNASeq/kb-python)
   - Use Cell Ranger pipelines to perform [sequence alignment and generate the count matrix](SingleCellRNASeq/CellRanger/cellrangercount.sh)
 - After having the `feature-barcode matrices` at hand, we can ...
