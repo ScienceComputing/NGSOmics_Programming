@@ -6,7 +6,7 @@ This repository houses coding practice, assignment/competition solutions based o
 **Analyze single cell RNA-Seq data**
 
 - As our inputs are `fastq` files, we can ...
-  - Run FastQC to evaluate sequence quality and content
+  - Run FastQC to [evaluate sequence quality and content](FastQC/Run_FastQC.sh)
   - Use kb-python package to perform [psuedo sequence alignment and generate the count matrix](SingleCellRNASeq/kb-python)
   - Use Cell Ranger pipelines to perform [sequence alignment and generate the count matrix](SingleCellRNASeq/CellRanger/cellrangercount.sh)
 - After having the `feature-barcode matrices` at hand, we can ...
