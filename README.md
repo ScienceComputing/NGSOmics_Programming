@@ -34,9 +34,9 @@ This repository houses coding practice, assignment/competition solutions based o
 
 **Analyze ATAC-seq data**
   
-  - [Align the FASTQ files](ATACSeq/AlignFASTQ.Rmd)
+  - [Align the fastq files](ATACSeq/AlignFASTQ.Rmd)
   - [Perform post-alignment processing](ATACSeq/PostAlignment.Rmd)
-  - [Perform ATAC-Seq quality assurance using ATACseqQC](ATACSeq/ATACseqQC.Rmd)
+  - [Perform ATAC-seq quality assurance using ATACseqQC](ATACSeq/ATACseqQC.Rmd)
   - [Evaluate the transcriptional start site signal](ATACSeq/EvaluateTSS.Rmd)
   - [Call peaks with quality control](ATACSeq/CallPeak.Rmd)
 
