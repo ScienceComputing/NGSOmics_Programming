@@ -1,0 +1,1 @@
+git show first_6_8_characters_of_hash
