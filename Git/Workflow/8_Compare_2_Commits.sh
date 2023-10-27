@@ -4,3 +4,6 @@ git diff hash_1 hash_2
 
 # View the differences betwen the third-most recent commit and second-most recent commit
 git diff HEAD~2 HEAD~1
+
+# View the differences between the fourth most recent and second most recent commits
+git diff HEAD~3 HEAD~1
