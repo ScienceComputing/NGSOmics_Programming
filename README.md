@@ -25,6 +25,7 @@ This repository houses coding practice, assignment/competition solutions based o
 **Analyze bulk RNA-seq data**
 
   - [Align and count the reads](BulkRNASeq/AlignmentCountingTCell.Rmd)
+    - Why align? To pinpoint the specific location on the human genome from which our reads originated, we will align our reads with the reference genome.
   - [Perform differential gene expression analysis](BulkRNASeq/DEAnalysisTCell.Rmd)
   - [Perform principal component analysis, heatmap, and clustering](BulkRNASeq/PCAHeatmapClusteringTissue.Rmd)
   - [Perform gene set enrichment analysis](BulkRNASeq/GeneSetTCell.Rmd)
