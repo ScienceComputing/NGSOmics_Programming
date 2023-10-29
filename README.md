@@ -29,6 +29,7 @@ This repository houses coding practice, assignment/competition solutions based o
     - **Why align?** To pinpoint the specific location on the human genome from which our reads originated
   - Use Qualimap to perform [quality assurance](BulkRNASeq/Qualimap_QC.sh) on the aligned reads
   - Use GenomicAlignments for aligned reads to [obtain the gene-level or exon-level quantification](BulkRNASeq/AlignmentCountingTCell.Rmd)
+  - Use featureCounts for aligned reads to [obtain the gene-level or exon-level quantification](BulkRNASeq/AlignmentCountingTCell.Rmd)
   - [Recommend] Use Salmon for unaligned reads to [obtain the transcript-level quantification](BulkRNASeq/Salmon_quant.sh)
     - **Why unalign?** To speed up the counting process of reads
   - [Perform differential gene expression analysis](BulkRNASeq/DEAnalysisTCell.Rmd)
