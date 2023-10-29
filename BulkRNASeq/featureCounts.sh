@@ -3,4 +3,4 @@ featureCounts -T 20 \
 -g gene_id \
 -a annotation.gtf \
 -o human_featureCounts_output.txt \
-sorted_human_alignment.bam
+Human_Infectious_Disease_Aligned.sortedByCoord.out.bam
