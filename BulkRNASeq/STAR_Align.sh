@@ -13,9 +13,9 @@ make STARforMacStatic CXX=/usr/local/Cellar/gcc/8.2.0/bin/g++-8
 cp STAR /usr/local/bin
 
 # Build a reference genome index
-STAR --runThreadN 6 \
+STAR --runThreadN 20 \
 --runMode genomeGenerate \
 --genomeDir chr1_hg38_index \
---genomeFastaFiles /n/groups/hbctraining/intro_rnaseq_hpc/reference_data_ensembl38/Homo_sapiens.GRCh38.dna.chromosome.1.fa \
---sjdbGTFfile /n/groups/hbctraining/intro_rnaseq_hpc/reference_data_ensembl38/Homo_sapiens.GRCh38.92.gtf \
+--genomeFastaFiles bulk_RNA_seq/reference_data_ensembl38/Homo_sapiens.GRCh38.dna.chromosome.1.fa \
+--sjdbGTFfile bulk_RNA_seq/reference_data_ensembl38/Homo_sapiens.GRCh38.92.gtf \
 --sjdbOverhang 99
