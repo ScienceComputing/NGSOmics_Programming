@@ -32,6 +32,7 @@ This repository houses coding practice, assignment/competition solutions based o
   - Use featureCounts for aligned reads to [count the fragments](BulkRNASeq/featureCounts.sh)
   - [Recommend] Use Salmon for unaligned reads to [obtain the transcript-level quantification](BulkRNASeq/Salmon_quant.sh)
     - **Why unalign?** To speed up the counting process of reads
+    - Next step: Use tximport to aggregate transcript-level quantification to the gene level
   - [Perform differential gene expression analysis](BulkRNASeq/DEAnalysisTCell.Rmd)
   - [Perform principal component analysis, heatmap, and clustering](BulkRNASeq/PCAHeatmapClusteringTissue.Rmd)
   - [Perform gene set enrichment analysis](BulkRNASeq/GeneSetTCell.Rmd)
