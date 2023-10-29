@@ -28,8 +28,8 @@ This repository houses coding practice, assignment/competition solutions based o
   - Use Rsubread to [align the reads](BulkRNASeq/AlignmentCountingTCell.Rmd)
     - **Why align?** To pinpoint the specific location on the human genome from which our reads originated
   - Use Qualimap to perform [quality assurance](BulkRNASeq/Qualimap_QC.sh) on the aligned reads
-  - Use GenomicAlignments for aligned reads to [count the reads](BulkRNASeq/AlignmentCountingTCell.Rmd)
-  - Use Salmon for unaligned reads to [count the reads](BulkRNASeq/AlignmentCountingTCell.Rmd)
+  - Use GenomicAlignments for aligned reads to [obtain the gene-level or transcript-level quantification](BulkRNASeq/AlignmentCountingTCell.Rmd)
+  - Use Salmon for unaligned reads to [obtain the transcript-level quantification](BulkRNASeq/AlignmentCountingTCell.Rmd)
     - **Why unalign?** To speed up the transcript quantification
   - [Perform differential gene expression analysis](BulkRNASeq/DEAnalysisTCell.Rmd)
   - [Perform principal component analysis, heatmap, and clustering](BulkRNASeq/PCAHeatmapClusteringTissue.Rmd)
