@@ -13,7 +13,7 @@ This repository houses coding practice, assignment/competition solutions based o
     - Use STAR to perform alignment and FeatureCounts to generate the count matrix
   - If our single-cell RNA-seq data is generated from the droplet-based protocol, we can ...
     - Use kb-python package to perform [psuedo sequence alignment and generate the count matrix](SingleCellRNASeq/kb-python)
-  - Use Cell Ranger pipelines to perform [sequence alignment and generate the count matrix](SingleCellRNASeq/CellRanger/cellrangercount.sh)
+    - Use Cell Ranger pipelines to perform [sequence alignment and generate the count matrix](SingleCellRNASeq/CellRanger/cellrangercount.sh)
 - After having the `feature-barcode matrices` at hand, we can ...
   - Use Scanpy workflow to perform [quality assurance, cell clustering, marker gene detection](SingleCellRNASeq/Scanpy/PBMC), and [trajectory inference](SingleCellRNASeq/Scanpy/Bone_Marrow)
   - Use Seurat workflow to perform [quality assurance, cell clustering, and marker gene detection](SingleCellRNASeq/SeuratSkinCell.Rmd)
