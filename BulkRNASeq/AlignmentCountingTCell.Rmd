@@ -135,7 +135,7 @@ indexBam("Sorted_Treg_1.bam")
 ```
 
 
-# Quantify the aligned RNAseq data 
+# Quantify the aligned RNAseq data using summarizeOverlabs from {GenomicAlignments}
 ## Use gene model
 ```{r}
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
