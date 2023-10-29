@@ -24,11 +24,13 @@ This repository houses coding practice, assignment/competition solutions based o
 
 **Analyze bulk RNA-seq data**
 
-  - Use Rsubread and GenomicAlignments to [align and count the reads](BulkRNASeq/AlignmentCountingTCell.Rmd)
+  - [Recommend] Use STAR to [align the reads](BulkRNASeq/STAR_Align.sh)
+  - Use Rsubread to [align the reads](BulkRNASeq/AlignmentCountingTCell.Rmd)
     - **Why align?** To pinpoint the specific location on the human genome from which our reads originated
-      - [Recommend] Use STAR (instead of `Rsubread`) to [align](BulkRNASeq/STAR_Align.sh) the reads
-    - Delve deeper into assessing the quality of read alignments to the reference and how closely the data aligns with the anticipated results
-      - Use Qualimap to perform [quality assurance](BulkRNASeq/Qualimap_QC.sh) on the aligned reads 
+  - Use Qualimap to perform [quality assurance](BulkRNASeq/Qualimap_QC.sh) on the aligned reads
+  - Use GenomicAlignments for aligned reads to [count the reads](BulkRNASeq/AlignmentCountingTCell.Rmd)
+  - Use Salmon for unaligned reads to [count the reads](BulkRNASeq/AlignmentCountingTCell.Rmd)
+    - **Why unalign?** To speed up the transcript quantification
   - [Perform differential gene expression analysis](BulkRNASeq/DEAnalysisTCell.Rmd)
   - [Perform principal component analysis, heatmap, and clustering](BulkRNASeq/PCAHeatmapClusteringTissue.Rmd)
   - [Perform gene set enrichment analysis](BulkRNASeq/GeneSetTCell.Rmd)
