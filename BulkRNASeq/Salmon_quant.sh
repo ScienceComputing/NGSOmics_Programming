@@ -1,9 +1,8 @@
-
-# Build the index 
-curl ftp://ftp.ensemblgenomes.org/pub/plants/release-28/fasta/arabidopsis_thaliana/cdna/Arabidopsis_thaliana.TAIR10.28.cdna.all.fa.gz -o athal.fa.gz
 # Build the transcriptome index
+cd bulk_RNAseq
+salmon index -t index/human_transcriptome.fasta -i human_index
 
-# Obtain the sequencing data
+# Obtain a batch of sequencing data
 mkdir raw_data
 cd raw_data
 for i in `seq 1 20`; 
@@ -16,7 +15,7 @@ do
 done
 cd .. 
 
-# Quantify the reads
+# Quantify a batch of reads
 for file_path in raw_data/ABC0290{1..20}; # This loop iterates over a range of sample numbers from 1 to 20
 do
     samp=`basename ${file_path}` # Extracts the sample name from the file path
