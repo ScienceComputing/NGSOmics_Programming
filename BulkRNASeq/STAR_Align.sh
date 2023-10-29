@@ -32,7 +32,7 @@ STAR --runThreadN 20 \
 STAR --genomeDir bulk_RNAseq/hg38_chr1_index \
 --runThreadN 20 \
 --readFilesIn bulk_RNAseq/raw_data/s1read1.fq.gz,s2read1.fq.gz s1read2.fq.gz,s2read2.fq.gz \
---outFileNamePrefix ../results/STAR/Human_Infectious_Disease_ \
+--outFileNamePrefix bulk_RNAseq/results/STAR/Human_Infectious_Disease_ \
 --outSAMtype BAM SortedByCoordinate \
 --outSAMunmapped Within \
 --outSAMattributes Standard 
