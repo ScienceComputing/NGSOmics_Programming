@@ -13,6 +13,8 @@ make STARforMacStatic CXX=/usr/local/Cellar/gcc/8.2.0/bin/g++-8
 cp STAR /usr/local/bin
 
 # Build a reference genome index
+mkdir -p bulk_RNAseq/hg38_chr1_index
+
 STAR --runThreadN 20 \
 --runMode genomeGenerate \ 
 --genomeDir hg38_chr1_index \
@@ -21,8 +23,8 @@ STAR --runThreadN 20 \
 --sjdbOverhang 99
 
 # genomeDir: provide the path to store the genome indices
-# genomeFastaFiles: provide the path to the reference genome in FASTA format
+# genomeFastaFiles: provide the path to one or more reference genomes in FASTA format
 # sjdbGTFfile: provide the path to the annotations of the reference genome in GTF format
-# sjdbOverhang: the ideal value is max(ReadLength)-1. In most cases, 100 works quite well.
+# sjdbOverhang: this is the length of the genomic sequence around the annotated junction to be used in constructing the splice junctions database. Ideally, this length should equal to the max(ReadLength)-1, where ReadLength is the length of the reads. e.g., for Illumina 2x100b paired-end reads, the ideal value is 100-1=99. Often, 100 works quite well.
 
 
