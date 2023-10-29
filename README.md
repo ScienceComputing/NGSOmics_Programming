@@ -30,7 +30,7 @@ This repository houses coding practice, assignment/competition solutions based o
   - Use Qualimap to perform [quality assurance](BulkRNASeq/Qualimap_QC.sh) on the aligned reads
   - Use GenomicAlignments for aligned reads to [obtain the gene-level or exon-level quantification](BulkRNASeq/AlignmentCountingTCell.Rmd)
   - Use Salmon for unaligned reads to [obtain the transcript-level quantification](BulkRNASeq/AlignmentCountingTCell.Rmd)
-    - **Why unalign?** To speed up the transcript quantification
+    - **Why unalign?** To speed up the counting process of reads
   - [Perform differential gene expression analysis](BulkRNASeq/DEAnalysisTCell.Rmd)
   - [Perform principal component analysis, heatmap, and clustering](BulkRNASeq/PCAHeatmapClusteringTissue.Rmd)
   - [Perform gene set enrichment analysis](BulkRNASeq/GeneSetTCell.Rmd)
