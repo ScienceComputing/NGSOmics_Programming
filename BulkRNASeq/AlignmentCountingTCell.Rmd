@@ -110,7 +110,7 @@ dfExons <- as.data.frame(myExons)
 SAF <- dfExons[, c("gene_id", "seqnames", "start", "end", "strand")]
 names(SAF) <- c("GeneID", "Chr", "Start", "End", "Strand")
 
-# The following cods crash
+# The following codes crash
 # SAF <- data.frame(
 #   GeneID = dfExons$gene_id,
 #   Chr = dfExons$seqnames,
