@@ -14,8 +14,15 @@ cp STAR /usr/local/bin
 
 # Build a reference genome index
 STAR --runThreadN 20 \
---runMode genomeGenerate \
---genomeDir chr1_hg38_index \
---genomeFastaFiles bulk_RNA_seq/reference_data_ensembl38/Homo_sapiens.GRCh38.dna.chromosome.1.fa \
---sjdbGTFfile bulk_RNA_seq/reference_data_ensembl38/Homo_sapiens.GRCh38.92.gtf \
+--runMode genomeGenerate \ 
+--genomeDir hg38_chr1_index \
+--genomeFastaFiles bulk_RNAseq/reference_data/homo_sapiens.GRCh38.dna.chromosome.1.fa \
+--sjdbGTFfile bulk_RNAseq/reference_data/homo_sapiens.GRCh38.92.gtf \
 --sjdbOverhang 99
+
+# genomeDir: provide the path to store the genome indices
+# genomeFastaFiles: provide the path to the reference genome in FASTA format
+# sjdbGTFfile: provide the path to the annotations of the reference genome in GTF format
+# sjdbOverhang: the ideal value is max(ReadLength)-1. In most cases, 100 works quite well.
+
+
