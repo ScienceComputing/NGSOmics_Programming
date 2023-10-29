@@ -28,7 +28,7 @@ This repository houses coding practice, assignment/competition solutions based o
     - **Why align?** To pinpoint the specific location on the human genome from which our reads originated, we will align our reads with the reference genome.
       - Use STAR (instead of R packages such as `Rsubread`) to [align](BulkRNASeq/STAR_Align.sh) the reads
     - Delve deeper into assessing the quality of read alignments to the reference and how closely the data aligns with the anticipated results.
-      - Use Qualimap to perform quality assurance on the aligned reads 
+      - Use Qualimap to perform [quality assurance](BulkRNASeq/Qualimap_QC.sh) on the aligned reads 
   - [Perform differential gene expression analysis](BulkRNASeq/DEAnalysisTCell.Rmd)
   - [Perform principal component analysis, heatmap, and clustering](BulkRNASeq/PCAHeatmapClusteringTissue.Rmd)
   - [Perform gene set enrichment analysis](BulkRNASeq/GeneSetTCell.Rmd)
