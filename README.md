@@ -16,7 +16,7 @@ This repository houses coding practice, assignment/competition solutions based o
     - Use Cell Ranger pipelines to perform [sequence alignment and generate the count matrix](SingleCellRNASeq/CellRanger/cellrangercount.sh)
 - After having the `feature-barcode matrices` at hand, we can ...
   - Use Scanpy workflow to perform [quality assurance, cell clustering, marker gene detection](SingleCellRNASeq/Scanpy/PBMC), and [trajectory inference](SingleCellRNASeq/Scanpy/Bone_Marrow)
-  - Use Seurat workflow to perform [quality assurance, cell clustering, and marker gene detection](SingleCellRNASeq/SeuratSkinCell.Rmd)
+  - Use Seurat workflow to perform [quality assurance, cell clustering, and marker gene detection](SingleCellRNASeq/SingleCellRNASeq/Seurat/SkinCell.Rmd)
   - Use Bioconductor packages to [orchestrate single cell RNA-Seq data analysis](SingleCellRNASeq/BioconductorSkinCell.Rmd)
   - Use scGen to model the [perturbation responses](SingleCellRNASeq/Perturbation/scGen)  
 
