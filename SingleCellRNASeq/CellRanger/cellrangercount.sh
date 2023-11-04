@@ -16,4 +16,4 @@ cellranger count --id=pbmc_1k_run_count \
    --transcriptome=../data/refdata-gex-GRCh38-2020-A
 
 # List the output
-ls -1 outs # Display one entry per line. 
+ls -1 outs # Display one entry per line
