@@ -1,7 +1,7 @@
 # Organize the directories
 mkdir -p raw_fastq qc_reports trimmed_fastq aligned_bam sorted_bam peak_calls peak_annotations tag_directories profiles motifs
 
-# QC with FastQC
+# QC
 fastqc raw_fastq/*.fastq.gz -o qc_reports/
 
 # Trim the sequences
