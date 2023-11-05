@@ -6,3 +6,5 @@ fastqc raw_fastq/*.fastq.gz -o qc_reports/
 
 # Trim the sequences
 cutadapt -a GATCGGAAGAGCACACGTCTGAACTCCAGTCACCGA -o trimmed_fastq/sample_trim.fastq.gz raw_fastq/sample.fastq.gz
+
+# TD
