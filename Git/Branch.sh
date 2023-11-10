@@ -30,3 +30,4 @@ git merge scRNA_seq_preprocess main # Merge the scRNA_seq_preproces branch into 
 
 # Merge conflict
 # A conflict arises when a file has differing contents across various branches, making it impossible for them to merge seamlessly into a unified version.
+# Avoid conflict: use each branch for a specific task; avoid editing a file in multiple branches
