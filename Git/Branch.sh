@@ -27,3 +27,6 @@ git branch # Confirm if we switch successfully
 # Doing so ensures that the main branch remains current and accurate.
 git merge source_branch_name destination_branch_name
 git merge scRNA_seq_preprocess main # Merge the scRNA_seq_preproces branch into the main branch
+
+# Merge conflict
+# A conflict arises when a file has differing contents across various branches, making it impossible for them to merge seamlessly into a unified version.
