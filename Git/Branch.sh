@@ -11,3 +11,6 @@ git branch
 # Create a new branch from the current branch
 git checkout -b new_branch_name
 git branch # Display branches again
+
+# Compare the difference between branches
+git diff branch_1 branch_2
