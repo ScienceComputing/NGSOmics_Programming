@@ -21,7 +21,9 @@ git ci F100.fastq.gz 'Upload the FASTQ file'
 
 # !Create an alias for unstaging files by executing unstage
 git config --global alias.unstage 'reset HEAD'
-# The alias should not overwrite the existing git or shell command
+# Unstage files
+git unstage file.py
+# !The alias should not overwrite the existing git or shell command
 
 # Show all the created aliases
 git config --global --list
