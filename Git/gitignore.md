@@ -1,9 +1,11 @@
+## Why use gitignore
+.gitignore is particularly useful if we are running many programs, where the number of files tracked is fairly large.
+
 ## Commonly ignored files
 - APIs
 - Credentials
 - System files
 - Software dependencies
-
 
 ## Go to the root of our local Git folder
 
