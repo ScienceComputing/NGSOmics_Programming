@@ -21,8 +21,9 @@ git config --global --list # See if the update has been made
 # Settings for every user on this computer
 git config --system
 
+# !The alias should not overwrite the existing git or shell command
 # !Create an alias for committing files by executing ci
-config --global alias.ci 'commit -m'
+git config --global alias.ci 'commit -m'
 # Commit files 
 git ci F100.fastq.gz 'Upload the FASTQ file'
 
@@ -30,7 +31,10 @@ git ci F100.fastq.gz 'Upload the FASTQ file'
 git config --global alias.unstage 'reset HEAD'
 # Unstage files
 git unstage file.py
-# !The alias should not overwrite the existing git or shell command
+
+# Ceate an alias for checking the status of files by executing st
+git config --global alias.st 'status'
+git st
 
 # Show all the created aliases
 git config --global --list
