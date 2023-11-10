@@ -1,3 +1,10 @@
+## Commonly ignored files
+- APIs
+- Credentials
+- System files
+- Software dependencies
+
+
 ## Go to the root of our local Git folder
 
 ```
