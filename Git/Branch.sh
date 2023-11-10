@@ -7,3 +7,7 @@
 # Display branches
 git branch
 # *: current branch
+
+# Create a new branch from the current branch
+git checkout -b new_branch_name
+git branch # Display branches again
