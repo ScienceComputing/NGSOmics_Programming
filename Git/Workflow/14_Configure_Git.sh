@@ -14,8 +14,9 @@ git config --local
 
 # Settings for all projects
 git config --global
-git config --global user.email XXX@gmail.com
+git config --global user.email XXX@gmail.com # Change the email address
 git config --global user.name 'YYY UUU'
+git config --global --list # See if the update has been made
 
 # Settings for every user on this computer
 git config --system
