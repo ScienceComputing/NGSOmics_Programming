@@ -1,6 +1,12 @@
-# Access a list of customizable settings
+# Display a list of customizable settings
 git config --list
-
+# user.email=XXX@gmail.com
+# user.name=YYY
+# core.editor=nano
+# core.repositoryformatversion=0
+# core.filemode=true
+# core.bare=false
+# core.logallrefupdates=true
 
 
 # Settings for one specific project
