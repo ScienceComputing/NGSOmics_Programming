@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser(description="scRNA-seq Analysis Tool")
 parser.add_argument("-i", "--input", required=True,
                     help="Path to the input file (e.g., a .h5ad file containing scRNA-seq data)")
 
-parser.add_argument("-n", "--normalization", type=str, default='CPM',
+parser.add_argument("-n", "--normalization", type=str, default='Yes',
                     choices=['Yes', 'None'],
                     help="Use the normalization or not")
 
