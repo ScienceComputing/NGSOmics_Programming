@@ -13,3 +13,7 @@ git merge origin main
 # Consequently, the process of fetching content from the remote and synchronizing it with the local repo is a common workflow.
 # ! Fetch and merge together
 git pull origin main
+
+# When we're working on local changes that haven't been committed, Git prevents us from pulling from a remote.
+# Git advises us to commit our changes, informing us that the pull command has been aborted. 
+# This highlights the importance of committing our local work before pulling from a remote repo.
