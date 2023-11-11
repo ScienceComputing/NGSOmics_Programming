@@ -6,6 +6,9 @@ git fetch origin main
 
 git fetch origin specific_local_branch_name
 
+# [add] Compare the remote branch with its local branch
+git diff <remote>/<remote branch> <local branch> 
+
 # After fetching, we have the contents of the remote in our local repo
 # We need to synchronize contents between the 2 repos
 git merge origin main
