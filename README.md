@@ -4,7 +4,8 @@ This repository houses coding practice, assignment/competition solutions based o
 
 ## Technical aspect
 **Analyze single cell RNA-seq data**
-- If we are given raw `bcl` files, we need to [convert them to fastq files](FastQC/bcl_to_fastq.sh)
+- A mini scRNA-seq pipeline
+- If we are given raw `bcl` files, we [convert them to fastq files](FastQC/bcl_to_fastq.sh)
 - As our inputs are `fastq` files, we can ...
   - Run FastQC to [evaluate sequence quality and content](FastQC/Run_FastQC.sh)
   - Use Trim Galore to [trim reads](FastQC/Trim_Read.sh) if we spot low-quality base calls/adaptor contamination
