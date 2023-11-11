@@ -8,5 +8,6 @@ git status
 
 # Covert an exsiting project into a repo
 # Run the following command from the project directory
+cd project_name
 git init
 git status # Check if the repo has been initialized correctly
