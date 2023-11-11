@@ -8,7 +8,6 @@ git config --list
 # core.bare=false
 # core.logallrefupdates=true
 
-
 # Settings for one specific project
 git config --local
 
