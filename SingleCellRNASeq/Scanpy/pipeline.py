@@ -45,8 +45,7 @@ gene_list = args.gene_list
 output_file = args.output
 num_threads = args.threads
 
-# Process the scRNA-seq data
-# Processing function using Scanpy
+# Process the scRNA-seq data using Scanpy workflow
 def process_scrna_data(input_file, normalization, clustering, dim_reduction, gene_list, output_file, num_threads):
     # Load the data
     print("Loading data")
@@ -88,7 +87,7 @@ def process_scrna_data(input_file, normalization, clustering, dim_reduction, gen
     print("Saving results")
     adata.write(output_file)
 
-    # Optionally, you can also output plots
+    # Optionally, we can output plots
     if dim_reduction == 'tSNE':
         sc.pl.tsne(adata, save='tsne_plot.png')
     elif dim_reduction == 'UMAP':
