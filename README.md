@@ -18,7 +18,7 @@ This repository houses coding practice, assignment/competition solutions based o
 - After having the `feature-barcode matrices` at hand, we can ...
   - Use Scanpy workflow to perform [quality assurance, cell clustering, marker gene detection](SingleCellRNASeq/Scanpy/PBMC), and [trajectory inference](SingleCellRNASeq/Scanpy/Bone_Marrow)
   - Use Seurat workflow to perform [quality assurance, cell clustering, and marker gene detection](SingleCellRNASeq/Seurat/SkinCell.Rmd)
-  - Use Bioconductor packages to [orchestrate single cell RNA-Seq data analysis](SingleCellRNASeq/BioconductorSkinCell.Rmd)
+  - Use Bioconductor packages to [perform single cell RNA-Seq data analysis](SingleCellRNASeq/Bioconductor/BioconductorSkinCell.Rmd)
   - Use scGen to model the [perturbation responses](SingleCellRNASeq/Perturbation/scGen)  
 
 <hr>
