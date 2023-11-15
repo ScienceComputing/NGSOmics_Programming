@@ -67,4 +67,11 @@
 - OR > 1: positive association (increased odds); 0 < OR < 1: negative association (decreased odds); OR = 1.0: no association
 
 # Interpreting the OR
-- 
+- What does the OR of age (1.02) mean in a multivariable logistic regression model?
+  ```
+  Patients with one-year older are 2% more likely to have the disease, after controlling for other variables. 
+  ```
+- What does the OR of age (0.94) mean in a multivariable logistic regression model?
+  ```
+  Patients with one-year older are 6% less likely to have the disease, after controlling for other variables.
+  ```
