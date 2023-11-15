@@ -18,6 +18,10 @@
 - Define controls: 1) free of the disease in question; 2) at risk of the disease; 3) other eligibility requirements as needed
 - Source of controls: hospitals; medical practices; population rosters; workforce; coomunity organizations; **relatives of cases**; friends or neighbors of cases
 - We typicall sample among potential controls
+- Who is the best control?
+  - If cases are a random sample of all cases in the population, controls should be a random sample of all non-cases in the population sampled at the same time
+  - If study cases are not a random sample of all cases, it is unlikely that a random sample of the population of non-cases will make up a good control population; in other words, controls must be selected so as to **mirror the same biases** that entered into the selection of cases
+  - **Comparability** is more important than representativeness in the selection of controls; the control must be at risk of developing the disease; the control should **resemble the case in all respects except for the presence of disease**
 
 # Source of data - exposure
 - Interviews with cases and controls
@@ -27,3 +31,4 @@
 - Biologic specimens: **genetic characteristics**; cholesterol; infection; markers of environmental exposures
 - Determine the accuracy of the exposure information since it is retrospective
 
+# Study base
