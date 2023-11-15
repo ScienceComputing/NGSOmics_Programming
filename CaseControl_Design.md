@@ -55,10 +55,11 @@
 - Once the variables are matched, we cannot explore the association of the disease with these matched variables
 
 # Measure the strength of association: odds ratio
-        | Exposure      | Have disease  | No disease    |
-        | ------------- | ------------- | ------------- |
-        | Yes           | A             | B             |
-        | No            | C             | D             |
+
+| Exposure      | Have disease   | No disease     |
+|---------------|----------------|----------------|
+| Yes           | A              | B              |
+| No            | C              | D              |
 
 - Odds of exposure in the cases = A/C
 - Odds of exposure in the controls = B/D
