@@ -32,3 +32,12 @@
 - Determine the accuracy of the exposure information since it is retrospective
 
 # Study base
+- It is composed of a population at risk of exposure over a period of risk of exposure
+- Both cases and controls should emerge from the same study base
+- If cases are selected exclusively from hospitalized patients, controls must also be selected from hospitalized patients
+- If cases must have gone through a certain ascertainment process (e.g., mammogram-detected screening), controls must have also
+- If cases must have reached a certain age before they can become cases, so must controls
+- If the exposure of interest is cumulative over time, the controls and cases must each have the same opportunity to be exposed to that exposure
+
+# Issues in matching controls
+
