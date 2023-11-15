@@ -55,3 +55,16 @@
 - Once the variables are matched, we cannot explore the association of the disease with these matched variables
 
 # Measure the strength of association: odds ratio
+    
+        | Exposure      | Have disease  | No disease    |
+        | ------------- | ------------- | ------------- |
+        | Yes           | A             | B             |
+        | No            | C             | D             |
+
+- Odds of exposure in the cases = A/C
+- Odds of exposure in the controls = B/D
+- Odds ratio (OR) = (A/C)/(B/D) = AD/BC
+- OR > 1: positive association (increased odds); 0 < OR < 1: negative association (decreased odds); OR = 1.0: no association
+
+# Interpreting the OR
+- 
