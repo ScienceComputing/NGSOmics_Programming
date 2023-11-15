@@ -49,3 +49,9 @@
 - Avoid over-matching: match only on factors known to be causes of the disease
 - Obtain power: match more than one control per case. Generally, the number of controls should be <= 5, since there is no further gain of power above 4 controls per case
 - Obtain generalizability: match more than one type of control
+
+# Issues with matching
+- It is difficult to find a good control if there are matching criteria on many variables
+- Once the variables are matched, we cannot explore the association of the disease with these matched variables
+
+# Measure the strength of association: odds ratio
