@@ -7,3 +7,6 @@
 - We hypothesize that the exposure to a factor increases an individual's risk of developing the disease
 - We select the individuals with the disease as cases, and the individuals without the disease who are comparable to the cases as controls
 - We compare the odds of exposure in cases and controls to derive the odds ratio
+
+# Selection of cases
+- Define case: homogeneity of disease entity
