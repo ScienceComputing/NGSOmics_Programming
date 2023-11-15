@@ -55,7 +55,6 @@
 - Once the variables are matched, we cannot explore the association of the disease with these matched variables
 
 # Measure the strength of association: odds ratio
-    
         | Exposure      | Have disease  | No disease    |
         | ------------- | ------------- | ------------- |
         | Yes           | A             | B             |
