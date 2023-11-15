@@ -1,3 +1,12 @@
+# Overview of a case-control study
+This retrospective study starts with the final health outcome and then traces back to identify potential causes that could have led to this outcome
+
+# Important historical case-control studies
+- 1950's: cigarette smoking and lung cancer
+- 1970's: post-memopausal estrogens and endometrial cancer
+- 1980's: Aspirin and Reyes syndrome; Tampon use and toxic shock syndrome; AIDS and sexual practices
+- 1990's: vaccine effectiveness; diet and cancer
+
 # Features of a case-control study
 - An observational study
 - A retrospective study that depends on recalling and recording events that happened before the selection of cases and controls
@@ -13,7 +22,7 @@
 - Source of cases: hospitals; disease registries; medical practices; general population
 - We typically take all the cases from the given source at the specified time
 
-# Selection of controls
+# Selection of controls - selection bias
 - The contols are from the **same source population** as the cases, such that they would have been identified and included as cases had they developed the disease
 - Define controls: 1) free of the disease in question; 2) at risk of the disease; 3) other eligibility requirements as needed
 - Source of controls: hospitals; medical practices; population rosters; workforce; coomunity organizations; **relatives of cases**; friends or neighbors of cases
@@ -22,8 +31,9 @@
   - If cases are a random sample of all cases in the population, controls should be a random sample of all non-cases in the population sampled at the same time
   - If study cases are not a random sample of all cases, it is unlikely that a random sample of the population of non-cases will make up a good control population; in other words, controls must be selected so as to **mirror the same biases** that entered into the selection of cases
   - **Comparability** is more important than representativeness in the selection of controls; the control must be at risk of developing the disease; the control should **resemble the case in all respects except for the presence of disease**
+  - ! Do not use convenient controls; use controls who are well defined
 
-# Source of data - exposure
+# Source of data - exposure - recall bias
 - Interviews with cases and controls
 - Interviews with surrogates (relatives)
 - Medical records
@@ -88,4 +98,9 @@
 - Investigators can obtain answers quickly
 
 # Disadvantages of case-control studies
+- Limitations in recall: sometimes, validation of exposure information is difficult or impossible
+- Control of confounding variables may not be complete
+- Restricted to a single outcome
+- Difficult to study **rare exposures**
 
+# Compare case-control studies and cohort studies
