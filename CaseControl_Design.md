@@ -75,3 +75,17 @@
   ```
   Patients with one-year older are 6% less likely to have the disease, after controlling for other variables.
   ```
+- We cannot calculate the incidence rate directly in a case-control study, because we do not have the population at risk. Instead, we calculate the odds of having the exposure in the cases and controls
+- The OR approximates relative risk (RR) when 1) controls are representative of the general population; 2) cases are representative of all diseased; 3) the **disease is rare**
+
+# Advantages of case-control studies
+- Well suited to the study of **rare diseases** or those with long latency
+- Allows study of **multiple potential causes** of a disease
+- Exisitng records can occasionally be used
+- Relatively efficient to organize and conduct
+- Relatively inexpensive compared to cohort and clinical trial
+- Relatively short time commitment from respondents compared to cohort and clinical trial
+- Investigators can obtain answers quickly
+
+# Disadvantages of case-control studies
+
