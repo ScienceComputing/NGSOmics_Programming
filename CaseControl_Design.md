@@ -40,4 +40,12 @@
 - If the exposure of interest is cumulative over time, the controls and cases must each have the same opportunity to be exposed to that exposure
 
 # Issues in matching controls
-
+- Identify the pool from which controls may come. This pool is likely to reflect the way cases and controls were ascertained (e.g., hospital, screening test, telephone survey)
+- Control selection is typically through matching
+  - Define matching variables (e.g., age) and criteria (e.g., control must be within the same 5 year age group) in advance
+- Controls can be individually matched or frequency matched
+  - Individual matching: select one or more controls who meet the matching criteria for each case
+  - Frequency matching: select a population of controls such that the overall characteristics of the group match the overall characteristics of the cases. e.g., if 20% of cases are female, 20% of controls are female, as well.
+- Avoid over-matching: match only on factors known to be causes of the disease
+- Obtain power: match more than one control per case. Generally, the number of controls should be <= 5, since there is no further gain of power above 4 controls per case
+- Obtain generalizability: match more than one type of control
