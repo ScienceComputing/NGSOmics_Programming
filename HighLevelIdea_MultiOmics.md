@@ -1,4 +1,5 @@
 # DNA + RNA
+Genome-wide association studies (GWAS) have been effective in identifying genetic variants linked to complex diseases. While these genotypes reveal disease susceptibility, pinpointing the specific genes and pathways influenced by these variants is challenging. Integrating RNA sequencing (RNA-Seq) allows researchers to annotate and prioritize GWAS-identified variants for functional analysis, aiding in understanding disease mechanisms. Analyzing gene expression shows whether and when genes of interest are upregulated or downregulated in disease samples. This multiomic approach enhances drug target identification and biomarker discovery in functional genomics.
 
 # DNA + epigenetics 
 
