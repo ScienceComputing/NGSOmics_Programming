@@ -112,7 +112,7 @@ def process_count_data(input_file, normalization, clustering, dim_reduction, gen
         sc.pp.neighbors(adata, n_neighbors=10, n_pcs=40)
         sc.tl.louvain(adata)
 
-    # Saving the result
+    # Saving the anndata result
     print("Saving results")
     adata.write(output_file)
 
