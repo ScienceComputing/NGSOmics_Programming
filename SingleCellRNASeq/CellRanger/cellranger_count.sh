@@ -10,10 +10,10 @@ wget https://cf.10xgenomics.com/supp/cell-exp/refdata-gex-GRCh38-2020-A.tar.gz
 tar -zxvf refdata-gex-GRCh38-2020-A.tar.gz
 
 # Align reads and generate Feature Barcode matrices
-cellranger count --id=pbmc_1k_run_count \
+cellranger count --id=pbmc_1k_count \
    --fastqs=../data/pbmc_1k_v3_fastqs \
    --sample=pbmc_1k_v3 \
    --transcriptome=../data/refdata-gex-GRCh38-2020-A
 
 # List the output
-ls -1 outs # Display one entry per line
+ls -1 pbmc_1k_count/outs # Display one entry per line
