@@ -75,7 +75,7 @@ def run_cellranger(trimmed_fastq_files, sample_id, ref_genome):
         "--sample", sample_id
     ])
 
-def process_scrna_data(input_file, normalization, clustering, dim_reduction, gene_list, output_file, num_threads):
+def process_count_data(input_file, normalization, clustering, dim_reduction, gene_list, output_file, num_threads):
     # Load the data
     print("Loading data")
     adata = sc.read(input_file)
@@ -130,7 +130,7 @@ run_cellranger(trimmed_fastq,
                sample_id=args.sample_id, 
                ref_genome=args.ref_genome)
 input_file_path=args.sample_id + "/outs"
-process_scrna_data(input_file=input_file_path, 
+process_count_data(input_file=input_file_path, 
                    normalization=args.normalization, 
                    clustering=args.cluster, 
                    dim_reduction=args.dim_reduction, 
