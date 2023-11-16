@@ -13,6 +13,7 @@ Authors in this [Nature Communications paper](https://www.nature.com/articles/s4
 A research team [studied](https://www.nature.com/articles/s41380-020-0808-3) the role of epigenetic markers in major depressive disorder (MDD). They investigated the link between DNA methylation variations and lifestyle-related depression risks, such as smoking and body mass index (BMI). The team examined the **genome-wide CpG methylation patterns** in 9,873 samples from the Generation Scotland: Scottish Family Health Study. Their findings revealed that **a "methylation risk score" significantly improved the prediction of depression when combined with genetic risk scores**. This methylation factor accounted for 1.75% of the variance in MDD cases and remained relevant even after adjusting for the lifestyle factors. The study highlights the potential of **multiomic data-based risk scores** in enhancing the prediction and possible prevention of MDD.
 
 # Epigenetics + RNA
+Epigenetics and transcriptomics provide complementary insights into cellular differentiation and response processes. By integrating epigenetic analyses with RNA-Seq methods, we can directly observe the relationship between gene regulation and expression, rather than just inferring it. This combined approach aids in identifying key genes and unraveling the mechanisms behind notable phenotypes. Employing this comprehensive and unbiased multiomics strategy can lead to the discovery of new regulatory elements, which are essential for identifying biomarkers and developing therapeutic targets.
 
 
 # DNA + protein
