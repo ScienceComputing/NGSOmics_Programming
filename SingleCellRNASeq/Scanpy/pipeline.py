@@ -16,9 +16,6 @@ parser.add_argument("-s", "--sample_id", required=True, help="Sample ID for Cell
 
 parser.add_argument("-r", "--ref_genome", required=True, help="Path to the reference genome for Cell Ranger")
 
-parser.add_argument("-i", "--input", required=True,
-                    help="Path to the input file (e.g., a .h5ad file containing scRNA-seq data)")
-
 parser.add_argument("-n", "--normalization", type=str, default='Yes',
                     choices=['Yes', 'None'],
                     help="Use the normalization or not")
@@ -43,16 +40,16 @@ parser.add_argument("-t", "--threads", type=int, default=1,
 args = parser.parse_args()
 
 # Use args to access the arguments
-fastq_files = args.fastq
-sample_id = args.sample_id
-ref_genome = args.ref_genome
-input_file = args.input
-normalization_method = args.normalization
-do_clustering = args.cluster
-dim_reduction_technique = args.dim_reduction
-gene_list = args.gene_list
-output_file = args.output
-num_threads = args.threads
+fastq_files=args.fastq
+sample_id=args.sample_id
+ref_genome=args.ref_genome
+input_file=args.input
+normalization_method=args.normalization
+do_clustering=args.cluster
+dim_reduction_technique=args.dim_reduction
+gene_list=args.gene_list
+output_file=args.output
+num_threads=args.threads
 
 # Process the scRNA-seq data using Scanpy workflow
 def run_fastqc(fastq_files):
@@ -125,12 +122,15 @@ def process_scrna_data(input_file, normalization, clustering, dim_reduction, gen
     elif dim_reduction == 'UMAP':
         sc.pl.umap(adata, save='umap_plot.png')
 
-# Call the processing function with parsed arguments
-process_scrna_data(
-                   fastq_files = args.fastq
-                   sample_id = args.sample_id
-                   ref_genome = args.ref_genome
-                   input_file=args.input, 
+
+# Call the functions with parsed arguments
+run_fastqc(fastq_files=args.fastq)
+trimmed_fastq = run_trim_galore(fastq_files=args.fastq)
+run_cellranger(trimmed_fastq, 
+               sample_id=args.sample_id, 
+               ref_genome=args.ref_genome)
+input_file_path=args.sample_id + "/outs"
+process_scrna_data(input_file=input_file_path, 
                    normalization=args.normalization, 
                    clustering=args.cluster, 
                    dim_reduction=args.dim_reduction, 
@@ -139,4 +139,4 @@ process_scrna_data(
                    num_threads=args.threads)
 
 # In the shell
-# python3 pipeline.py -i scRNA.h5ad -n Yes -d UMAP -o output.h5ad -t 30
+# python pipeline.py PBMC_R1.fastq PBMC_R2.fastq -s PBMC_count -r ../data/refdata-gex-GRCh38-2020-A -n Yes -d UMAP -o output.h5ad -t 30
