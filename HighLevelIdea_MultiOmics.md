@@ -6,6 +6,8 @@ In the context of solid organ transplant, the longevity and impact of donor-deri
 The [study](https://journals.lww.com/jasn/fulltext/2020/09000/harnessing_expressed_single_nucleotide_variation.12.aspx) involved single-cell immune profiling to examine the transcriptomes of over 5000 macrophages and 3600 lymphocytes. The authors observed that macrophages and T-cells originating from recipients exhibited **unique proinflammatory gene expression patterns**. Notably, donor-derived cells were found to persist for years post-transplant. Insights gained from this research could pave the way for more precisely tailored immunosuppressive medications, enhancing organ transplant outcomes.
 
 # DNA + epigenetics 
+Most human genetic variations identified in GWAS are located in the genome's noncoding regions, such as introns, promoters, and enhancers. To understand the function of these variants, comprehensive epigenetic profiling is key to reveal gene regulation patterns. Next-Generation Sequencing (NGS)-based epigenetic methods, including chromatin immunoprecipitation (ChIP-Seq), assay for transposase-accessible chromatin (ATAC-Seq), and chromosome conformation capture techniques like Capture C and HiC, are instrumental in this process. Additionally, conserved DNA methylation patterns may serve as a novel category of biomarkers. Integrating methylation or other epigenetic data with genetic information through multiomic approaches allows for the exploration of complex pathways and disease mechanisms by linking various functional layers.
+
 
 # Epigenetics + RNA
 
