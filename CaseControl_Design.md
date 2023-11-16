@@ -103,4 +103,28 @@ This retrospective study starts with the final health outcome and then traces ba
 - Restricted to a single outcome
 - Difficult to study **rare exposures**
 
-# Compare case-control studies and cohort studies
+# Compare case-control and cohort studies
+- Case-control study
+  - Only estimate the odds ratio
+  - Potentially weaker causal investigation
+  - Inexpensive
+  - Short-term study
+  - Can be powerful with small sample of cases
+  - Efficient design for rare disease
+  - Good for multiple exposures
+  - Suffer recall bias
+  - Less likely to suffer loss of follow-up
+  - The results may not be generalizable
+  - Cannot examine the natural course of disease, survival
+- Cohort study
+  - Can calculate the incidence rate, risk, and relative risk
+  - Potentially greater causal investigation
+  - Expensive
+  - Long-term study
+  - Large sample size required
+  - Efficient design for rare exposure
+  - Good for multiple outcomes
+  - Less likely to suffer recall bias
+  - More likely to suffer loss of follow-up
+  - The results may be generalizable
+  - Can examine the natural course of disease, survival
