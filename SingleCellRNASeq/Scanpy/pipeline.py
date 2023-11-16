@@ -61,7 +61,7 @@ def run_trim_galore(fastq_files):
     trimmed_fastq_files = []
     for fastq in fastq_files:
         output_fastq = fastq.replace('.fastq', '_trimmed.fastq')
-        subprocess.run(["trim_galore", "--paired", fastq, output_fastq])
+        subprocess.run(["trim_galore", "--illumina", "--paired", fastq, output_fastq]) # TD: --basename
         trimmed_fastq_files.append(output_fastq)
     return trimmed_fastq_files
 
