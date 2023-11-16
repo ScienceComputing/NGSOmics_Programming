@@ -2,7 +2,7 @@
 This retrospective study starts with the final health outcome and then traces back to identify potential causes that could have led to this outcome
 
 # Important historical case-control studies
-- 1950's: cigarette smoking and lung cancer
+- 1950's: [cigarette smoking and lung cancer](https://www.thelancet.com/pdfs/journals/lanonc/PIIS1470204509704012.pdf)
 - 1970's: post-memopausal estrogens and endometrial cancer
 - 1980's: Aspirin and Reyes syndrome; Tampon use and toxic shock syndrome; AIDS and sexual practices
 - 1990's: vaccine effectiveness; diet and cancer
