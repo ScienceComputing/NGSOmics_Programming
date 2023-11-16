@@ -1,15 +1,21 @@
 import argparse
 import scanpy as sc
 import numpy as np
+import subprocess
 
 print('*****************************************')
 print('  Single-Cell RNA Sequencing Analysis Tool')
 print('*****************************************\n')
 
-# Creating an argument parser
+# Set up the argument parser
 parser = argparse.ArgumentParser(description="scRNA-seq Analysis Tool")
 
-# Adding arguments
+parser.add_argument("fastq", nargs=2, help="Path to the paired-end FASTQ files")
+
+parser.add_argument("-s", "--sample_id", required=True, help="Sample ID for Cell Ranger")
+
+parser.add_argument("-r", "--ref_genome", required=True, help="Path to the reference genome for Cell Ranger")
+
 parser.add_argument("-i", "--input", required=True,
                     help="Path to the input file (e.g., a .h5ad file containing scRNA-seq data)")
 
@@ -37,6 +43,9 @@ parser.add_argument("-t", "--threads", type=int, default=1,
 args = parser.parse_args()
 
 # Use args to access the arguments
+fastq_files = args.fastq
+sample_id = args.sample_id
+ref_genome = args.ref_genome
 input_file = args.input
 normalization_method = args.normalization
 do_clustering = args.cluster
@@ -46,6 +55,29 @@ output_file = args.output
 num_threads = args.threads
 
 # Process the scRNA-seq data using Scanpy workflow
+def run_fastqc(fastq_files):
+    print("Running FastQC...")
+    subprocess.run(["fastqc", *fastq_files])
+
+def run_trim_galore(fastq_files):
+    print("Running Trim Galore...")
+    trimmed_fastq_files = []
+    for fastq in fastq_files:
+        output_fastq = fastq.replace('.fastq', '_trimmed.fastq')
+        subprocess.run(["trim_galore", "--paired", fastq, output_fastq])
+        trimmed_fastq_files.append(output_fastq)
+    return trimmed_fastq_files
+
+def run_cellranger(trimmed_fastq_files, sample_id, ref_genome):
+    print("Running Cell Ranger...")
+    subprocess.run([
+        "cellranger", "count", 
+        "--id", sample_id, 
+        "--transcriptome", ref_genome, 
+        "--fastqs", ",".join(trimmed_fastq_files), 
+        "--sample", sample_id
+    ])
+
 def process_scrna_data(input_file, normalization, clustering, dim_reduction, gene_list, output_file, num_threads):
     # Load the data
     print("Loading data")
@@ -94,7 +126,11 @@ def process_scrna_data(input_file, normalization, clustering, dim_reduction, gen
         sc.pl.umap(adata, save='umap_plot.png')
 
 # Call the processing function with parsed arguments
-process_scrna_data(input_file=args.input, 
+process_scrna_data(
+                   fastq_files = args.fastq
+                   sample_id = args.sample_id
+                   ref_genome = args.ref_genome
+                   input_file=args.input, 
                    normalization=args.normalization, 
                    clustering=args.cluster, 
                    dim_reduction=args.dim_reduction, 
