@@ -51,7 +51,7 @@ This repository houses coding practice, assignment/competition solutions based o
 
 <hr>
 
-**Analyze the integrated single cell RNA-seq and ATAC-seq data**
+**Analyze integrated single cell RNA-seq and ATAC-seq data**
 
 *Under Active Construction*
 
