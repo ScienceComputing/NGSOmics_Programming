@@ -10,7 +10,7 @@ This repository houses coding practice, assignment/competition solutions based o
 
 
 ## Technical aspect
-**Analyze single cell RNA-seq data**
+### Analyze single cell RNA-seq data**
 - A mini scRNA-seq [pipeline](SingleCellRNASeq/Scanpy/pipeline.py)
 - If given raw `bcl` files, we [convert them to fastq files](FastQC/bcl_to_fastq.sh)
 - As inputs are `fastq` files, we can ...
