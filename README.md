@@ -6,11 +6,11 @@ This repository houses coding practice, assignment/competition solutions based o
 
 * [Single cell RNA-seq data analysis](#Analyze-single-cell-RNA-seq-data)
 * [Bulk RNA-seq data analysis](#Analyze-bulk-RNA-seq-data)
-* [Multi-omics idea](#High-level-multi-omics-idea)
+* [Multi-omics idea](HighLevelIdea_MultiOmics.md)
 
 
 ## Technical aspect
-### Analyze single cell RNA-seq data**
+### Analyze single cell RNA-seq data
 - A mini scRNA-seq [pipeline](SingleCellRNASeq/Scanpy/pipeline.py)
 - If given raw `bcl` files, we [convert them to fastq files](FastQC/bcl_to_fastq.sh)
 - As inputs are `fastq` files, we can ...
@@ -30,7 +30,7 @@ This repository houses coding practice, assignment/competition solutions based o
 
 <hr>
 
-**Analyze bulk RNA-seq data**
+### Analyze bulk RNA-seq data
 
   - [Recommend] Use STAR to [align the reads](BulkRNASeq/STAR_Align.sh)
   - Use Rsubread to [align the reads](BulkRNASeq/AlignmentCountingTCell.Rmd)
@@ -48,7 +48,7 @@ This repository houses coding practice, assignment/competition solutions based o
 <hr>
 
 
-**Analyze ATAC-seq data**
+### Analyze ATAC-seq data
   
   - [Align the fastq files](ATACSeq/AlignFASTQ.Rmd)
   - [Perform post-alignment processing](ATACSeq/PostAlignment.Rmd)
@@ -58,13 +58,13 @@ This repository houses coding practice, assignment/competition solutions based o
 
 <hr>
 
-**Analyze integrated single cell RNA-seq and ATAC-seq data**
+### Analyze integrated single cell RNA-seq and ATAC-seq data
 
 *Under Active Construction*
 
 <hr>
 
-**Analyze proteomics data**
+### Analyze proteomics data
 
 - A quick start from [loading an online spectrum, performing peak quality control, annotating peaks, to visualizing the annotated peaks](Proteomics/spectrum_utils/0_Quick_Start.py)
 
