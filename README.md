@@ -65,7 +65,7 @@ This repository houses coding practice, assignment/competition solutions based o
 
 ## Conceptual aspect
 
-- [High-level scientific idea](HighLevelIdea_MultiOmics.md)
+- [High-level multi-omics idea](HighLevelIdea_MultiOmics.md)
 - [Case-control design](CaseControl_Design.md)
 
 
