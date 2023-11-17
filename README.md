@@ -59,7 +59,7 @@ This repository houses coding practice, assignment/competition solutions based o
 
 **Analyze proteomics data**
 
-- A quick start from [loading an online spectrum, performing peak quality control, annotating peaks, to visulizing the annotated peaks](Proteomics/spectrum_utils/0_Quick_Start.py)
+- A quick start from [loading an online spectrum, performing peak quality control, annotating peaks, to visualizing the annotated peaks](Proteomics/spectrum_utils/0_Quick_Start.py)
 
 <hr>
 
