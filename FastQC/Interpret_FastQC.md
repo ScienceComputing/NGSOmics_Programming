@@ -40,5 +40,5 @@ The graph displaying sequence length distribution illustrates the variation in r
 
 
 ## More reading
-[Common next-generation sequencing problems](https://sequencing.qcfail.com)
-[FastQC Tutorial & FAQ](https://rtsf.natsci.msu.edu/genomics/technical-documents/fastqc-tutorial-and-faq.aspx)
+- [Common next-generation sequencing problems](https://sequencing.qcfail.com)
+- [FastQC Tutorial & FAQ](https://rtsf.natsci.msu.edu/genomics/technical-documents/fastqc-tutorial-and-faq.aspx)
