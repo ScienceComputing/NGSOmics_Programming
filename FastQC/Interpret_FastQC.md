@@ -1,3 +1,10 @@
+## Table of contents
+
+* [Basic Statistics](#Basic-Statistics)
+* [Per Base Sequence Quality](#Per-Base-Sequence-Quality)
+* [Per Tile Sequence Quality](#Per-Tile-Sequence-Quality)
+
+
 ## Basic Statistics
 - High-quality single-cell data typically exhibit minimal instances of low-quality sequences and frequently have consistent sequence lengths. 
 - The GC content should closely align with the overall GC composition of the genome or transcriptome specific to the species being sequenced. 
