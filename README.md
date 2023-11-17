@@ -2,6 +2,13 @@
 
 This repository houses coding practice, assignment/competition solutions based on the materials from a variety of computational biology/bioinformatics courses, workshops, technical manuals, academic articles, and others. 
 
+## Table of featured contents
+
+* [Single cell RNA-seq data analysis](#Analyze-single-cell-RNA-seq-data)
+* [Bulk RNA-seq data analysis](#Analyze-bulk-RNA-seq-data)
+* [Multi-omics idea](#High-level-multi-omics-idea)
+
+
 ## Technical aspect
 **Analyze single cell RNA-seq data**
 - A mini scRNA-seq [pipeline](SingleCellRNASeq/Scanpy/pipeline.py)
