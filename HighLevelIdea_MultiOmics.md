@@ -21,6 +21,8 @@ Authors in this [Nature Communications paper](https://www.nature.com/articles/s4
 # DNA + protein
 Connecting genetic variations to protein expression at the single-cell level allows us to uncover unique cell identities and subtle cellular states, thereby enhancing our ability to conduct more informed research in the realms of disease and therapeutic development. This approach is particularly valuable in cancer research, where deciphering the relationship between genotype and phenotype is crucial for understanding tumor evolution and the progression of diseases.
 
+Authors in this [Nature paper](https://www.nature.com/articles/s41586-020-2864-x) utilized single-cell multiomics to examine clonal evolution in 146 myeloid cancer samples from 123 patients. The team conducted simultaneous single-cell mutational analysis and cell-surface protein measurement on over 740,000 cells using targeted sequencing panels. This approach enabled them to intricately connect genotype and phenotype, providing detailed insights into the complexity of cancer cell clones and their impact on disease progression.
+
 # RNA + protein
 While established technologies like single-cell RNA sequencing can uncover new cell types and states within complex tissues, they often struggle to distinguish functionally distinct categories of immune cells that may be molecularly similar.
 
