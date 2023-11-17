@@ -1,8 +1,9 @@
-## Table of contents
+## Table of Contents
 
 * [Basic Statistics](#Basic-Statistics)
 * [Per Base Sequence Quality](#Per-Base-Sequence-Quality)
 * [Per Tile Sequence Quality](#Per-Tile-Sequence-Quality)
+* [Per Sequence Quality Scores](#Per-Sequence-Quality-Scores)
 
 
 ## Basic Statistics
@@ -17,3 +18,6 @@
 
 ## Per Tile Sequence Quality
 The per tile sequence quality plot indicates the variation in read quality across each sequenced tile in the flowcell. Hotter colors represent greater deviations in quality. Ideally, the plot should display uniform blue, indicating consistent quality across all tiles. However, if some tiles show poor quality (indicated by Hotter  colors), it may suggest temporary issues during sequencing, like bubbles or smudges in the flowcell.
+
+## Per Sequence Quality Scores
+The per sequence quality score plot displays each read's average quality score distribution in the file. The x-axis represents average quality scores, while the y-axis indicates the occurrence frequency of each score. Ideally, this plot should exhibit a single peak towards the end, signifying good data quality. The emergence of additional peaks may suggest quality issues in a subset of the reads.
