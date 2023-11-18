@@ -1,0 +1,2 @@
+- [XGDAG: explainable gene–disease associations via graph neural networks](https://academic.oup.com/bioinformatics/article/39/8/btad482/7235567)
+- [Graph Neural Networks and Their Current Applications in Bioinformatics](https://www.frontiersin.org/articles/10.3389/fgene.2021.690049/full)
