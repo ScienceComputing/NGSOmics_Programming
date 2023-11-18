@@ -72,7 +72,7 @@ This repository houses coding practice, assignment/competition solutions based o
 
 ## Conceptual aspect
 
-- [High-level multi-omics idea](HighLevelIdea_MultiOmics.md)
+- [High level multi-omics idea](HighLevelIdea_MultiOmics.md)
 - [Case-control design](CaseControl_Design.md)
-- [Graph Neural Networks in Biomedical Studies](Reference/Graph_Neural_Network.md)
+- [Graph neural networks in biomedical studies](Reference/Graph_Neural_Network.md)
 
