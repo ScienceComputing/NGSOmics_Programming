@@ -2,7 +2,7 @@
 
 This repository houses coding practice, assignment/competition solutions based on the materials from a variety of computational biology/bioinformatics courses, workshops, technical manuals, academic articles, and others. 
 
-## Table of featured contents
+## Featured contents
 
 * [Single cell RNA-seq data analysis](#Analyze-single-cell-RNA-seq-data)
 * [Bulk RNA-seq data analysis](#Analyze-bulk-RNA-seq-data)
@@ -74,5 +74,5 @@ This repository houses coding practice, assignment/competition solutions based o
 
 - [High-level multi-omics idea](HighLevelIdea_MultiOmics.md)
 - [Case-control design](CaseControl_Design.md)
-
+- [Graph Neural Networks in Biomedical Studies]
 
