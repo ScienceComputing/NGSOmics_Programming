@@ -247,6 +247,7 @@ atac_dds <- DESeq(atac_dds)
 kidney_vs_hindbrain <- results(atac_dds, c("Group", "kidney", "hind_brain"), format = "GRanges")
 # format	
 # character, either "DataFrame", "GRanges", or "GRangesList", whether the results should be printed as a DESeqResults DataFrame, or if the results DataFrame should be attached as metadata columns to the **GRanges** or GRangesList rowRanges of the DESeqDataSet. If the rowRanges is a GRangesList, and GRanges is requested, the **range of each gene will be returned**
+# This GRanges format is very important, as it allows us to subset the results to specific open regions (e.g., promoters)
 kidney_vs_hindbrain_order <- kidney_vs_hindbrain[order(kidney_vs_hindbrain$pvalue)]
 kidney_vs_hindbrain_order
 
@@ -266,4 +267,87 @@ kidney_vs_hindbrain_order
 #   [36320]     chrX 169047684-169047857      * |   2.55896              0   2.42940         0           1          NA
 #   -------
 #   seqinfo: 22 sequences from an unspecified genome; no seqlengths
+
+##----We subset results to open regions within promoters----
+library(TxDb.Mmusculus.UCSC.mm10.knownGene)
+promoter_overlap <- promoters(x = TxDb.Mmusculus.UCSC.mm10.knownGene, 
+                              upstream = 500, 
+                              downstream = 500)
+# upstream defines the number of nucleotides toward the 5' end and downstream defines the number toward the 3' end, relative to the transcription start site (TSS). Promoter regions are formed by merging the upstream and downstream ranges.
+
+promoter_overlap
+# GRanges object with 142446 ranges and 2 metadata columns:
+#                              seqnames          ranges strand |     tx_id              tx_name
+#                                 <Rle>       <IRanges>  <Rle> | <integer>          <character>
+#   ENSMUST00000193812.1           chr1 3072753-3073752      + |         1 ENSMUST00000193812.1
+#   ENSMUST00000082908.1           chr1 3101516-3102515      + |         2 ENSMUST00000082908.1
+#   ENSMUST00000192857.1           chr1 3252257-3253256      + |         3 ENSMUST00000192857.1
+#   ENSMUST00000161581.1           chr1 3466087-3467086      + |         4 ENSMUST00000161581.1
+#   ENSMUST00000192183.1           chr1 3531295-3532294      + |         5 ENSMUST00000192183.1
+#                    ...            ...             ...    ... .       ...                  ...
+#   ENSMUST00000184505.1 chrUn_GL456381     16222-17221      - |    142442 ENSMUST00000184505.1
+#   ENSMUST00000178705.1 chrUn_GL456385     30743-31742      + |    142443 ENSMUST00000178705.1
+#   ENSMUST00000180206.1 chrUn_GL456385     32219-33218      + |    142444 ENSMUST00000180206.1
+#   ENSMUST00000179505.7 chrUn_JH584304     59168-60167      - |    142445 ENSMUST00000179505.7
+#   ENSMUST00000178343.1 chrUn_JH584304     59191-60190      - |    142446 ENSMUST00000178343.1
+#   -------
+#   seqinfo: 66 sequences (1 circular) from mm10 genome
+
+kidney_vs_hindbrain_order_promoter <- kidney_vs_hindbrain_order[
+  (!is.na(kidney_vs_hindbrain_order$padj) & kidney_vs_hindbrain_order$padj < 0.05) & kidney_vs_hindbrain_order %over% promoter_overlap, 
+  ]
+kidney_vs_hindbrain_order_promoter
+# GRanges object with 571 ranges and 6 metadata columns:
+#         seqnames            ranges strand |  baseMean log2FoldChange     lfcSE      stat      pvalue        padj
+#            <Rle>         <IRanges>  <Rle> | <numeric>      <numeric> <numeric> <numeric>   <numeric>   <numeric>
+#     [1]     chr4 22488379-22488925      * |   96.8199      -3.484755  0.272029 -12.81021 1.43736e-37 5.01798e-33
+#     [2]     chr1 24613428-24614006      * |  285.2533       1.465584  0.161832   9.05623 1.35040e-19 2.35719e-15
+#     [3]     chr9   3020206-3020334      * |  808.0880      -0.793603  0.112104  -7.07919 1.45004e-12 6.32781e-09
+#     [4]    chr16 18213704-18214070      * |   27.5220      -4.536604  0.676970  -6.70133 2.06525e-11 6.00833e-08
+#     [5]     chr7   4123750-4124017      * |   22.3862      -4.253127  0.649868  -6.54460 5.96544e-11 1.22506e-07
+#     ...      ...               ...    ... .       ...            ...       ...       ...         ...         ...
+#   [567]     chr5 77265720-77265949      * |   16.8217       1.859305  0.627672   2.96222  0.00305428   0.0489793
+#   [568]     chr5 91402874-91403158      * |   10.0064       2.585540  0.873043   2.96153  0.00306118   0.0490450
+#   [569]    chr12 11436515-11436838      * |   26.0419      -1.188009  0.401368  -2.95990  0.00307737   0.0492365
+#   [570]    chr11 78550637-78550963      * |   73.5612      -0.807302  0.273209  -2.95489  0.00312784   0.0498840
+#   [571]    chr17 44078643-44079094      * |   28.9860      -1.301105  0.440351  -2.95470  0.00312973   0.0498913
+#   -------
+#   seqinfo: 22 sequences from an unspecified genome; no seqlengths
+
+# Make a HTML table to review the results in IGV
+library(tracktables)
+a <- makebedtable(kidney_vs_hindbrain_order_promoter, "kidney_vs_hindbrain_order_promoter.html", getwd())
+browseURL(a)
+
+##----We annotate our differential ATACseq regions to genes----
+library(ChIPseeker)
+kidney_vs_hindbrain_order_promoter_annotate <- annotatePeak(
+  peak = kidney_vs_hindbrain_order_promoter,
+  TxDb = TxDb.Mmusculus.UCSC.mm10.knownGene, 
+  verbose = F)
+atac_differential_binding <- as.data.frame(kidney_vs_hindbrain_order_promoter_annotate)
+atac_differential_binding |> tail()
+#     seqnames    start      end width strand  baseMean log2FoldChange     lfcSE      stat      pvalue       padj       annotation geneChr geneStart  geneEnd
+# 566     chr6  3385046  3385139    94      *  4.021103      5.0872542 1.7162279  2.964207 0.003034644 0.04873158 Promoter (<=1kb)       6   3376950  3385006
+# 567     chr5 77265720 77265949   230      * 16.821678      1.8593048 0.6276724  2.962222 0.003054279 0.04897929 Promoter (<=1kb)       5  77265491 77286432
+# 568     chr5 91402874 91403158   285      * 10.006383      2.5855403 0.8730432  2.961526 0.003061185 0.04904498 Promoter (<=1kb)       5  91357261 91402994
+# 569    chr12 11436515 11436838   324      * 26.041863     -1.1880090 0.4013677 -2.959902 0.003077372 0.04923654 Promoter (<=1kb)      12  11325242 11436613
+# 570    chr11 78550637 78550963   327      * 73.561172     -0.8073017 0.2732091 -2.954886 0.003127844 0.04988405 Promoter (<=1kb)      11  78541817 78550777
+# 571    chr17 44078643 44079094   452      * 28.985996     -1.3011045 0.4403507 -2.954701 0.003129726 0.04989126 Promoter (<=1kb)      17  44078813 44086567
+#     geneLength geneStrand geneId          transcriptId distanceToTSS
+# 566       8057          2 209086  ENSMUST00000201638.1           -40
+# 567      20942          1  19712 ENSMUST00000080359.11           229
+# 568      45734          2  12223  ENSMUST00000121044.5             0
+# 569     111372          2  26950  ENSMUST00000072299.6             0
+# 570       8961          2  69071  ENSMUST00000103242.4             0
+# 571       7755          1  83965  ENSMUST00000154166.7             0
+
+##----We detect functional enrichment of differential ATACseq regions----
+library(clusterProfiler)
+atac_go <- enrichGO(gene = atac_differential_binding$geneId, 
+                    OrgDb = "org.Mm.eg.db",
+                    ont = "BP",
+                    maxGSSize = 5000) # maximal size of genes annotated for testing
+atac_go@result |> View()
 ```
+
