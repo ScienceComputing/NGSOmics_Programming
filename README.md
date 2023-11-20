@@ -55,6 +55,7 @@ This repository houses coding practice, assignment/competition solutions based o
   - [Perform ATAC-seq quality assurance using ATACseqQC](ATACSeq/ATACseqQC.Rmd)
   - [Evaluate the transcriptional start site signal](ATACSeq/EvaluateTSS.Rmd)
   - [Call peaks with quality control](ATACSeq/CallPeak.Rmd)
+  - [Perform differential analysis with peaks](ATACSeq/DifferentialAnalysis.Rmd)
 
 <hr>
 
