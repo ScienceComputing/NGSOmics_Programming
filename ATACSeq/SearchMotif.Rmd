@@ -1,0 +1,118 @@
+---
+title: "ATAC-Seq Data Analysis with Human Data - Search Motifs"
+author: "Anni Liu"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: 
+  html_document:
+    code_folding: show
+---
+
+# Find motifs
+* Why identify motifs in ATAC-seq?
+  + Motif analysis allows us to predict the potential binding sites for transcription factors (TFs) in the accessible chromatin regions. TFs play a crucial role in gene regulation by binding to specific DNA motifs. Identifying these motifs can help us understand which TFs are likely to be active in a given cell type or condition.
+  + ATAC-seq data can reveal regions of open chromatin associated with regulatory elements such as enhancers and promoters. Motif analysis can help in pinpointing the specific motifs that are enriched in these regions. This information can be used to infer the regulatory networks and pathways active in the analyzed samples.
+  + Different cell types may have distinct chromatin accessibility patterns and regulatory elements. By analyzing motifs, we can identify cell type-specific motifs that are enriched in open chromatin regions. This can aid in characterizing cell identity and differentiation states.
+  + Motif analysis can provide functional annotations to the open chromatin regions. For example, if we find motifs associated with a particular TF known to regulate immune response genes, it suggests that these regions may be involved in immune-related functions.
+  + Combining ATAC-seq motif analysis with RNA-seq data can provide a more comprehensive view of gene regulation. We can link the presence of specific motifs in open chromatin regions to changes in gene expression, helping to elucidate the regulatory mechanisms.
+* Recommended open-source tool: [Fast Motif Matching in R](https://bioconductor.org/packages/release/bioc/vignettes/motifmatchr/inst/doc/motifmatchr.html)
+* Recommended open-source motif database:
+[JASPAR](https://jaspar.elixir.no)
+[MotifDB](https://bioconductor.org/packages/release/bioc/vignettes/MotifDb/inst/doc/MotifDb.html)
+
+## Structures and operations of motif databases
+### MotifDb
+```{r}
+##----We load MotifDb----
+library(MotifDb)
+MotifDb # 12657 position/motif frequency matrices from 22 sources
+class(MotifDb)
+# [1] "MotifList"
+# attr(,"package")
+# [1] "MotifDb"
+length(MotifDb) # [1] 12657
+motif_names <- names(MotifDb)
+length(motif_names) # [1] 12657
+motif_names |> tail()
+# [1] "Mmusculus-UniPROBE-Zfp691.UP00095"
+# [2] "Mmusculus-UniPROBE-Zfp740.UP00022"
+# [3] "Mmusculus-UniPROBE-Zic1.UP00102"  
+# [4] "Mmusculus-UniPROBE-Zic2.UP00057"  
+# [5] "Mmusculus-UniPROBE-Zic3.UP00006"  
+# [6] "Mmusculus-UniPROBE-Zscan4.UP00026"
+
+##----We retrieve the second MotifList----
+MotifDb[12657]
+
+##----We retrieve the position probability matrix (PPM); each column represents the position of a motif----
+MotifDb[[12657]]
+#           1         2         3         4          5           6
+# A 0.2039268 0.3603414 0.2511950 0.4871860 0.12283797 0.020466874
+# C 0.1572597 0.2652161 0.2988057 0.1224721 0.05106196 0.009991709
+# G 0.3070709 0.1473273 0.2410505 0.2143623 0.05577333 0.965816157
+# T 0.3317426 0.2271152 0.2089488 0.1759796 0.77032674 0.003725260
+#             7           8           9          10          11         12
+# A 0.005886533 0.030656083 0.002078162 0.960642728 0.003725260 0.77032674
+# C 0.026662635 0.002166648 0.965099108 0.006808103 0.965816157 0.05577333
+# G 0.006808103 0.965099108 0.002166648 0.026662635 0.009991709 0.05106196
+# T 0.960642728 0.002078162 0.030656083 0.005886533 0.020466874 0.12283797
+#           13         14         15        16        17
+# A 0.04480760 0.75131969 0.36274223 0.4366353 0.3039305
+# C 0.38230731 0.04741718 0.22889829 0.1114793 0.2853735
+# G 0.04292044 0.04448209 0.08537279 0.2172844 0.1958724
+# T 0.52996466 0.15678104 0.32298669 0.2346011 0.2148237
+
+colSums(MotifDb[[1]])
+
+##----We retrieve a DataFrame of all the motif metadata information----
+values(MotifDb) # DataFrame with 12657 rows and 15 columns
+# geneSymbol shows the gene name associated with each motif
+
+##----We partially retrieve the MotifList by restricting the metadata information----
+# Only select MotifList with CTCF
+ctcf <- query(object = MotifDb, 
+              andStrings = c("CTCF"))
+ctcf
+# MotifDb object of length 24
+# | Created from downloaded public sources, last update: 2022-Mar-04
+# | 24 position frequency matrices from 10 sources:
+# |        HOCOMOCOv10:    3
+# | HOCOMOCOv11-core-A:    2
+# |              HOMER:    3
+# |        JASPAR_2014:    2
+# |        JASPAR_CORE:    1
+# |         jaspar2016:    2
+# |         jaspar2018:    3
+# |         jaspar2022:    5
+# |          jolma2013:    1
+# |       SwissRegulon:    2
+# | 4 organism/s
+# |           Hsapiens:   16
+# |      Dmelanogaster:    4
+# |          Mmusculus:    1
+# |              other:    3
+# Hsapiens-HOCOMOCOv10-CTCFL_HUMAN.H10MO.A 
+# Hsapiens-HOCOMOCOv10-CTCF_HUMAN.H10MO.A 
+# Mmusculus-HOCOMOCOv10-CTCF_MOUSE.H10MO.A 
+# Hsapiens-HOCOMOCOv11-core-A-CTCFL_HUMAN.H11MO.0.A 
+# Hsapiens-HOCOMOCOv11-core-A-CTCF_HUMAN.H11MO.0.A 
+# ...
+# Hsapiens-jaspar2022-CTCF-MA1929.1 
+# Hsapiens-jaspar2022-CTCF-MA1930.1 
+# Hsapiens-jolma2013-CTCF 
+# Hsapiens-SwissRegulon-CTCFL.SwissRegulon 
+# Hsapiens-SwissRegulon-CTCF.SwissRegulon 
+
+# Only select MotifList with CTCF, hsapiens, jaspar2018
+ctcf_2 <- query(object = MotifDb, 
+                andStrings = c("CTCF", "hsapiens", "jaspar2022"))
+# MotifDb object of length 4
+# | Created from downloaded public sources, last update: 2022-Mar-04
+# | 4 position frequency matrices from 1 source:
+# |         jaspar2022:    4
+# | 1 organism/s
+# |           Hsapiens:    4
+# Hsapiens-jaspar2022-CTCF-MA0139.1 
+# Hsapiens-jaspar2022-CTCFL-MA1102.2 
+# Hsapiens-jaspar2022-CTCF-MA1929.1 
+# Hsapiens-jaspar2022-CTCF-MA1930.1 
+```
