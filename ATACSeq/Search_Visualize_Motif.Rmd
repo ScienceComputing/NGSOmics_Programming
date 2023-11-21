@@ -165,3 +165,49 @@ motif_list
 # PFMatrixList of length 841
 # names(841): MA0004.1 MA0006.1 MA0019.1 MA0029.1 ... MA1633.2 MA1647.2 MA0597.2 MA1540.2
 ```
+
+## Visualize motifs
+A seqLogo illustrates the relative frequency of a base at each motif position by representing the base's size relative to other bases at that particular position.
+### MotifDb
+```{r}
+library(seqLogo)
+ctcf[[1]] # This is the position probability matrix (PPM)
+#       1     2     3     4     5     6     7     8     9    10    11    12    13    14    15
+# A 0.100 0.162 0.302 0.072 0.012 0.786 0.024 0.122 0.914 0.012 0.376 0.022 0.028 0.024 0.096
+# C 0.356 0.214 0.100 0.826 0.966 0.024 0.620 0.494 0.010 0.008 0.010 0.022 0.002 0.016 0.818
+# G 0.122 0.406 0.436 0.050 0.012 0.108 0.336 0.056 0.048 0.976 0.602 0.606 0.962 0.880 0.038
+# T 0.422 0.218 0.162 0.052 0.010 0.082 0.020 0.328 0.028 0.004 0.012 0.350 0.008 0.080 0.048
+#      16    17    18    19
+# A 0.424 0.086 0.122 0.342
+# C 0.024 0.532 0.348 0.260
+# G 0.522 0.326 0.122 0.318
+# T 0.030 0.056 0.408 0.080
+seqLogo::seqLogo(pwm = ctcf[[1]], ic.scale = F) # ic.scale = F -> show the probability
+seqLogo::seqLogo(pwm = ctcf[[1]], ic.scale = T) # ic.scale = T -> help identify the important bases: positions with equal probabilities for each base A/T/C/G will score 0, while positions with only 1 possible base will score 2. 
+```
+
+### JASPAR
+```{r}
+# Covert the position frequency matrix to the position probability matrix
+mat_prob <- mat/colSums(mat)
+mat_prob
+#        [,1]       [,2]       [,3]      [,4] [,5]      [,6]      [,7]       [,8]      [,9]     [,10]      [,11]      [,12]     [,13]     [,14]
+# A 0.0000000 0.07692308 0.92307692 0.4615385    0 0.0000000 0.0000000 0.07692308 0.1538462 0.4615385 0.46153846 0.07692308 0.2307692 0.0000000
+# C 0.0000000 0.00000000 0.00000000 0.5384615    1 0.2307692 0.1538462 0.00000000 0.0000000 0.3076923 0.38461538 0.76923077 0.4615385 0.2307692
+# G 0.1538462 0.92307692 0.07692308 0.0000000    0 0.0000000 0.0000000 0.00000000 0.8461538 0.2307692 0.07692308 0.07692308 0.0000000 0.2307692
+# T 0.8461538 0.00000000 0.00000000 0.0000000    0 0.7692308 0.8461538 0.92307692 0.0000000 0.0000000 0.07692308 0.07692308 0.3076923 0.5384615
+
+seqLogo::seqLogo(pwm = mat_prob, ic.scale = F) 
+seqLogo::seqLogo(pwm = mat_prob, ic.scale = T)
+
+# Alternative approach 1 - the resulting visuals are the same
+mat_icm <- toICM(NR2F1_mat) # Convert a raw frequency matrix (PFMatrix) to a information content matrix (ICMatrix).
+TFBSTools::seqLogo(x = mat_icm, ic.scale = F)
+TFBSTools::seqLogo(x = mat_icm, ic.scale = T)
+
+# Alternative approach 2
+library(ggseqlogo)
+library(ggplot2)
+ggseqlogo(mat) + # Either a position probability matrix or a position frequency matrix is OK
+  theme_minimal()
+```
