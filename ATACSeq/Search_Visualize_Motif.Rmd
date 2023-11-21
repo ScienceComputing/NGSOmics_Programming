@@ -1,5 +1,5 @@
 ---
-title: "ATAC-Seq Data Analysis with Human Data - Search Motifs"
+title: "ATAC-Seq Data Analysis with Human Data - Search and Visualize Motifs"
 author: "Anni Liu"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: 
