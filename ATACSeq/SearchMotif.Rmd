@@ -116,3 +116,52 @@ ctcf_2 <- query(object = MotifDb,
 # Hsapiens-jaspar2022-CTCF-MA1929.1 
 # Hsapiens-jaspar2022-CTCF-MA1930.1 
 ```
+
+### JASPAR
+The JASPAR packages are updated more frequently, and may include motifs not captured in the MotifDb package. 
+```{r}
+##----We load JASPAR2022 database----
+BiocManager::install(version = "3.18")
+devtools::install_github("da-bar/JASPAR2022")
+library(JASPAR2022)
+JASPAR2022
+
+##----We use TFBStools to interact with JASPAR2022----
+library(TFBSTools)
+?getMatrixSet
+?getMatrixByID # Take the JASPAR database object and a JASPAR ID
+?getMatrixByName # Take the JASPAR database object and a transcription factor name
+gata2_mat <- getMatrixByName(JASPAR2022, "GATA2")
+class(gata2_mat)
+# [1] "PFMatrix" # This is different from the common matrix in R
+# attr(,"package")
+# [1] "TFBSTools"
+NR2F1_mat <- getMatrixByID(JASPAR2022, "MA0017.1") # Select the exact motif
+ID(NR2F1_mat) # [1] "MA0017.1"
+
+##----We retrieve the position frequency matrix----
+mat <- Matrix(NR2F1_mat)
+mat_2 <- as.matrix(NR2F1_mat)
+
+#   [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12] [,13] [,14]
+# A    0    1   12    6    0    0    0    1    2     6     6     1     3     0
+# C    0    0    0    7   13    3    2    0    0     4     5    10     6     3
+# G    2   12    1    0    0    0    0    0   11     3     1     1     0     3
+# T   11    0    0    0    0   10   11   12    0     0     1     1     4     7
+
+# Among 13 motifs, 11 of those motifs have the first position carrying T. The probability of T in the first position = 11/13
+
+##----We retrieve sets of motifs----
+# opts: a search options list. 
+# collection=c("CORE", "CNE", "PHYLOFACTS", "SPLICE", "POLII", "FAM", "PBM", "PBM_HOMEO", "PBM_HLH", "UNVALIDATED")
+# species: The species source for the sequences, in Latin (Homo sapiens) or NCBI tax IDs (9606).
+# matrixtype=c("PFM", "PWM", "ICM")
+# tax_group: Group of species, currently consisting of "plants", "vertebrates", "insects", "urochordat", "nematodes", "fungi".
+opts <- list()
+opts[["collection"]] <- "CORE"
+opts[["tax_group"]] <- "vertebrates"
+motif_list <- getMatrixSet(JASPAR2022, opts)
+motif_list
+# PFMatrixList of length 841
+# names(841): MA0004.1 MA0006.1 MA0019.1 MA0029.1 ... MA1633.2 MA1647.2 MA0597.2 MA1540.2
+```
