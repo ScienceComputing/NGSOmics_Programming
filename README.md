@@ -56,7 +56,7 @@ This repository houses coding practice, assignment/competition solutions based o
   - [Evaluate the transcriptional start site signal](ATACSeq/EvaluateTSS.Rmd)
   - [Call peaks with quality control](ATACSeq/CallPeak.Rmd)
   - [Perform differential and enrichment analysis with peaks](ATACSeq/DifferentialAnalysis.Rmd)
-  - [Search motifs](ATACSeq/SearchMotif.Rmd)
+  - [Search and visualize motifs](ATACSeq/Search_Visualize_Motif.Rmd)
 
 <hr>
 
