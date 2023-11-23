@@ -1,0 +1,47 @@
+---
+title: "ATAC-Seq Data Analysis with Mouse Tissue Data - Analyze Differences in Motifs across Conditions"
+author: "Anni Liu"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: 
+  html_document:
+    code_folding: show
+---
+
+## Analyze alterations in ATACseq peaks containing motifs - identify changes in motifs between one condition and another condition
+```{r}
+library(chromVAR)
+##----We remove peaks with < 5 counts across all samples----
+atac_count # RangedSummarizedExperiment 
+counts(atac_count)
+atac_count_filter <- atac_count[rowSums(counts(atac_count)) > 5, ]
+atac_count_filter
+
+##----We correct for GC bias to make peaks (with diverse sequence composition) comparison comparable----
+atac_count_filter <- addGCBias(atac_count_filter, genome = BSgenome.Mmusculus.UCSC.mm10)
+
+##----We map the motifs to ATACseq peaks----
+motif_map <- matchMotifs(pwms = motifs_to_scan, subject = atac_count_filter, genome = BSgenome.Mmusculus.UCSC.mm10, out = "matches")
+motif_map
+dim(motif_map) # Row: peak; column: motif
+
+##----We examine how much peaks including motifs are changing across conditions----
+deviation_motif <- computeDeviations(object = atac_count_filter, annotations = motif_map)
+variability_motif <- computeVariability(deviation_motif)
+dev_z <- deviationScores(variability_motif) # This is a matrix of deviation Z-scores, which display the **enrichment for ATACseq signal in each sample for each motif**
+dev_z[1:6, ]
+
+variability_motif <- variability_motif[ordervariability_motif$p_value, ]
+head(variability_motif) # Display the motifs' ranking based on their variability across samples (e.g., single cells). **Highly variable motifs indicate their association with a specific sample group or variable across all groups**
+
+top_variable_motif <- variability_motif[1:50, ]
+top_dev <- merge(top_variable_motif [, 1, drop = FALSE], dev_z, by = 0)
+# Select the first column of the top_variable_motif data frame. The drop = FALSE argument ensures that the result is still a data frame, even if there's only one column
+# by = 0 argument indicates that the merge should be done by row names
+top_dev
+
+# Visualize the enrichment of top variable motis across our samples using the heatmap
+top_dev_vis <- as.matrix(top_dev[, -c(1:2)])
+rownames(top_dev_vis) <- top_dev[, 2]
+library(pheatmap)
+pheatmap(top_dev_vis)
+```
