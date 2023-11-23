@@ -18,6 +18,11 @@ output:
 # Comment or uncomment current selection: Ctrl+Shift+C (Windows) or Cmd+Shift+C (Mac)
 ```
 
+# Run the FastQC to check the read quality in FASTQ files
+```{bash}
+zcat *.fastq.gz | fastqc stdin --outdir=../report/
+# zcat ATACSample_r1.fastq.gz ATACSample_r2.fastq.gz | fastqc stdin --outdir=../report/
+```
 
 # Align the FASTQ files
 ## Create a reference genome
