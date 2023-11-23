@@ -7,19 +7,7 @@ output:
     code_folding: show
 ---
 
-# Functional analysis of peaks
-```{r}
-if (!require("rGREAT", quietly = TRUE)) { BiocManager::install("rGREAT"); library(rGREAT) } else { library(rGREAT) }
-great_Job <- submitGreatJob(MacsCalls, species = "hg19")
-availableCategories(great_Job)
-
-great_ResultTable <- getEnrichmentTables(great_Job)
-names(great_ResultTable)
-
-great_ResultTable[["GO Biological Process"]][1:4, ]
-```
-
-## Differential ATACseq - identify changes in open regions between one condition and another condition
+## !Differential ATACseq peaks - identify changes in open regions between one condition and another condition
 Here we will establish a collection of unique peaks that are found in a minimum of 2 samples. These peaks will serve as the basis for evaluating alterations in nucleosome-free ATAC-seq data using DESeq2.
 Here is an alternative approach: [DiffBind](https://bioconductor.org/packages/release/bioc/vignettes/DiffBind/inst/doc/DiffBind.pdf)
 ```{r}
@@ -138,7 +126,7 @@ my_peaks
 #   -------
 #   seqinfo: 22 sequences from an unspecified genome; no seqlengths
 
-##----Return a single set of non-redundant peaks----
+##----We return a single set of non-redundant peaks----
 all_peaks_set <- GRangesList(my_peaks) |> unlist() |> reduce()
 class(all_peaks_set)
 # [1] "GRanges"
@@ -182,14 +170,14 @@ class(all_peaks_set)
 #   -------
 #   seqinfo: 22 sequences from an unspecified genome; no seqlengths
 
-##----Estimate how often each of these non-redundant peaks occurs in each sample----
+##----*We estimate how often each of these non-redundant peaks occurs in each sample----
 overlap <- list()
 for (i in 1:length(my_peaks)) {
   overlap[[i]] <- all_peaks_set %over% my_peaks[[i]]
 }
 # length(my_peaks): 6
 # Finding interval overlaps between two "range-based" objects: a query and a subject
-# query %over% subject; if query overlaps with subject, return T; otherwise, return F.
+# query %over% subject; *if query overlaps with subject, return T; otherwise, return F.
 overlap_mat <- do.call(cbind, overlap)
 dim(overlap_mat) # Return a T/F matrix with 89769 rows and 6 columns
 colnames(overlap_mat) <- basename(peaks)
@@ -202,7 +190,7 @@ blacklist <- import.bed("./data/ATAC_blacklists/ENCFF547MET.bed.gz")
 eligble_peak <- all_peaks_set[(!all_peaks_set %over% blacklist) & (seqnames(all_peaks_set) != "chrM")]
 eligble_peak
 
-##----Determine how many times each of our non-redundant peaks appears in the samples----
+##----We determine how many times each of our non-redundant peaks appears in the samples----
 elementMetadata(eligble_peak)
 # DataFrame with 89654 rows and 6 columns
 peak_count <- elementMetadata(eligble_peak) |> as.data.frame() |> rowSums()
@@ -222,7 +210,7 @@ my_count <- summarizeOverlaps(features = eligble_peak_select,
 # features is A GRanges or a GRangesList object of genomic regions of interest.
 colnames(my_count) <- c("hind_brain_1", "hind_brain_2", "kidney_1", "kidney_2", "liver_1", "liver_2")
 
-##----We run DESeq2 for differential ATACseq----
+##----We run DESeq2 for deriving differential ATACseq peaks----
 library(DESeq2)
 load("./data/my_count.RData")
 atac_count <- myCounts
@@ -244,10 +232,17 @@ atac_dds <- DESeq(atac_dds)
 # final dispersion estimates
 # fitting model and testing
 
-kidney_vs_hindbrain <- results(atac_dds, c("Group", "kidney", "hind_brain"), format = "GRanges")
+kidney_vs_hindbrain <- results(atac_dds, contrast = c("Group", "kidney", "hind_brain"), format = "GRanges")
 # format	
 # character, either "DataFrame", "GRanges", or "GRangesList", whether the results should be printed as a DESeqResults DataFrame, or if the results DataFrame should be attached as metadata columns to the **GRanges** or GRangesList rowRanges of the DESeqDataSet. If the rowRanges is a GRangesList, and GRanges is requested, the **range of each gene will be returned**
 # This GRanges format is very important, as it allows us to subset the results to specific open regions (e.g., promoters)
+
+# contrast	
+# this argument specifies what comparison to extract from the object to build a results table. one of either:
+# a character vector with exactly three elements: the name of a factor in the design formula, the name of the numerator level for the fold change, and the name of the denominator level for the fold change (simplest case)
+# a list of 2 character vectors: the names of the fold changes for the numerator, and the names of the fold changes for the denominator. these names should be elements of resultsNames(object). if the list is length 1, a second element is added which is the empty character vector, character(). (more general case, can be to combine interaction terms and main effects)
+# a numeric contrast vector with one element for each element in resultsNames(object) (most general case)
+
 kidney_vs_hindbrain_order <- kidney_vs_hindbrain[order(kidney_vs_hindbrain$pvalue)]
 kidney_vs_hindbrain_order
 
@@ -267,6 +262,9 @@ kidney_vs_hindbrain_order
 #   [36320]     chrX 169047684-169047857      * |   2.55896              0   2.42940         0           1          NA
 #   -------
 #   seqinfo: 22 sequences from an unspecified genome; no seqlengths
+
+kidney_vs_hindbrain_up_region <- kidney_vs_hindbrain_order[kidney_vs_hindbrain_order$log2FoldChange > 0, ][1:500]
+kidney_vs_hindbrain_down_region <- kidney_vs_hindbrain_order[kidney_vs_hindbrain_order$log2FoldChange < 0, ][1:500]
 
 ##----We subset results to open regions within promoters----
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
