@@ -1,5 +1,5 @@
 `universalmotif` is a powerful tool to import most common motif types into R, and convert the motif information between different classes as defined by other Bioconductor packages. 
-Reference: https://github.com/bjmt/universalmotif
+Reference: [universalmotif](https://github.com/bjmt/universalmotif)
 
 ```
 library(universalmotif)
