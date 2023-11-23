@@ -1,0 +1,22 @@
+---
+title: "ATAC-Seq Data Analysis with Mouse Tissue Data - Identify Motifs"
+author: "Anni Liu"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: 
+  html_document:
+    code_folding: show
+---
+
+## Map peaks to motifs
+```{r}
+library(motifmatchr)
+opts <- list()
+opts[["tax_group"]] <- "vertebrates"
+opts[["collection"]] <- "CORE"
+opts[["all_versions"]] <- F # Only include the latest version of a motif
+motifs_to_scan <- getMatrixSet(JASPAR2022, opts)
+?matchMotifs
+
+peak_ranges <- rowRanges(atac_count)
+peak_ranges 
+```
