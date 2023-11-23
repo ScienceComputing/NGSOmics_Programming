@@ -50,7 +50,7 @@ This repository houses coding practice, assignment/competition solutions based o
 
 ### Analyze ATAC-seq data
   
-  - [Align the fastq files relative to hg19/hg38/hs1](ATACSeq/AlignFASTQ.Rmd)
+  - Use Rsubread or Rbowtie2 to [align the fastq files relative to hg19/hg38/hs1](ATACSeq/AlignFASTQ.Rmd)
   - [Perform post-alignment processing](ATACSeq/PostAlignment.Rmd)
   - [Perform ATAC-seq quality assurance using ATACseqQC](ATACSeq/ATACseqQC.Rmd)
   - [Evaluate the transcriptional start site signal](ATACSeq/EvaluateTSS.Rmd)
