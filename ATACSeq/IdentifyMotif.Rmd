@@ -17,6 +17,52 @@ opts[["all_versions"]] <- F # Only include the latest version of a motif
 motifs_to_scan <- getMatrixSet(JASPAR2022, opts)
 ?matchMotifs
 
+load("./data/my_count.RData")
+atac_count <- myCounts
+atac_count
+
 peak_ranges <- rowRanges(atac_count)
 peak_ranges 
+
+library(BSgenome.Mmusculus.UCSC.mm10)
+peak_ranges_center <- resize(peak_ranges, fix = "center", width = 100)
+peak_ranges_center |> class() # GRanges
+peak_seqs <- getSeq(BSgenome.Mmusculus.UCSC.mm10, peak_ranges_center) # Retrieve sequences from a BSGenome object using a GRange object, to define the regions of interest
+peak_seqs
+names(peak_seqs) <- as.character(peak_ranges_center)
+peak_seqs 
+length(peak_seqs)
+
+##----We locate the motif positions by scanning for 10 selected motifs from JASPAR2022 using the sequence under the first 200 ATACseq peaks----
+motif_positions <- matchMotifs(motifs_to_scan[1:10], peak_seqs[1:200], out = "positions")
+length(motif_positions) # 10
+names(motifs_to_scan[1:10])
+names(motif_positions)
+motif_positions$MA0006.1 # Each motif has 200 elements, each of which shows the start, end, width, strand, and score of the matched motif in each centered ATACseq peak with width 100; if element is empty, suggesting there is no motif in this peak
+
+# View the peaks showing the matched motif
+ma0006 <- motif_positions$MA0006.1
+names(ma0006) <- names(peak_seqs[1:200])
+unlist(ma0006, use.names = T)
+
+##----We map the motifs to ATACseq peaks----
+motif_hits <- matchMotifs(motifs_to_scan, peak_seqs, out = "matches")
+motif_hits  # class: SummarizedExperiment 
+dim(motif_hits) # Row: peak; column: motif
+peak_motif_mat <- motifMatches(motif_hits)
+peak_motif_mat[1:6, 1:6] # This is a sparse matrix: . -> there is no motif in this peak; | -> there is a motif in this peak
+
+##----We estimate how many peaks map to each motif----
+library(Matrix)
+colSums(peak_motif_mat[, 1:6]) 
+# Error in .local(x, na.rm, dims, ...) :
+#  object 'CRsparse_colSums' not found
+
+# Solution
+colSums(as.array(peak_motif_mat[, 1:6]))
+
+##----We detect peaks which map to the selected motif----
+# peak_ranges_center <- resize(peak_ranges, fix = "center", width = 100)
+peak_map_ma0006 <- peak_ranges_center[peak_motif_mat[, "MA0006.1"] == 1]
+peak_map_ma0006
 ```
