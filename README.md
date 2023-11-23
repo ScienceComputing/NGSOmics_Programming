@@ -57,6 +57,8 @@ This repository houses coding practice, assignment/competition solutions based o
   - [Call peaks with quality control](ATACSeq/CallPeak.Rmd)
   - [Perform differential and enrichment analysis with peaks](ATACSeq/DifferentialAnalysis.Rmd)
   - [Search and visualize motifs](ATACSeq/Search_Visualize_Motif.Rmd)
+  - [Map peaks to motifs](ATACSeq/IdentifyMotif.Rmd)
+  - [Analyze differences in motifs across conditions](ATACSeq/Detect_Difference_Motif.Rmd)
 
 <hr>
 
