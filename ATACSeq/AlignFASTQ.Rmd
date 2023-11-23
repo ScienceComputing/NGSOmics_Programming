@@ -78,25 +78,59 @@ buildindex(basename = "BSgenome.Hsapiens.UCSC.hg19.mainChrs",
 
 ## Align **paired-end** sequence reads from Greenleaf
 ```{r}
+# Take a peek at 2 fastq files
 library(ShortRead)
+# The following 2 fastq files data downloaded from https://www.ebi.ac.uk/ena/browser/view/SRR891269
 read1 <- readFastq(dirPath = "./data/ATACSample_r1.fastq.gz")
 read2 <- readFastq(dirPath = "./data/ATACSample_r2.fastq.gz")
 id(read1)[1]
-# 59 HISEQ:236:HA03EADXX:1:1101:1147:2237 1:Y:0:TAAGGCGACTCTCTAT
+# BStringSet object of length 1:
+#     width seq
+# [1]    59 HISEQ:236:HA03EADXX:1:1101:1147:2237 1:Y:0:TAAGGCGACTCTCTAT
 id(read2)[1]
-# 59 HISEQ:236:HA03EADXX:1:1101:1147:2237 2:Y:0:TAAGGCGACTCTCTAT
-```
+# BStringSet object of length 1:
+#     width seq
+# [1]    59 HISEQ:236:HA03EADXX:1:1101:1147:2237 2:Y:0:TAAGGCGACTCTCTAT
+# These 2 IDs indicate 2 reads are paired, stemming from the same fragment
 
-
-## Align sequence reads using `Rsubread`
-```{r}
 library(Rsubread)
 align(index = "BSgenome.Hsapiens.UCSC.hg19.mainChrs",
-      readfile1 = read1, readfile2 = read2,
+      readfile1 = "./data/ATACSample_r1.fastq.gz", 
+      readfile2 = "./data/ATACSample_r2.fastq.gz",
       output_file = "ATAC_50K_2.bam",
       nthreads = 2, type = 1,
       unique = TRUE, maxFragLength = 2000)
-# type: a character string or an integer giving the type of sequencing data. Possible values include rna (or 0; RNA-seq data) and dna (or 1; genomic DNA-seq data such as WGS, WES, ChIP-seq data etc.). Character strings are case insensitive.
+# type: a character string or an integer giving the type of sequencing data. Possible values include rna (or 0; RNA-seq data) and dna (or *1; genomic DNA-seq data such as WGS, WES, *ChIP-seq data etc.). Character strings are case insensitive.
+# unique: logical indicating if only uniquely mapped reads should be reported. A uniquely mapped read has one single mapping location that has less mis-matched bases than any other candidate locations. By default, multi-mapping reads will be reported in addition to uniquely mapped reads. Number of alignments reported for each multi-mapping read is determined by the nBestLocations parameter.
+# maxFragLength: numeric value giving the maximum fragment length. 600 by default.
+```
+
+## Perform the alignment relative to hg38 using the new ATACseq data from female lung
+```{bash}
+# https://www.ebi.ac.uk/ena/browser/view/SAMN08743398?show=reads
+wget -nc ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR687/008/SRR6870408/SRR6870408_2.fastq.gz
+wget -nc ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR687/008/SRR6870408/SRR6870408_1.fastq.gz
+# -nc: if a file with the same name already exists, wget will not overwrite it but will skip the download.
+```
+
+```{r}
+r1 <- readFastq(dirPath = "./data/SRR6870408_1.fastq.gz")
+r2 <- readFastq(dirPath = "./data/SRR6870408_2.fastq.gz")
+id(r1)[1]
+# BStringSet object of length 1:
+#     width seq
+# [1]    16 SRR6870408.1 1/1
+id(r2)[1]
+# BStringSet object of length 1:
+#     width seq
+# [1]    16 SRR6870408.1 1/2
+
+align(index = "BSgenome.Hsapiens.UCSC.hg38.mainchr",
+      readfile1 = "./data/SRR6870408_1.fastq.gz", 
+      readfile2 = "./data/SRR6870408_2.fastq.gz",
+      output_file = "ATAC_female_lung.bam",
+      nthreads = 4, type = 1,
+      unique = TRUE, maxFragLength = 600)
 ```
 
 
