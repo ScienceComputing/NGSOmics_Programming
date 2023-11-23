@@ -109,7 +109,7 @@ bowtie2_build(references = "BSgenome.Hsapiens.UCSC.hg19.mainChrs.fa",
 
 
 ## Decompress FASTQ files
-```{r}
+```{bash}
 gunzip("./ATAC_Data/ATAC_FQs/SRR891269_1.fastq.gz")
 gunzip("./ATAC_Data/ATAC_FQs/SRR891269_2.fastq.gz")
 ```
