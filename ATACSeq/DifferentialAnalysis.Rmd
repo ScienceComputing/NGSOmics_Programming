@@ -1,5 +1,5 @@
 ---
-title: "ATAC-Seq Data Analysis with Human Data - Perform Differential Anlaysis of Peaks"
+title: "ATAC-Seq Data Analysis with Mouse Tissue Data - Perform Differential Anlaysis of Peaks"
 author: "Anni Liu"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: 
