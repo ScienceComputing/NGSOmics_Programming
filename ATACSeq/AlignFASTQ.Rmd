@@ -32,6 +32,31 @@ Biostrings::writeXStringSet(x = mainChrSeqSet,
                             filepath = "BSgenome.Hsapiens.UCSC.hg19.mainChrs.fa")
 ```
 
+## Update the reference genome based on hg38
+```{r}
+# https://gatk.broadinstitute.org/hc/en-us/articles/360035890951-Human-genome-reference-builds-GRCh38-or-hg38-b37-hg19
+library(BSgenome.Hsapiens.UCSC.hg38)
+main_chromosomes <- paste0("chr", c(1:22, "X", "Y", "M"))
+main_chr_seq <- lapply(main_chromosomes,
+                       function(x) BSgenome.Hsapiens.UCSC.hg38[[x]])
+names(main_chr_seq) <- main_chromosomes
+main_chr_seq_set <- DNAStringSet(main_chr_seq)
+Biostrings::writeXStringSet(x = main_chr_seq_set, 
+                            filepath = "BSgenome.Hsapiens.UCSC.hg38.mainchr.fa")
+```
+
+## Update the reference genome based on hs1
+```{r}
+library(BSgenome.Hsapiens.UCSC.hs1)
+main_chromosomes <- paste0("chr", c(1:22, "X", "Y", "M"))
+main_chr_seq <- lapply(main_chromosomes,
+                       function(x) BSgenome.Hsapiens.UCSC.hs1[[x]])
+names(main_chr_seq) <- main_chromosomes
+main_chr_seq_set <- DNAStringSet(main_chr_seq)
+Biostrings::writeXStringSet(x = main_chr_seq_set, 
+                            filepath = "BSgenome.Hsapiens.UCSC.hs1.mainchr.fa")
+```
+
 
 ## Build the index
 ```{r}
