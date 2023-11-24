@@ -1,6 +1,6 @@
 ---
 title: "Homework 4 - Problem 2"
-author: "Anni Liu (ali4006@med.cornell.edu)"
+author: "Anni Liu"
 date: "`r format(Sys.Date(), '%B %d, %Y')`"
 output:
   pdf_document: default
