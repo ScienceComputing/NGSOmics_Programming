@@ -7,7 +7,7 @@ This repository houses coding practice, assignment/competition solutions based o
 * [Single cell RNA-seq data analysis](#Analyze-single-cell-RNA-seq-data)
 * [Bulk RNA-seq data analysis](#Analyze-bulk-RNA-seq-data)
 * [Multi-omics idea](HighLevelIdea_MultiOmics.md)
-
+* [COVID-19 RNA-seq data resources](https://github.com/ScienceComputing/COVID-19-RNA-Seq-datasets)
 
 ## Technical aspect
 ### Analyze single cell RNA-seq data
