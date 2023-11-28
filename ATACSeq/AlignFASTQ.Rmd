@@ -170,7 +170,9 @@ bowtie2(bt2Index = "BSgenome.Hsapiens.UCSC.hg19.mainChrs_bowtie2",
 
 # Convert the output SAM file to a more useable BAM file
 library(Rsamtools)
-asBam("ATAC_50K_2_bowtie2.sam") # asBam, asSam return the file name of the destination file.
+asBam("ATAC_50K_2_bowtie2.sam")
+# https://rdrr.io/bioc/Rsamtools/src/R/asBam.R
+# asBam, asSam return the file name of the destination file.
 
 # To save the disk space, we are removing the uncompressed FASTQ and SAM files, while retaining the BAM file
 unlink(c("./ATAC_Data/ATAC_FQs/SRR891269_1.fastq",
