@@ -134,31 +134,60 @@ align(index = "BSgenome.Hsapiens.UCSC.hg38.mainchr",
 ```
 
 
-## Alternative: align sequence reads using `Rbowtie2`
+## Alternative alignment approach: `Rbowtie2`
+### Build the Rbowtie2 index
 ```{r}
 library(Rbowtie2)
 bowtie2_build(references = "BSgenome.Hsapiens.UCSC.hg19.mainChrs.fa",
               bt2Index = "BSgenome.Hsapiens.UCSC.hg19.mainChrs_bowtie2")
 ```
 
-
-## Decompress FASTQ files
-```{bash}
-gunzip("./ATAC_Data/ATAC_FQs/SRR891269_1.fastq.gz")
-gunzip("./ATAC_Data/ATAC_FQs/SRR891269_2.fastq.gz")
+```{r}
+bowtie2_build(references = "BSgenome.Hsapiens.UCSC.hg38.mainchr.fa",
+              bt2Index = "BSgenome.Hsapiens.UCSC.hg38.mainchr_bowtie2")
 ```
 
+### Decompress the FASTQ files
+```{bash}
+gunzip ./ATAC_Data/ATAC_FQs/SRR891269_1.fastq.gz
+gunzip ./ATAC_Data/ATAC_FQs/SRR891269_2.fastq.gz
 
-## Create Rbowtie2 index
+# Keep the compressed file: 
+# gunzip -c ./ATAC_Data/ATAC_FQs/SRR891269_1.fastq.gz > ./ATAC_Data/ATAC_FQs/SRR891269_1.fastq
+```
+
+```{bash}
+gunzip ./data/SRR6870408_1.fastq.gz
+gunzip ./data/SRR6870408_2.fastq.gz
+```
+
+### Align the paired reads
 ```{r}
-library(Rsamtools)
 bowtie2(bt2Index = "BSgenome.Hsapiens.UCSC.hg19.mainChrs_bowtie2",
         samOutput = "ATAC_50K_2_bowtie2.sam",
         seq1 = "./ATAC_Data/ATAC_FQs/SRR891269_1.fastq",
-        seq1 = "./ATAC_Data/ATAC_FQs/SRR891269_2.fastq"
-        )
-asBam("ATAC_50K_2_bowtie2.sam") # Convert the output SAM file to a more useable BAM file
-# To save the disk space, we now delete the FASTQ and SAM files, keeping the BAM file
+        seq2 = "./ATAC_Data/ATAC_FQs/SRR891269_2.fastq")
+
+# Convert the output SAM file to a more useable BAM file
+library(Rsamtools)
+asBam("ATAC_50K_2_bowtie2.sam") # asBam, asSam return the file name of the destination file.
+
+# To save the disk space, we are removing the uncompressed FASTQ and SAM files, while retaining the BAM file
+unlink(c("./ATAC_Data/ATAC_FQs/SRR891269_1.fastq",
+         "./ATAC_Data/ATAC_FQs/SRR891269_2.fastq",
+         "ATAC_50K_2_bowtie2.sam"))
+```
+
+```{r}
+bowtie2(bt2Index = "BSgenome.Hsapiens.UCSC.hg38.mainchr_bowtie2",
+        samOutput = "./data/ATAC_female_lung_bowtie2.sam",
+        seq1 = "./data/SRR6870408_1.fastq",
+        seq2 = "./data/SRR6870408_2.fastq")
+asBam("./data/ATAC_female_lung_bowtie2.sam") 
+
+unlink(c("./data/SRR6870408_1.fastq",
+         "./data/SRR6870408_2.fastq",
+         "./data/ATAC_female_lung_bowtie2.sam"))
 ```
 
 
