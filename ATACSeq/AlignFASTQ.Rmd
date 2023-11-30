@@ -182,51 +182,82 @@ unlink(c("./ATAC_Data/ATAC_FQs/SRR891269_1.fastq",
 
 ```{r}
 bowtie2(bt2Index = "BSgenome.Hsapiens.UCSC.hg38.mainchr_bowtie2",
-        samOutput = "./data/ATAC_female_lung_bowtie2.sam",
-        seq1 = "./data/SRR6870408_1.fastq",
-        seq2 = "./data/SRR6870408_2.fastq")
-asBam("./data/ATAC_female_lung_bowtie2.sam") 
+        samOutput = "ATAC_female_lung_bowtie2.sam",
+        seq1 = "SRR6870408_1.fastq",
+        seq2 = "SRR6870408_2.fastq")
+# arguments 'show.output.on.console', 'minimized' and 'invisible' are for Windows only
+# 43819122 reads; of these:
+#   43819122 (100.00%) were paired; of these:
+#     4382152 (10.00%) aligned concordantly 0 times
+#     26983067 (61.58%) aligned concordantly exactly 1 time
+#     12453903 (28.42%) aligned concordantly >1 times
+#     ----
+#     4382152 pairs aligned concordantly 0 times; of these:
+#       1142730 (26.08%) aligned discordantly 1 time
+#     ----
+#     3239422 pairs aligned 0 times concordantly or discordantly; of these:
+#       6478844 mates make up the pairs; of these:
+#         4752093 (73.35%) aligned 0 times
+#         742250 (11.46%) aligned exactly 1 time
+#         984501 (15.20%) aligned >1 times
+# 94.58% overall alignment rate
 
-unlink(c("./data/SRR6870408_1.fastq",
-         "./data/SRR6870408_2.fastq",
-         "./data/ATAC_female_lung_bowtie2.sam"))
+asBam("ATAC_female_lung_bowtie2.sam") 
+# [bam_sort_core] merging from 42 files and 1 in-memory blocks...
+# [1] "ATAC_female_lung_bowtie2.bam"
+
+unlink(c("SRR6870408_1.fastq",
+         "SRR6870408_2.fastq",
+         "ATAC_female_lung_bowtie2.sam"))
 ```
 
 
-## Sort and index
+## Sort and index the aligned reads
 ```{r}
 library(Rsamtools)
-sortedBAM <- file.path(dirname(outBAM),
-                       paste0("Sorted_", basename(outBAM))) # Construct the path to a file from components 
 
-sortBam(outBAM, gsub("\\.bam", "", basename(sortedBAM)))
-indexBam(sortedBAM)
+out_bam <- 'ATAC_female_lung_bowtie2.bam'
+sorted_bam <- file.path(dirname(out_bam),
+                        paste0("Sorted_", basename(out_bam))) # Construct the path to a file from components 
+
+sortBam(out_bam, gsub("\\.bam", "", basename(sorted_bam)))
+# [1] "Sorted_ATAC_female_lung_bowtie2.bam"
+
+indexBam(sorted_bam)
+#      ./Sorted_ATAC_female_lung_bowtie2.bam 
+# "./Sorted_ATAC_female_lung_bowtie2.bam.bai" 
+
+# basename("../ATACseq/res.bam")
+# [1] "res.bam"
 ```
 
 
 ## Check the distribution of mapped reads across chromosomes
 ```{r}
 library(Rsamtools)
-mappedReads <- idxstatsBam(sortedBAM)
-save(mappedReads, file = "data/pres1_idxstats.RData")
+mapped_reads <- idxstatsBam(sorted_bam)
+# idxstatsBam visit the index in index(file), and quickly returns the number of mapped and unmapped reads on each seqname.
+saveRDS(mapped_reads, file = "ATAC_female_lung_idxstats.RDS")
 
-load("data/pres1_idxstats.RData")
+mapped_reads <- readRDS("ATAC_female_lung_idxstats.RDS")
+mapped_reads |> View()
 ```
 
-```{r data.in.package}
-file.path <- system.file("extdata", "ex1.bam", package = "Rsamtools", mustWork = T)
-indexBam(file.path)
-idxstatsBam(file.path)
-# seqnames: chromosome names; mapped: how many reads are mapped on every chromosome
+```{r use.data.in.package}
+file_path <- system.file("extdata", "ex1.bam", package = "Rsamtools", mustWork = T)
+indexBam(file_path)
+idxstatsBam(file_path)
+# seqnames: chromosome names
+# mapped: how many reads are mapped on every chromosome
 ```
 
 ```{r visual}
 library(ggplot2)
-load("data/pres1_idxstats.RData")
-ggplot(data = mappedReads, 
+ggplot(data = mapped_reads, 
        mapping = aes(x = seqnames, y = mapped, fill = seqnames))+
   geom_bar(stat = "identity") + 
   geom_text(mapping = aes(label = mapped), vjust = 0, color = "black", size = 3.5)+
-  coord_flip()
-# There are lots of mitochondrial reads
+  coord_flip() +
+  labs(fill = 'Chromosome')
+# The barplot shows lots of mapped mitochondrial reads
 ```
