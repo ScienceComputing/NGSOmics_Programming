@@ -234,7 +234,7 @@ indexBam(sorted_bam)
 ```
 
 
-## Check the distribution of mapped reads across chromosomes
+## [QC] Check the distribution of mapped reads on every chromosome
 ```{r}
 library(Rsamtools)
 mapped_reads <- idxstatsBam(sorted_bam)
