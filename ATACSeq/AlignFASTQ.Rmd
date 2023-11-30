@@ -135,13 +135,14 @@ align(index = "BSgenome.Hsapiens.UCSC.hg38.mainchr",
 
 
 ## Alternative alignment approach: `Rbowtie2`
-### Build the Rbowtie2 index
+### Build the Rbowtie2 index relative to hg19
 ```{r}
 library(Rbowtie2)
 bowtie2_build(references = "BSgenome.Hsapiens.UCSC.hg19.mainChrs.fa",
               bt2Index = "BSgenome.Hsapiens.UCSC.hg19.mainChrs_bowtie2")
 ```
 
+### Build the Rbowtie2 index relative to hg38
 ```{r}
 bowtie2_build(references = "BSgenome.Hsapiens.UCSC.hg38.mainchr.fa",
               bt2Index = "BSgenome.Hsapiens.UCSC.hg38.mainchr_bowtie2")
@@ -161,7 +162,7 @@ gunzip ./data/SRR6870408_1.fastq.gz
 gunzip ./data/SRR6870408_2.fastq.gz
 ```
 
-### Align the paired reads
+### Align the paired reads relative to hg19
 ```{r}
 bowtie2(bt2Index = "BSgenome.Hsapiens.UCSC.hg19.mainChrs_bowtie2",
         samOutput = "ATAC_50K_2_bowtie2.sam",
@@ -180,6 +181,7 @@ unlink(c("./ATAC_Data/ATAC_FQs/SRR891269_1.fastq",
          "ATAC_50K_2_bowtie2.sam"))
 ```
 
+### Align the paired reads relative to hg38
 ```{r}
 bowtie2(bt2Index = "BSgenome.Hsapiens.UCSC.hg38.mainchr_bowtie2",
         samOutput = "ATAC_female_lung_bowtie2.sam",
