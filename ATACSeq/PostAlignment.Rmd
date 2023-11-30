@@ -20,25 +20,116 @@ output:
 
 
 # Perform post-alignment processing
-## Filter properly paired reads
+## [QC] Select properly paired reads using `ScanBamParam()` and `scanBamFlag()`
 ```{r}
 library(GenomicAlignments)
 flags <- scanBamFlag(isProperPair = T)
+# Here we only select reads paired in alignment within the preset max fragment length 600 bp
+# isProperPair = T: represent reads aligning to identical reference sequences and with a specified distance, 600 bp in our case.
 
-myParam <- ScanBamParam(flag = flags,
-                        what = c("qname", "mapq", "isize"),
-                        which = GRanges("chr20", IRanges(1, 63025520))) # 63025520: length of chromosome 20
-# qname: reads name; mapq: quality of alignment; isize: insert size of our fragment
-myParam
+# Recap maxFragLength = 600
+# align(index = "BSgenome.Hsapiens.UCSC.hg38.mainchr",
+#       readfile1 = "./data/SRR6870408_1.fastq.gz", 
+#       readfile2 = "./data/SRR6870408_2.fastq.gz",
+#       output_file = "./data/ATAC_female_lung.bam",
+#       nthreads = 4, type = 1,
+#       unique = TRUE, maxFragLength = 600)
+
+chr20_param  <- ScanBamParam(flag = flags,
+                             what = c("qname", "mapq", "isize"),
+                             which = GRanges("chr20", IRanges(1, 64444167))) 
+
+# https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19&chromInfoPage=
+# 63025520: length of chromosome 20 (GRCh37/hg19)
+# https://genome.ucsc.edu/cgi-bin/hgTracks?hgsid=1795230954_XcEyjdAa9Z968dnsdwUvHaqjwvOg&chromInfoPage=
+# 64444167: length of chromosome 20 (GRCh38/hg38)
+# qname: reads name
+# mapq: quality of alignment
+# isize: insert size of our fragment
+chr20_param
+
+# class: ScanBamParam
+# bamFlag (NA unless specified): isProperPair=TRUE
+# bamSimpleCigar: FALSE
+# bamReverseComplement: FALSE
+# bamTag:  
+# bamTagFilter:
+# bamWhich: 1 ranges
+# bamWhat: qname, mapq, isize
+# bamMapqFilter: NA
 ```
 
+```{r more.chromosomes}
+chr1X_param <- ScanBamParam(flag = flags,
+                            what = c("qname", "mapq", "isize"),
+                            which = IRangesList(chr1=IRanges(1, 248956422),
+                                                chrX=IRanges(1, 156040895))) 
+```
 
 ## Read properly paired reads
 ```{r}
 # Global view of the 2 reads, containing the seqnames, strand, ranges of 2 reads
-atacReads <- readGAlignmentPairs(sortedBAM, param = myParam)
-class(atacReads)
-atacReads[1:2, ]
+atac_reads_chr20 <- readGAlignmentPairs(sorted_bam, param = chr20_param)
+class(atac_reads_chr20)
+# [1] "GAlignmentPairs"
+# attr(,"package")
+# [1] "GenomicAlignments"
+atac_reads_chr20
+# GAlignmentPairs object with 686908 pairs, strandMode=1, and 0 metadata columns:
+#            seqnames strand   :            ranges  --            ranges
+#               <Rle>  <Rle>   :         <IRanges>  --         <IRanges>
+#        [1]    chr20      -   :       60100-60196  --       60007-60106
+#        [2]    chr20      +   :       60246-60280  --       60248-60288
+#        [3]    chr20      +   :       60255-60296  --       60257-60298
+#        [4]    chr20      +   :       60260-60296  --       60262-60298
+#        [5]    chr20      +   :       60261-60315  --       60263-60323
+#        ...      ...    ... ...               ... ...               ...
+#   [686904]    chr20      -   : 64332264-64332359  -- 64332180-64332268
+#   [686905]    chr20      -   : 64332477-64332521  -- 64332469-64332513
+#   [686906]    chr20      +   : 64332967-64333059  -- 64332969-64333061
+#   [686907]    chr20      +   : 64333282-64333381  -- 64333312-64333411
+#   [686908]    chr20      +   : 64334000-64334042  -- 64334002-64334044
+#   -------
+#   seqinfo: 25 sequences from an unspecified genome
+atac_reads_chr20[1:2, ]
+# atac_reads_chr1X <- readGAlignmentPairs(sorted_bam, param = chr1X_param)
+# atac_reads_chr1X
+# 
+# GAlignmentPairs object with 4348926 pairs, strandMode=1, and 0 metadata columns:
+#             seqnames strand   :              ranges  --              ranges
+#                <Rle>  <Rle>   :           <IRanges>  --           <IRanges>
+#         [1]     chr1      +   :          9996-10084  --         10277-10374
+#         [2]     chr1      +   :          9997-10087  --         10082-10179
+#         [3]     chr1      +   :         10003-10091  --         10123-10221
+#         [4]     chr1      +   :         10004-10099  --         10009-10108
+#         [5]     chr1      +   :         10004-10104  --         10037-10136
+#         ...      ...    ... ...                 ... ...                 ...
+#   [4348922]     chrX      -   : 156030710-156030739  -- 156030677-156030713
+#   [4348923]     chrX      +   : 156030720-156030793  -- 156030723-156030795
+#   [4348924]     chrX      +   : 156030726-156030759  -- 156030728-156030761
+#   [4348925]     chrX      -   : 156030736-156030787  -- 156030725-156030785
+#   [4348926]     chrX      -   : 156030748-156030783  -- 156030289-156030331
+#   -------
+#   seqinfo: 25 sequences from an unspecified genome
+
+atac_reads_chr1X <- readGAlignmentPairs(sorted_bam, param = chr1X_param)
+atac_reads_chr1X
+# GAlignmentPairs object with 4348926 pairs, strandMode=1, and 0 metadata columns:
+#             seqnames strand   :              ranges  --              ranges
+#                <Rle>  <Rle>   :           <IRanges>  --           <IRanges>
+#         [1]     chr1      +   :          9996-10084  --         10277-10374
+#         [2]     chr1      +   :          9997-10087  --         10082-10179
+#         [3]     chr1      +   :         10003-10091  --         10123-10221
+#         [4]     chr1      +   :         10004-10099  --         10009-10108
+#         [5]     chr1      +   :         10004-10104  --         10037-10136
+#         ...      ...    ... ...                 ... ...                 ...
+#   [4348922]     chrX      -   : 156030710-156030739  -- 156030677-156030713
+#   [4348923]     chrX      +   : 156030720-156030793  -- 156030723-156030795
+#   [4348924]     chrX      +   : 156030726-156030759  -- 156030728-156030761
+#   [4348925]     chrX      -   : 156030736-156030787  -- 156030725-156030785
+#   [4348926]     chrX      -   : 156030748-156030783  -- 156030289-156030331
+#   -------
+#   seqinfo: 25 sequences from an unspecified genome
 
 # Gain information on the first or second read, containing the seqnames, strand, cigar, qwidth, start, end, width, qname, mapq, isize
 read1 <- first(atacReads)
