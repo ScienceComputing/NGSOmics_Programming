@@ -18,24 +18,26 @@ output:
 # Comment or uncomment current selection: Ctrl+Shift+C (Windows) or Cmd+Shift+C (Mac)
 ```
 
-
-# Tutorial
 # Perform ATACseq quality control using the `{ATACseqQC}`
 `{ATACseqQC}` includes two useful metrics - PCR Bottleneck Coefficients (PBC1 and PBC2). 
 
-* The `PCRbottleneckCoefficient_1` is calculated as the number of positions in genome with exactly 1 read mapped uniquely compared to the number of positions with at least 1 read. Values less than 0.7 indicate severe bottlenecking, between 0.7 and 0.9 indicate moderate bottlenecking,  greater than 0.9 show no bottlenecking. 
+* The `PCRbottleneckCoefficient_1` is calculated as the number of positions in genome with exactly 1 read mapped uniquely compared to the number of positions with at least 1 read. Values less than 0.7 indicate severe bottlenecking, between 0.7 and 0.9 indicate moderate bottlenecking, greater than 0.9 indicate no bottlenecking. Notice that if the sequencing depth is very high, we may get a lower value of this metric.
 
-* The `PCRbottleneckCoefficient_2` is calculated as the number of positions in genome with exactly 1 read mapped uniquely compared to the number of positions with exactly 2 reads mapped uniquely. Values less than 1 indicate severe bottlenecking, between 1 and 3 indicate moderate bottlenecking,  greater than 3 show no bottlenecking. 
+* The `PCRbottleneckCoefficient_2` is calculated as the number of positions in genome with exactly 1 read mapped uniquely compared to the number of positions with exactly 2 reads mapped uniquely. Values less than 1 indicate severe bottlenecking, between 1 and 3 indicate moderate bottlenecking, greater than 3 indicate no bottlenecking. 
 
 ```{r}
 # BiocManager::install("ATACseqQC")
 library(ATACseqQC)
-ATACQC <- bamQC("./data/Sorted_ATAC_50K_2_ch17.bam")
+atac_qc <- bamQC("./Sorted_ATAC_female_lung_bowtie2_chr1X.bam")
 
 # Get access to the names of all metrics
-names(ATACQC)
+names(atac_qc)
+#  [1] "totalQNAMEs"                   *"duplicateRate"                 "mitochondriaRate"             
+#  [4] "properPairRate"                "unmappedRate"                  "hasUnmappedMateRate"          
+#  [7] "notPassingQualityControlsRate" *"nonRedundantFraction"          *"PCRbottleneckCoefficient_1"   
+# [10] *"PCRbottleneckCoefficient_2"    *"MAPQ"                          *"idxstats"     
 
 # Extract 2 PCR Bottleneck Coefficients
-ATACQC$PCRbottleneckCoefficient_1
-ATACQC$PCRbottleneckCoefficient_2
+atac_qc$PCRbottleneckCoefficient_1 # 0.8553605
+atac_qc$PCRbottleneckCoefficient_2 # 7.395941
 ```
