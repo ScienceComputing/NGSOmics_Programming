@@ -92,9 +92,7 @@ atac_reads_chr20
 #   -------
 #   seqinfo: 25 sequences from an unspecified genome
 atac_reads_chr20[1:2, ]
-# atac_reads_chr1X <- readGAlignmentPairs(sorted_bam, param = chr1X_param)
-# atac_reads_chr1X
-# 
+
 # GAlignmentPairs object with 4348926 pairs, strandMode=1, and 0 metadata columns:
 #             seqnames strand   :              ranges  --              ranges
 #                <Rle>  <Rle>   :           <IRanges>  --           <IRanges>
@@ -115,7 +113,7 @@ atac_reads_chr20[1:2, ]
 atac_reads_chr1X <- readGAlignmentPairs(sorted_bam, param = chr1X_param)
 atac_reads_chr1X
 # GAlignmentPairs object with 4348926 pairs, strandMode=1, and 0 metadata columns:
-#             seqnames strand   :              ranges  --              ranges
+#             seqnames strand   :              ranges [read1]  --      ranges [read2]
 #                <Rle>  <Rle>   :           <IRanges>  --           <IRanges>
 #         [1]     chr1      +   :          9996-10084  --         10277-10374
 #         [2]     chr1      +   :          9997-10087  --         10082-10179
@@ -131,117 +129,162 @@ atac_reads_chr1X
 #   -------
 #   seqinfo: 25 sequences from an unspecified genome
 
-# Gain information on the first or second read, containing the seqnames, strand, cigar, qwidth, start, end, width, qname, mapq, isize
-read1 <- first(atacReads)
-read2 <- second(atacReads)
-read2[1, ]
+# Gain information on the first or second/last alignment for each alignment pair in atac_reads_chr1X, containing the seqnames, strand, cigar, qwidth, start, end, width, qname, mapq, isize
+read1 <- first(atac_reads_chr1X)
+read2 <- second(atac_reads_chr1X)
+read1[1, ] # This shows the first alignment in the first read
+# GAlignments object with 1 alignment and 3 metadata columns:
+#       seqnames strand       cigar    qwidth     start       end     width     njunc |              qname
+#          <Rle>  <Rle> <character> <integer> <integer> <integer> <integer> <integer> |        <character>
+#   [1]     chr1      +    30M2I59M        91      9996     10084        89         0 | SRR6870408.2987101
+#            mapq     isize
+#       <integer> <integer>
+#   [1]         2       379
+#   -------
+#   seqinfo: 25 sequences from an unspecified genome
+read2[1, ] # This shows the first alignment in the second read
+# GAlignments object with 1 alignment and 3 metadata columns:
+#       seqnames strand         cigar    qwidth     start       end     width     njunc |              qname
+#          <Rle>  <Rle>   <character> <integer> <integer> <integer> <integer> <integer> |        <character>
+#   [1]     chr1      - 15M1I62M1I21M       100     10277     10374        98         0 | SRR6870408.2987101
+#            mapq     isize
+#       <integer> <integer>
+#   [1]         2      -379
+#   -------
+#   seqinfo: 25 sequences from an unspecified genome
 ```
 
 
-## Retrieve MapQ scores
+## Retrieve and summarize MapQ scores
 ```{r}
 # Do our reads have the high-quality mapping?
-read1MapQ <- mcols(read1)$mapq
-read2MapQ <- mcols(read2)$mapq
-read1MapQ[1:2]
-```
+read1_mapq <- mcols(read1)$mapq # mapq is a metadata column which can be accessed using mcols()
+read2_mapq <- mcols(read2)$mapq
+read1_mapq
+read2_mapq
 
+# *How our MapQ scores distribute across each read?
+read1_mapq_dist <- table(read1_mapq); read2_mapq_dist <- table(read2_mapq)
+read1_mapq_dist
+read2_mapq_dist
 
-## Estimate the MapQ score frequency
-```{r}
-read1MapQFreqs <- table(read1MapQ)
-read2MapQFreqs <- table(read2MapQ)
-```
-
-
-## Plot MapQ scores
-```{r}
+# Visualize the distribution of MapQ scores per read
 library(ggplot2)
-toPlot <- data.frame(MapQ = c(names(read1MapQFreqs), names(read2MapQFreqs)),
-                     Frequency = c(read1MapQFreqs, read2MapQFreqs),
-                     Read = c(rep("Read1", length(read1MapQFreqs)), 
-                              rep("Read2", length(read2MapQFreqs))))
-toPlot$MapQ <- factor(toPlot$MapQ, 
-                      levels = unique(sort(as.numeric(toPlot$MapQ))))
-ggplot(toPlot, mapping = aes(x = MapQ, y = Frequency, fill = MapQ)) + 
-  geom_bar(stat = "identity") + 
-  facet_grid(~Read)
+plot_df <- data.frame(MapQ = c(names(read1_mapq_dist), names(read2_mapq_dist)),
+                      Frequency = c(read1_mapq_dist, read2_mapq_dist),
+                      Read = c(rep("Read1", length(read1_mapq_dist)), 
+                              rep("Read2", length(read2_mapq_dist))))
+plot_df$MapQ <- factor(plot_df$MapQ, 
+                       levels = unique(sort(as.numeric(plot_df$MapQ))))
+plot_df |>
+  ggplot(mapping = aes(x = MapQ, y = Frequency, fill = MapQ)) + 
+    geom_bar(stat = "identity") + 
+    facet_grid(~Read) 
 ```
 
 
-## Retrieve insert sizes 
+## Retrieve and summarize insert sizes 
 ```{r}
-insertSizes <- elementMetadata(read1)$isize |> abs() # Or use the mcols to retrieve the insert size
-head(insertSizes)
-```
+# Distance between read1 and read2 = distance between read2 and read1, so we only need to view the insert size of read1
+insert_size <- mcols(read1)$isize |> abs() 
+# insert_size_2 <- elementMetadata(read1)$isize |> abs()
+insert_size
+length(insert_size)
+# [1] 4348926
 
+# *How our insert sizes distribute?
+(insert_size_dist <- table(insert_size))
 
-## Plot insert size
-```{r}
-library(ggplot2)
-fragLenSizes <- table(insertSizes)
-fragLenSizes[1:5 ]
-toPlot <- data.frame(InsertSize = as.numeric(names(fragLenSizes)),
-                     Count = as.numeric(fragLenSizes))
-fragLenPlot <- ggplot(toPlot,aes(x = InsertSize, y = Count)) + geom_line()
-fragLenPlot + theme_bw() 
+# Visualize the distribution 
+plot_df <- data.frame(Insert_size = as.numeric(names(insert_size_dist)),
+                      Count = as.numeric(insert_size_dist)) # as.numeric only extracts the frequency values in a frequency table
+(insert_size_plot <- plot_df |> 
+  ggplot(mapping = aes(x = Insert_size, y = Count)) + 
+  geom_line())
 
-# Apply the log2 transformation to the counts to clarify the nucleosome patterning 
-fragLenPlot + scale_y_continuous(trans = "log2") + theme_bw()
+# Use the log2 transformation to the counts on y-axis to show the nucleosome patterning 
+(insert_size_plot + 
+    scale_y_continuous(trans = "log2"))
 
-# Refine the plot
-fragLenPlot + scale_y_continuous(trans = "log2") + 
+# The log2 transformed count of <100 bp is too high -> the concentration of transposases is too high
+# Recap: ATAC-seq (Assay for Transposase-Accessible Chromatin with high-throughput sequencing) is a method for determining chromatin accessibility across the genome. It utilizes a hyperactive Tn5 transposase to insert sequencing adapters into open chromatin regions. High-throughput sequencing then yields reads that indicate these regions of increased accessibility.
+
+# Nucleosome free (<100 bp), mononucleosome (180-247 bp), dinucleosome (315-437 bp)
+(insert_size_plot + scale_y_continuous(trans = "log2") + 
   geom_vline(xintercept = c(180, 247),colour = "red") + 
   geom_vline(xintercept = c(315, 437),colour="darkblue") +
-  geom_vline(xintercept = c(100), colour = "darkgreen") + theme_bw()
+  geom_vline(xintercept = c(100), colour = "darkgreen"))
 ```
 
 
-## Subset ATACseq reads by insert sizes
+## Subset ATACseq reads by varying insert sizes
 ```{r}
-atacReads_NucFree <- atacReads[insertSizes < 100, ]
-atacReads_MonoNuc <- atacReads[insertSizes > 180 & insertSizes < 240, ]
-atacReads_diNuc <- atacReads[insertSizes > 315 & insertSizes < 437, ]
+# Nucleosome free (<100 bp), mononucleosome (180-247 bp), dinucleosome (315-437 bp)
+# Why 100, not 147? Make sure the open region does not overlap the nucleosome location
+atac_reads_chr1X_free <- atac_reads_chr1X[insert_size < 100, ]
+atac_reads_chr1X_mono <- atac_reads_chr1X[insert_size > 180 & insert_size < 240, ]
+atac_reads_chr1X_di <- atac_reads_chr1X[insert_size > 315 & insert_size < 437, ]
 ```
 
 
 ## Save the subsetted ATACseq reads as BMA files
 ```{r}
-nucFreeRegionBam <- gsub("\\.bam", "_nucFreeRegions\\.bam", sortedBAM)
-monoNucBam <- gsub("\\.bam", "_monoNuc\\.bam", sortedBAM)
-diNucBam <- gsub("\\.bam", "_diNuc\\.bam", sortedBAM)
+sorted_bam
+# [1] "./Sorted_ATAC_female_lung_bowtie2.bam"
+free_bam <- gsub("\\.bam", "_chr1X_free\\.bam", sorted_bam) # "./Sorted_ATAC_female_lung_bowtie2_chr1X_free.bam"
+mono_bam <- gsub("\\.bam", "_chr1X_mono\\.bam", sorted_bam)
+di_bam <- gsub("\\.bam", "_chr1X_di\\.bam", sorted_bam)
+full_bam <- gsub("\\.bam", "_chr1X\\.bam", sorted_bam)
 
 library(rtracklayer)
-export(object = atacReads_NucFree, con = nucFreeRegionBam, format = "bam") # Save the object atacReads_NucFree with the filename in `nucFreeRegionBam`
-export(object = atacReads_MonoNuc, con = monoNucBam, format = "bam")
-export(object = atacReads_diNuc, con = diNucBam, format = "bam")
+export(object = atac_reads_chr1X_free, con = free_bam, format = "bam") # Save the object atac_reads_chr1X_free with the filename in `free_bam`
+export(object = atac_reads_chr1X_mono, con = mono_bam, format = "bam")
+export(object = atac_reads_chr1X_di, con = di_bam, format = "bam")
+export(object = atac_reads_chr1X, con = full_bam, format = "bam")
 ```
 
 
-## Reconstruct the fragment using `granges`
+## Reconstruct one full-length fragment from 2 paired reads using `granges`
 ```{r}
 # Show the GAlignmentPairs object with 1 pair
-atacReads[1, ] 
+atac_reads_chr1X[1, ] 
+# GAlignmentPairs object with 1 pair, strandMode=1, and 0 metadata columns:
+#       seqnames strand :     ranges --      ranges
+#          <Rle>  <Rle> :  <IRanges> --   <IRanges>
+#   [1]     chr1      + : 9996-10084 -- 10277-10374
 
-# Show the GRange object with 1 range: collapse read 1 and read2 into one long read
-atacFragments <- granges(atacReads)
-atacFragments[1, ] 
+# Show the GRange object with 1 range, which collapses read 1 and read2 into one long read
+atac_reads_chr1X_long <- granges(atac_reads_chr1X)
+atac_reads_chr1X_long[1, ] 
+# GRanges object with 1 range and 0 metadata columns:
+#       seqnames     ranges strand
+#          <Rle>  <IRanges>  <Rle>
+#   [1]     chr1 9996-10374      +
+#   -------
+#   seqinfo: 25 sequences from an unspecified genome
+```
 
-# Identify the non-redundant fraction of the full-length fragments 
 
-# duplicated() returns a logical vector indicating which elements (rows) are duplicates.
-duplicatedFragments <- sum(duplicated(atacFragments))
-totalFragments <- length(atacFragments)
-duplicateRate <- duplicatedFragments/totalFragments
-nonRedundantFraction <- 1 - duplicateRate
-nonRedundantFraction # NRF
+## [QC] Estimate the non-redundant fraction (NRF) of the full-length fragments 
+```{r}
+duplicated(atac_reads_chr1X_long) |> length() # duplicated() returns a logical vector indicating which elements (rows) are duplicates.
+# [1] 4348926
+duplicated_frag <- sum(duplicated(atac_reads_chr1X_long))
+duplicate_rate <- duplicated_frag/length(atac_reads_chr1X_long)
+(non_redundant_fraction <- 1 - duplicate_rate) # [1] 0.7760803
 ```
 
 
 ## Construct an open region bigWig
 ```{r}
-openRegionRPMBigWig <- gsub("\\.bam","_openRegionRPM\\.bw",sortedBAM)
-myCoverage <- coverage(atacFragments,
-                       weight = (10^6/length(atacFragments)))
-export.bw(myCoverage,openRegionRPMBigWig)
+class(atac_reads_chr1X_long)
+# [1] "GRanges"
+# attr(,"package")
+# [1] "GenomicRanges"
+length(atac_reads_chr1X_long)
+# [1] 4348926
+open_region_bw <- gsub("\\.bam","_open_region\\.bw", sorted_bam)
+coverage_bw <- coverage(atac_reads_chr1X_long,
+                        weight = (10^6/length(atac_reads_chr1X_long))) # Normalize to total mapped reads
+export.bw(coverage_bw, open_region_bw)
 ```
