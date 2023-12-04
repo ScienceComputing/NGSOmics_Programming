@@ -51,7 +51,7 @@ This repository houses coding practice, assignment/competition solutions based o
 ### Analyze ATAC-seq data
   
   - Use Rsubread or Rbowtie2 to [align the fastq files relative to hg19/hg38/hs1](ATACSeq/AlignFASTQ.Rmd)
-  - Use GenomicAlignments and GenomicRanges to perform post-alignment processing including [reading properly paired reads, estimating MapQ scores/insert sizes, reconstructing the full-length fragment](ATACSeq/PostAlignment.Rmd)
+  - Use GenomicAlignments and GenomicRanges to perform post-alignment processing including [reading properly paired reads, estimating MapQ scores/insert sizes, reconstructing the full-length fragment, and others](ATACSeq/PostAlignment.Rmd)
   - Use ATACseqQC to perform [comprehensive ATAC-seq quality assurance](ATACSeq/ATACseqQC.Rmd)
   - [Evaluate the transcriptional start site signal](ATACSeq/EvaluateTSS.Rmd)
   - [Call peaks with quality control](ATACSeq/CallPeak.Rmd)
