@@ -26,6 +26,8 @@ This repository houses coding practice, assignment/competition solutions based o
   - Use Scanpy workflow to perform [quality assurance, cell clustering, marker gene detection](SingleCellRNASeq/Scanpy/PBMC), and [trajectory inference](SingleCellRNASeq/Scanpy/Bone_Marrow)
   - Use Seurat workflow to perform [quality assurance, cell clustering, and marker gene detection](SingleCellRNASeq/Seurat/SkinCell.Rmd)
   - Use Bioconductor packages to [perform single cell RNA-Seq data analysis](SingleCellRNASeq/Bioconductor/BioconductorSkinCell.Rmd)
+  - Generate the [pseudobulk](SingleCellRNASeq/Scanpy/Pseudobulk.py)
+  - Perform the pseudobulk-based [differentially gene expression analysis](SingleCellRNASeq/Scanpy/scRNAseq_DE_Part1.ipynb)
   - Use scGen to model the [perturbation responses](SingleCellRNASeq/Perturbation/scGen)  
 
 <hr>
