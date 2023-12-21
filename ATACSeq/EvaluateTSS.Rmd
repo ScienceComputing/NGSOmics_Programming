@@ -1,5 +1,5 @@
 ---
-title: "ATAC-Seq Data Analysis with Human Data - Evaluate Transcriptional Start Site Signal"
+title: "ATAC-Seq Data Analysis with Human Data - Assess Transcriptional Start Site Signal using soGGi"
 author: "Anni Liu"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: 
@@ -19,91 +19,174 @@ output:
 ```
 
 
-# Evaluate transcriptional start site (TSS) signal
-## Plot signal over TSS regions using `soGGi`
+# Assess transcriptional start site (TSS) signal
+* Shorter fragments suggest the nucleosome-free open regions around transcription factors: signal at TSS
+* Longer fragments suggest the nucleosomes: signal outside of TSS while at -1 and +1 nucleosome positions
+
+## Plot aggregated signals over TSS regions using `soGGi`
+### Set up environments
 ```{r}
 # Attach required packages
-# BiocManager::install("soGGi")
-library(soGGi) |> suppressPackageStartupMessages()
-
-# BiocManager::install("TxDb.Hsapiens.UCSC.hg19.knownGene")
-library(TxDb.Hsapiens.UCSC.hg19.knownGene) |> suppressPackageStartupMessages()
-
-# bio_pkgs <- c("soGGi", "TxDb.Hsapiens.UCSC.hg19.knownGene")
+# bio_pkgs <- c("soGGi", "TxDb.Hsapiens.UCSC.hg38.knownGene")
 # BiocManager::install(bio_pkgs)
+# soGGi: visualize ChIP-seq, MNase-seq and motif occurrence as aggregate plots **Summarised Over Grouped Genomic Intervals**
+library(soGGi) |> suppressPackageStartupMessages()
+library(TxDb.Hsapiens.UCSC.hg38.knownGene) |> suppressPackageStartupMessages()
 
-# View TxDb.Hsapiens.UCSC.hg19.knownGene
-TxDb.Hsapiens.UCSC.hg19.knownGene
+# Take a look at our TxDb.Hsapiens.UCSC.hg38.knownGene
+TxDb.Hsapiens.UCSC.hg38.knownGene
+
+# TxDb object:
+# # Db type: TxDb
+# # Supporting package: GenomicFeatures
+# # Data source: UCSC
+# # Genome: hg38
+# # Organism: Homo sapiens
+# # Taxonomy ID: 9606
+# # UCSC Table: knownGene
+# # UCSC Track: GENCODE V44
+# # Resource URL: http://genome.ucsc.edu/
+# # Type of Gene ID: Entrez Gene ID
+# # Full dataset: yes
+# # miRBase build ID: NA
+# # Nb of transcripts: 276905
+# # Db created by: GenomicFeatures package from Bioconductor
+# # Creation time: 2023-09-20 17:25:17 +0000 (Wed, 20 Sep 2023)
+# # GenomicFeatures version at creation time: 1.53.2
+# # RSQLite version at creation time: 2.3.1
+# # DBSCHEMAVERSION: 1.2
 ``` 
 
-## Extract gene locations (TSS to TSS) 
+
+### Create a `GRanges` of TSS for hg38
 ```{r}
-genesLocations <- genes(TxDb.Hsapiens.UCSC.hg19.knownGene)
-# 403 genes were dropped because they have exons located on both
-# strands of the same reference sequence or on more than one
-# reference sequence, so cannot be represented by a single genomic
+# Retrieve gene locations
+gene_loc <- genes(TxDb.Hsapiens.UCSC.hg38.knownGene)
+# 2135 genes were dropped because they have exons located on both strands of the same reference
+# sequence or on more than one reference sequence, so cannot be represented by a single genomic
 # range.
-genesLocations
-# ranges denote the start and end positions of a gene, not considering the intron and exon
-```
+# Use 'single.strand.genes.only=FALSE' to get all the genes in a GRangesList object, or use
+# suppressMessages() to suppress this message.
+gene_loc
+# ranges denote the start and end positions of a gene, which do not consider the intron and exon; as we focus on TSS, we actually do not care about the locations of introns and exons
+# GRanges object with 30733 ranges and 1 metadata column:
+#             seqnames              ranges strand |     gene_id
+#                <Rle>           <IRanges>  <Rle> | <character>
+#           1    chr19   58345178-58362751      - |           1
+#          10     chr8   18386311-18401218      + |          10
+#         100    chr20   44584896-44652252      - |         100
+#        1000    chr18   27932879-28177946      - |        1000
+#   100008586     chrX   49551278-49568218      + |   100008586
+#         ...      ...                 ...    ... .         ...
+#        9990    chr15   34229784-34338060      - |        9990
+#        9991     chr9 112217716-112333664      - |        9991
+#        9992    chr21   34364006-34371381      + |        9992
+#        9993    chr22   19036282-19122454      - |        9993
+#        9997    chr22   50523568-50526461      - |        9997
+#   -------
+#   seqinfo: 711 sequences (1 circular) from hg38 genome
 
-## Extract the start position of every gene (TSS)
-```{r}
-tssLocations <- resize(genesLocations, fix = "start", width = 1)
-tssLocations
+# Retrieve the start position of every gene
+tss_loc <- resize(gene_loc, fix = "start", width = 1) # width = 1 -> we exact want the start position of a gene
+tss_loc 
 # resize knows if the strand is negative, it will use the second value in IRanges as the start position; and if the strand is positive, it will use the first value in IRanges as the start positions
+# GRanges object with 30733 ranges and 1 metadata column:
+#             seqnames    ranges strand |     gene_id
+#                <Rle> <IRanges>  <Rle> | <character>
+#           1    chr19  58362751      - |           1
+#          10     chr8  18386311      + |          10
+#         100    chr20  44652252      - |         100
+#        1000    chr18  28177946      - |        1000
+#   100008586     chrX  49551278      + |   100008586
+#         ...      ...       ...    ... .         ...
+#        9990    chr15  34338060      - |        9990
+#        9991     chr9 112333664      - |        9991
+#        9992    chr21  34364006      + |        9992
+#        9993    chr22  19122454      - |        9993
+#        9997    chr22  50526461      - |        9997
+#   -------
+#   seqinfo: 711 sequences (1 circular) from hg38 genome
 ```
 
-## Limit the TSS location to the main chromosomes
-```{r}
-mainChromosomes <- paste0("chr", c(1:21, "X", "Y", "M"))
-myIndex <- match(seqnames(tssLocations), mainChromosomes)
-# match returns the position of each element in seqnames(tssLocations) in the character vector mainChromosomes
-myIndex
-# NA: chr22 in seqnames(tssLocations) does not have the matched counterpart in mainChromosomes
 
-tssLocations <- tssLocations[!is.na(as.numeric(myIndex))]
-tssLocations
-seqnames(tssLocations)
-seqlevels(tssLocations) <- mainChromosomes
-# seqlevels() sets the levels of the seqnames
+### Select TSS locations on the main chromosomes
+```{r}
+# Limit the TSS location to the main chromosomes
+main_chromosomes <- paste0("chr", c(1:22, "X", "Y", "M")) # Used to build the reference genome hg38 for alignment
+filter_idx <- match(seqnames(tss_loc), main_chromosomes)
+# match returns the position of each element in seqnames(tss_loc) in the character vector main_chromosomes
+filter_idx
+# integer-Rle of length 30733 with 20797 runs
+#   Lengths:  1  1  1  1  1  1  1  1  1  1  1  1  1 69 ...  1  1  1  1  1  1  1  1  1  1  1  1  1  2
+#   Values : 19  8 20 18 23 *NA* 11 10  3 14 15 19 16 15 ... 22  1 21  4 18 11  4  7 18 16 15  9 21 22
+tss_loc[1:10]
+# GRanges object with 10 ranges and 1 metadata column:
+#                     seqnames    ranges strand |     gene_id
+#                        <Rle> <IRanges>  <Rle> | <character>
+#           1            chr19  58362751      - |           1
+#          10             chr8  18386311      + |          10
+#         100            chr20  44652252      - |         100
+#        1000            chr18  28177946      - |        1000
+#   100008586             chrX  49551278      + |   100008586
+#   100008587 chrUn_GL000220v1    112025      + |   100008587
+#   100009613            chr11  70075433      - |   100009613
+#   100009667            chr10  68010862      - |   100009667
+#   100009676             chr3 101676424      + |   100009676
+#       10001            chr14  70641204      - |       10001
+#   -------
+#   seqinfo: 711 sequences (1 circular) from hg38 genome
+      
+# NA: chrUn_GL000220v1 in seqnames(tss_loc) does not have the matched counterpart in main_chromosomes
+
+tss_loc_2 <- tss_loc[!is.na(as.numeric(filter_idx))]
+tss_loc_2
+seqnames(tss_loc_2)
+seqlevels(tss_loc_2) <- main_chromosomes # seqlevels() sets the levels of the seqnames
 ```
 
 
-## Visualize signal over TSS regions using `{soGGi}`
+### Visualize the meta-plot
 ```{r}
+# Load BMA file with only nucleosome free signal (< 100 base-pairs)
 library(Rsamtools)
-sortedBAM <- "./data/Sorted_ATAC_50K_2.bam" # A sorted BAM file where the ATAC-seq data is aligned
-allSignal <- regionPlot(bamFile = sortedBAM, testRanges = tssLocations)
-allSignal
-```
+sorted_bam <- "./Sorted_ATAC_female_lung_bowtie2.bam" # A sorted BAM file where the ATAC-seq data is aligned
+all_signal <- regionPlot(bamFile = sorted_bam, testRanges = tss_loc_2)
+# all_signal
+# class: ChIPprofile 
+# dim: 30601 3001 
+# metadata(2): names AlignedReadsInBam
+# assays(1): ''
+# rownames(30601): giID13479 giID13481 ... giID25797 giID25799
+# rowData names(2): gene_id giID
+# colnames(3001): Point_Centre-1500 Point_Centre-1499 ... Point_Centre1499 Point_Centre1500
+# colData names(0):
 
-## Select only nucleosome free signal (< 100 base-pairs): minFragmentLength = 0, maxFragmentLength = 100
-```{r}
-nucFree <- regionPlot(bamFile = sortedBAM, 
-                      testRanges = tssLocations, 
-                      style = "point", # Type of plot
-                      format = "bam", # Use the bam file
-                      paired = T, 
-                      minFragmentLength = 0, 
-                      maxFragmentLength = 100, 
-                      forceFragment = 50) # forceFragment: visualization purpose
-class(nucFree)
-plotRegion(nucFree)
-# We see the signal peak for our nucleosome free region in the region over TSS
-```
+# Select only nucleosome free signal (< 100 base-pairs): minFragmentLength = 0, maxFragmentLength = 100
+nucleosome_free <- regionPlot(bamFile = sorted_bam, 
+                              testRanges = tss_loc_2, 
+                              style = "point", # Type of plot
+                              format = "bam", # Use the bam file
+                              paired = T, 
+                              minFragmentLength = 0, 
+                              maxFragmentLength = 100, 
+                              forceFragment = 50) # forceFragment: visualization purpose
+class(nucleosome_free)
+# [1] "ChIPprofile"
+# attr(,"package")
+# [1] "soGGi"
 
-## Select only mono-nucleosome signal: minFragmentLength = 180, maxFragmentLength = 240
-```{r}
-monoNuc <- regionPlot(bamFile = sortedBAM, 
-                      testRanges = tssLocations, 
-                      style = "point", # Type of plot
-                      format = "bam", # Use the bam file
-                      paired = T, 
-                      minFragmentLength = 180, 
-                      maxFragmentLength = 240, 
-                      forceFragment = 80) # forceFragment: visualization purpose
-class(monoNuc)
-plotRegion(monoNuc)
-# We see the expected +1 nucleosome signal peak and other nucleosome signal peaks
+plotRegion(nucleosome_free) 
+# What can we learn from the plot? The signal peak for our nucleosome free region is around TSS (central location)
+
+# Select only mono-nucleosome signal: minFragmentLength = 180, maxFragmentLength = 240
+mono_nucleosome <- regionPlot(bamFile = sorted_bam, 
+                              testRanges = tss_loc_2,
+                              style = "point", 
+                              format = "bam", 
+                              paired = T, 
+                              minFragmentLength = 180, 
+                              maxFragmentLength = 240, 
+                              forceFragment = 80)
+plotRegion(mono_nucleosome)
+# What can we learn from the plot? The signal peak for mono nucleosome region is outside of TSS, while at -1 and +1 nucleosome positions, along with 2nd, 3d, and 4th nucleosome positions on the right side of TSS.
 ```
