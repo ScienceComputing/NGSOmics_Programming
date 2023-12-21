@@ -55,8 +55,9 @@ This repository houses coding practice, assignment/competition solutions based o
   - Use Rsubread or Rbowtie2 to [align the fastq files relative to hg19/hg38/hs1](ATACSeq/AlignFASTQ.Rmd)
   - Use GenomicAlignments and GenomicRanges to perform post-alignment processing including [reading properly paired reads, estimating MapQ scores/insert sizes, reconstructing the full-length fragment, and others](ATACSeq/PostAlignment.Rmd)
   - Use ATACseqQC to perform [comprehensive ATAC-seq quality assurance](ATACSeq/ATACseqQC.Rmd)
-  - [Evaluate the transcriptional start site signal](ATACSeq/EvaluateTSS.Rmd)
-  - [Call peaks with quality control](ATACSeq/CallPeak.Rmd)
+  - Use soGGi to [assess the transcriptional start site signal](ATACSeq/EvaluateTSS.Rmd) in the nucleosome-free open region
+  - Use MACS2 to [call peaks with quality control](ATACSeq/CallPeak.Rmd)
+    - Or use Genrich to call peaks
   - [Perform differential and enrichment analysis with peaks](ATACSeq/DifferentialAnalysis.Rmd)
   - [Search and visualize motifs](ATACSeq/Search_Visualize_Motif.Rmd)
   - [Map peaks to motifs](ATACSeq/IdentifyMotif.Rmd)
