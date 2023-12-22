@@ -13,7 +13,7 @@ output:
 # Cursor at the end of a command line: Ctrl+E
 # Clear all the code from your console: Ctrl+L
 # Create a pipe operator %>%: Ctrl+Shift+M (Windows) or Cmd+Shift+M (Mac)
-# Create an assignment operator <-: Alt+- (Windows) or Option+-(Mac) 
+# Create an assignment operator <-: Alt+- (Windows) or Option+- (Mac) 
 # Knit a document (knitr): Ctrl+Shift+K (Windows) or Cmd+Shift+K (Mac)
 # Comment or uncomment current selection: Ctrl+Shift+C (Windows) or Cmd+Shift+C (Mac)
 ```
@@ -27,7 +27,7 @@ flags <- scanBamFlag(isProperPair = T)
 # Here we only select reads paired in alignment within the preset max fragment length 600 bp
 # isProperPair = T: represent reads aligning to identical reference sequences and with a specified distance, 600 bp in our case.
 
-# Recap maxFragLength = 600
+# Recap maxFragLength = 600 | Perform the alignment relative to hg38 using the new ATACseq data from female lung
 # align(index = "BSgenome.Hsapiens.UCSC.hg38.mainchr",
 #       readfile1 = "./data/SRR6870408_1.fastq.gz", 
 #       readfile2 = "./data/SRR6870408_2.fastq.gz",
