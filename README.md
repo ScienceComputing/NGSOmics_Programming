@@ -56,8 +56,9 @@ This repository houses coding practice, assignment/competition solutions based o
   - Use GenomicAlignments and GenomicRanges to perform post-alignment processing including [reading properly paired reads, estimating MapQ scores/insert sizes, reconstructing the full-length fragment, and others](ATACSeq/PostAlignment.Rmd)
   - Use ATACseqQC to perform [comprehensive ATAC-seq quality assurance](ATACSeq/ATACseqQC.Rmd)
   - Use soGGi to [assess the transcriptional start site signal](ATACSeq/EvaluateTSS.Rmd) in the nucleosome-free open region
-  - Use MACS2 to [call peaks with quality control](ATACSeq/CallPeak.Rmd)
-    - Or use Genrich to call peaks
+  - Use MACS2 and ChIPQC to [call peaks in the nucleosome-free open region, and perform quality assurance](ATACSeq/CallPeak.Rmd)
+    - We can also use Genrich to call peaks in the nucleosome-free open region
+    - Or use MACS3/MACSr (R wrapper of MACS3) to call peaks in the nucleosome-free open region
   - [Perform differential and enrichment analysis with peaks](ATACSeq/DifferentialAnalysis.Rmd)
   - [Search and visualize motifs](ATACSeq/Search_Visualize_Motif.Rmd)
   - [Map peaks to motifs](ATACSeq/IdentifyMotif.Rmd)
