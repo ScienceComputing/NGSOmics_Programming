@@ -52,7 +52,7 @@ This repository houses coding practice, assignment/competition solutions based o
 
 ### Analyze ATAC-seq data
 
-  - Run [ENCODE ATAC-seq pipeline](https://github.com/ScienceComputing/atac-seq-pipeline/blob/master/README.md) to perform alignment, quality assurance, peaking calling, and signal track generation.
+  - Run [ENCODE ATAC-seq pipeline](https://github.com/ScienceComputing/atac-seq-pipeline/blob/master/README.md) to perform alignment, quality assurance, peaking calling, and signal track generation
   - If we hope to closely monitor each analytical phase, or even tailor it to our needs by leveraging the latest tool that the current pipeline does not utilize, ...
   - For alignment and post-alignment phases, we can ...
     - Use Rsubread or Rbowtie2 to [align the fastq files relative to hg19/hg38/hs1](ATACSeq/AlignFASTQ.Rmd)
