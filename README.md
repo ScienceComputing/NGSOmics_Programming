@@ -51,13 +51,18 @@ This repository houses coding practice, assignment/competition solutions based o
 
 
 ### Analyze ATAC-seq data
-  
-  - Use Rsubread or Rbowtie2 to [align the fastq files relative to hg19/hg38/hs1](ATACSeq/AlignFASTQ.Rmd)
-  - Use GenomicAlignments and GenomicRanges to perform post-alignment processing including [reading properly paired reads, estimating MapQ scores/insert sizes, reconstructing the full-length fragment, and others](ATACSeq/PostAlignment.Rmd)
-  - Use ATACseqQC to perform [comprehensive ATAC-seq quality assurance](ATACSeq/ATACseqQC.Rmd)
-  - Use soGGi to [assess the transcriptional start site signal](ATACSeq/EvaluateTSS.Rmd) in the nucleosome-free open region
-  - Use MACS2 and ChIPQC to [call peaks in the nucleosome-free open region, and perform quality assurance](ATACSeq/CallPeak.Rmd)
-    - We can also use Genrich to call peaks in the nucleosome-free open region
+
+  - Run [ENCODE ATAC-seq pipeline](https://github.com/ScienceComputing/atac-seq-pipeline/blob/master/README.md) to perform alignment, quality assurance, peaking calling, and signal track generation.
+  - If we hope to closely monitor each analytical phase, or even tailor it to our needs by leveraging the latest tool that the current pipeline does not utilize, ...
+  - For alignment and post-alignment phases, we can ...
+    - Use Rsubread or Rbowtie2 to [align the fastq files relative to hg19/hg38/hs1](ATACSeq/AlignFASTQ.Rmd)
+    - Use GenomicAlignments and GenomicRanges to perform post-alignment processing including [reading properly paired reads, estimating MapQ scores/insert sizes, reconstructing the full-length fragment, and others](ATACSeq/PostAlignment.Rmd)
+    - Use ATACseqQC to perform [comprehensive ATAC-seq quality assurance](ATACSeq/ATACseqQC.Rmd)
+  - For TSS analysis phase, we can ...
+    - Use soGGi to [assess the transcriptional start site signal](ATACSeq/EvaluateTSS.Rmd) in the nucleosome-free open region
+  - For peaking calling phase, we can ...
+    - Use MACS2 and ChIPQC to [call peaks in the nucleosome-free open region, and perform quality assurance](ATACSeq/CallPeak.Rmd)
+    - Or use Genrich to call peaks in the nucleosome-free open region
     - Or use MACS3/MACSr (R wrapper of MACS3) to call peaks in the nucleosome-free open region
   - [Perform differential and enrichment analysis with peaks](ATACSeq/DifferentialAnalysis.Rmd)
   - [Search and visualize motifs](ATACSeq/Search_Visualize_Motif.Rmd)
