@@ -19,6 +19,12 @@ output:
 ```
 
 # Peak calling
+## Install MACS2 using `pip`
+```{bash}
+ /Users/your_name/Library/r-miniconda-arm64/bin/pip install macs2
+ # macs2 and pip are in the same virtual environment
+```
+
 ## Install MACS2 using `conda`
 ```{bash}
 # Reference: https://docs.conda.io/projects/conda/en/latest/commands/install.html
