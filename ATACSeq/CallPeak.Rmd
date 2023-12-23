@@ -1,5 +1,5 @@
 ---
-title: "ATAC-Seq Data Analysis with Human Data - Call Peaks with Quality Control"
+title: "ATAC-Seq Data Analysis with Human Data - Call Peaks and Perform Quality Control"
 author: "Anni Liu"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: 
@@ -93,21 +93,32 @@ with_CondaEnv("atac",
                       stdout = T))
 ```
 
-## Nucleosome free peak calling from paired-end sequencing
-Nucleosome-free peak calling from paired-end sequencing - no concerns on the correct specifications of `shift` and `extsize`
-```{r}
+## Nucleosome-free peak calling from paired-end sequencing - no concerns on the correct specifications of `shift` and `extsize`
+```{bash}
 # Reference: https://pypi.org/project/MACS2/
+# https://biohpc.cornell.edu/lab/doc/Chip-seq_workshop_lecture1.pdf
 # -N/--NAME
 # The name string of the experiment. MACS will use this string NAME to create output files like NAME_peaks.xls, NAME_negative_peaks.xls, NAME_peaks.bed , NAME_summits.bed, NAME_model.r and so on. So please avoid any confliction between these filenames and your existing files.
+
 # -F/--FORMAT FORMAT
 # Format of tag file can be ELAND, BED, ELANDMULTI, ELANDEXPORT, SAM, BAM, BOWTIE, BAMPE, or BEDPE. Default is AUTO which will allow MACS to decide the format automatically. AUTO is also useful when you combine different formats of files. Note that MACS can't detect BAMPE or BEDPE format with AUTO, and you have to implicitly specify the format for BAMPE and BEDPE.
 # Nowadays, the most common formats are BED or BAM (including BEDPE and BAMPE). Our recommendation is to convert your data to BED or BAM first.
 # Also, MACS2 can detect and read gzipped file. For example, .bed.gz file can be directly used without being uncompressed with --format BED.
+
+# BEDPE or BAMPE
+# A special mode will be triggered while the format is specified as BAMPE or BEDPE. In this way, MACS2 will process the BAM or BED files as paired-end data. Instead of building a bimodal distribution of plus and minus strand reads to predict fragment size, MACS2 will use actual insert sizes of pairs of reads to build fragment pileup.
+# The BAMPE format is just a BAM format containing paired-end alignment information, such as those from BWA or BOWTIE.
+
+/Users/your_name/Library/r-miniconda-arm64/bin/macs2 callpeak -t Documents/WCM_Project/ATAC_seq/Sorted_ATAC_female_lung_bowtie2_chr1X_free.bam --outdir Documents/WCM_Project/ATAC_seq/Sorted_ATAC_female_lung_bowtie2_chr1X_free_narrowpeak --format BAMPE --name female_lung -g hs
+```
+
+
+```{r suspend}
 with_CondaEnv("atac",
               system2(command = "macs2",
                       args = c("callpeak",
-                               "-t", "Users/your_name/Documents/ATAC_seq/Sorted_ATAC_female_lung_bowtie2_chr1X_free.bam", # Nucleosome-free open region BMA file
-                               "--outdir", "Users/your_name/Documents/ATAC_seq/Sorted_ATAC_female_lung_bowtie2_chr1X_free_narrowpeak/",
+                               "-t", "Documents/WCM_Project/ATAC_seq/Sorted_ATAC_female_lung_bowtie2_chr1X_free.bam", # Nucleosome-free open region BMA file
+                               "--outdir", "Documents/WCM_Project/ATAC_seq/Sorted_ATAC_female_lung_bowtie2_chr1X_free_narrowpeak/",
                                "--format", "BAM",
                                "--name", "female_lung",
                                "-g", "hs"),
