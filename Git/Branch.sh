@@ -1,8 +1,5 @@
-# Why use braches?
-# Systematically track multiple versions of files
-# Minimize the risk of conflicting versions
-# Avoid endless subdirectories
-# Allow multiple users to work simultaneously
+# Why use branches? 1) Systematically track multiple versions of files; 2) Minimize the risk of conflicting versions; 
+# 3) Avoid endless subdirectories; 4) Allow multiple users to work simultaneously
 
 # Display branches
 git branch
