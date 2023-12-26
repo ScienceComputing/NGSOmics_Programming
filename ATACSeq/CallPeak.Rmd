@@ -125,7 +125,7 @@ with_CondaEnv("atac",
                       args = c("callpeak",
                                "-t", "Documents/WCM_Project/ATAC_seq/Sorted_ATAC_female_lung_bowtie2_chr1X_free.bam", # Nucleosome-free open region BMA file
                                "--outdir", "Documents/WCM_Project/ATAC_seq/Sorted_ATAC_female_lung_bowtie2_chr1X_free_narrowpeak/",
-                               "--format", "BAM",
+                               "--format", "BAMPE",
                                "--name", "female_lung",
                                "-g", "hs"),
                       stdout = T))
