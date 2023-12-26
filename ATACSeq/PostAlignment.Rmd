@@ -19,15 +19,15 @@ output:
 ```
 
 
-# Perform post-alignment processing
-## [QC] Select properly paired reads using `ScanBamParam()` and `scanBamFlag()`
+# [QC] Perform post-alignment processing
+## Select properly paired reads using `ScanBamParam()` and `scanBamFlag()`
 ```{r}
 library(GenomicAlignments)
 flags <- scanBamFlag(isProperPair = T)
 # Here we only select reads paired in alignment within the preset max fragment length 600 bp
 # isProperPair = T: represent reads aligning to identical reference sequences and with a specified distance, 600 bp in our case.
 
-# Recap maxFragLength = 600 | Perform the alignment relative to hg38 using the new ATACseq data from female lung
+# Recap maxFragLength = 600 # Line 501: Perform the alignment relative to hg38 using the new ATACseq data from female lung
 # align(index = "BSgenome.Hsapiens.UCSC.hg38.mainchr",
 #       readfile1 = "./data/SRR6870408_1.fastq.gz", 
 #       readfile2 = "./data/SRR6870408_2.fastq.gz",
@@ -35,6 +35,7 @@ flags <- scanBamFlag(isProperPair = T)
 #       nthreads = 4, type = 1,
 #       unique = TRUE, maxFragLength = 600)
 
+# Set up parameters for scanning BAM files
 chr20_param  <- ScanBamParam(flag = flags,
                              what = c("qname", "mapq", "isize"),
                              which = GRanges("chr20", IRanges(1, 64444167))) 
@@ -59,12 +60,43 @@ chr20_param
 # bamMapqFilter: NA
 ```
 
-```{r more.chromosomes}
+```{r two.chromosomes}
 chr1X_param <- ScanBamParam(flag = flags,
                             what = c("qname", "mapq", "isize"),
                             which = IRangesList(chr1=IRanges(1, 248956422),
                                                 chrX=IRanges(1, 156040895))) 
 ```
+
+```{r all.chromosomes}
+# https://genome.ucsc.edu/cgi-bin/hgTracks?hgsid=1795230954_XcEyjdAa9Z968dnsdwUvHaqjwvOg&chromInfoPage=
+mainchr_param <- ScanBamParam(flag = flags,
+                              what = c("qname", "mapq", "isize"),
+                              which = IRangesList(chr1=IRanges(1, 248956422),
+                                                  chr2=IRanges(1, 242193529),
+                                                  chr3=IRanges(1, 198295559),
+                                                  chr4=IRanges(1, 190214555),
+                                                  chr5=IRanges(1, 181538259),
+                                                  chr6=IRanges(1, 170805979),
+                                                  chr7=IRanges(1, 159345973),
+                                                  chr8=IRanges(1, 145138636),
+                                                  chr9=IRanges(1, 138394717),
+                                                  chr10=IRanges(1, 133797422),
+                                                  chr11=IRanges(1, 135086622),
+                                                  chr12=IRanges(1, 133275309),
+                                                  chr13=IRanges(1, 114364328),
+                                                  chr14=IRanges(1, 107043718),
+                                                  chr15=IRanges(1, 101991189),
+                                                  chr16=IRanges(1, 90338345),
+                                                  chr17=IRanges(1, 83257441),
+                                                  chr18=IRanges(1, 80373285),
+                                                  chr19=IRanges(1, 58617616),
+                                                  chr20=IRanges(1, 64444167),
+                                                  chr21=IRanges(1, 46709983),
+                                                  chr22=IRanges(1, 50818468),
+                                                  chrX=IRanges(1, 156040895),
+                                                  chrY=IRanges(1, 57227415))) 
+```
+
 
 ## Read properly paired reads
 ```{r}
@@ -142,7 +174,7 @@ read1[1, ] # This shows the first alignment in the first read
 #   [1]         2       379
 #   -------
 #   seqinfo: 25 sequences from an unspecified genome
-read2[1, ] # This shows the first alignment in the second read
+read2[1, ] # This shows the first alignment in the paired second read
 # GAlignments object with 1 alignment and 3 metadata columns:
 #       seqnames strand         cigar    qwidth     start       end     width     njunc |              qname
 #          <Rle>  <Rle>   <character> <integer> <integer> <integer> <integer> <integer> |        <character>
@@ -152,6 +184,10 @@ read2[1, ] # This shows the first alignment in the second read
 #   [1]         2      -379
 #   -------
 #   seqinfo: 25 sequences from an unspecified genome
+```
+
+```{r}
+atac_reads_mainchr <- readGAlignmentPairs(sorted_bam, param = mainchr_param)
 ```
 
 
@@ -226,6 +262,12 @@ atac_reads_chr1X_mono <- atac_reads_chr1X[insert_size > 180 & insert_size < 240,
 atac_reads_chr1X_di <- atac_reads_chr1X[insert_size > 315 & insert_size < 437, ]
 ```
 
+```{r}
+read1 <- first(atac_reads_mainchr)
+insert_size <- mcols(read1)$isize |> abs() 
+atac_reads_mainchr_free <- atac_reads_mainchr[insert_size < 100, ]
+```
+
 
 ## Save the subsetted ATACseq reads as BMA files
 ```{r}
@@ -241,6 +283,11 @@ export(object = atac_reads_chr1X_free, con = free_bam, format = "bam") # Save th
 export(object = atac_reads_chr1X_mono, con = mono_bam, format = "bam")
 export(object = atac_reads_chr1X_di, con = di_bam, format = "bam")
 export(object = atac_reads_chr1X, con = full_bam, format = "bam")
+```
+
+```{r}
+free_bam <- gsub("\\.bam", "_mainchr_free\\.bam", sorted_bam) 
+export(object = atac_reads_mainchr_free, con = free_bam, format = "bam")
 ```
 
 
