@@ -1,4 +1,4 @@
-# TD: Optimize the function aggregate_and_filter
+# TD: Optimize the function aggregate_and_filter | NumPy over pandas in processing numerical data
 # Avoid Copying Data: The copy() operation is removed to save memory.
 # Efficient Donor Filtering: The donor filtering is streamlined with vectorized operations.
 # DataFrame Initialization: The DataFrame is pre-initialized with the necessary columns.
