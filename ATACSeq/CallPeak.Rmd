@@ -131,6 +131,18 @@ with_CondaEnv("atac",
                       stdout = T))
 ```
 
+## Use MACS3-based MACSr to call peaks in the nucleosome-free open regions from paired-end sequencing
+```{r}
+# Reference: https://github.com/macs3-project/MACS/blob/master/docs/callpeak.md
+library(MACSr)
+cp1 <- callpeak(tfile="Sorted_ATAC_female_lung_bowtie2_mainchr_free.bam", 
+                gsize = "hs", 
+                format = "BAMPE",
+                name = "chr1_narrow", 
+                outdir = "Sorted_ATAC_female_lung_bowtie2_mainchr_free_peak",
+                cutoff_analysis = T)
+```
+
 # Quality control
 ```{r}
 library(ChIPQC)
