@@ -68,7 +68,9 @@ chr1X_param <- ScanBamParam(flag = flags,
 ```
 
 ```{r all.chromosomes}
+# Approach 1:
 # https://genome.ucsc.edu/cgi-bin/hgTracks?hgsid=1795230954_XcEyjdAa9Z968dnsdwUvHaqjwvOg&chromInfoPage=
+scanBamHeader(sorted_bam)[[1]]$targets
 mainchr_param <- ScanBamParam(flag = flags,
                               what = c("qname", "mapq", "isize"),
                               which = IRangesList(chr1=IRanges(1, 248956422),
@@ -95,6 +97,15 @@ mainchr_param <- ScanBamParam(flag = flags,
                                                   chr22=IRanges(1, 50818468),
                                                   chrX=IRanges(1, 156040895),
                                                   chrY=IRanges(1, 57227415))) 
+
+
+# Approach 2:
+as(Seqinfo(genome = "hg38"), "GRanges")@seqnames@values
+mainchr_param_2 <- ScanBamParam(flag = flags,
+                                what = c("qname", "mapq", "isize"),
+                                which = as(Seqinfo(genome="hg38"), "GRanges")[1:24]) 
+mainchr_param_2@which@partitioning@NAMES <- paste0("chr", c(1:22, "X", "Y"))
+mainchr_param_2@which@partitioning@end <- 1:24
 ```
 
 
