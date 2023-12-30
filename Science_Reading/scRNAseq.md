@@ -1,3 +1,12 @@
+**Multimodal spatiotemporal phenotyping of human retinal organoid development**
+```
+"In this study, we generated multiplexed protein maps over a retinal organoid time course and primary adult human retinal tissue...In addition, we generated a single-cell transcriptome and chromatin accessibility timecourse dataset and inferred a gene regulatory network underlying organoid development. We integrated genomic data with spatially segmented nuclei into a multimodal atlas to explore organoid patterning and retinal ganglion cell (RGC) spatial neighborhoods, highlighting pathways involved in RGC cell death and showing that mosaic genetic perturbations in retinal organoids provide insight into cell fate regulation."
+```
+
+<br>
+
+Wahle, P., Brancati, G., Harmel, C. et al. Multimodal spatiotemporal phenotyping of human retinal organoid development. Nat Biotechnol 41, 1765–1775 (2023). https://doi.org/10.1038/s41587-023-01747-2
+
 **Accurately spot cell-free droplets, and provide noise-free scRNAseq quantification**
 
 Fleming, S.J., Chaffin, M.D., Arduini, A. et al. Unsupervised removal of systematic background noise from droplet-based single-cell experiments using CellBender. Nat Methods 20, 1323–1335 (2023). https://doi.org/10.1038/s41592-023-01943-7
