@@ -54,7 +54,7 @@ This repository houses coding practice, assignment/competition solutions based o
 ### Analyze ATAC-seq data
 
   - Run [ENCODE ATAC-seq pipeline](https://github.com/ScienceComputing/atac-seq-pipeline/blob/master/README.md) to perform alignment, quality assurance, peaking calling, and signal track generation
-  - If we hope to closely monitor each analytical phase, or even tailor it to our needs by leveraging features of the latest tools that the current pipeline does not utilize, ...
+  - If we're interested in inspecting every step in each analytical phase, or even leveraging advanced/unique features of other tools that the current pipeline ignores, ...
   - For alignment and post-alignment phases, we can ...
     - Use Rsubread or Rbowtie2 to [align the fastq files relative to hg19/hg38/hs1](ATACSeq/AlignFASTQ.Rmd)
     - Use GenomicAlignments and GenomicRanges to perform post-alignment processing including [reading properly paired reads, estimating MapQ scores/insert sizes, reconstructing the full-length fragment, and others](ATACSeq/PostAlignment.Rmd)
@@ -65,6 +65,7 @@ This repository houses coding practice, assignment/competition solutions based o
     - Use MACS2 and ChIPQC to [call peaks in the nucleosome-free open region, and perform quality assurance](ATACSeq/CallPeak.Rmd)
     - Or use Genrich to call peaks in the nucleosome-free open region
     - Or use MACS3/MACSr (R wrapper of MACS3) to [call peaks in the nucleosome-free open region](ATACSeq/CallPeak.Rmd)
+    - Use ChIPseeker to annotate peak regions with genomic features
   - [Perform differential and enrichment analysis with peaks](ATACSeq/DifferentialAnalysis.Rmd)
   - [Search and visualize motifs](ATACSeq/Search_Visualize_Motif.Rmd)
   - [Map peaks to motifs](ATACSeq/IdentifyMotif.Rmd)
