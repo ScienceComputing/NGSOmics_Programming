@@ -22,6 +22,8 @@ William DeGroat, Dinesh Mendhe, Atharva Bhusari, Habiba Abdelhalim, Saman Zeesha
 
 Dou, J., Tan, Y., Kock, K.H. et al. Single-nucleotide variant calling in single-cell sequencing data with Monopogen. Nat Biotechnol (2023). https://doi.org/10.1038/s41587-023-01873-x
 
+> ??? Develop algorithms capable of detecting intronic variants for scRNA-seq, snRNA-seq, snATAC-seq and scDNA-seq data
+
 <br>
  
 **Seperate variations of gene expression enriched in treated single cells from those shared with controls**
