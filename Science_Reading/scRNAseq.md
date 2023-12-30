@@ -1,7 +1,6 @@
 **Multimodal spatiotemporal phenotyping of human retinal organoid development**
-```
-"In this study, we generated multiplexed protein maps over a retinal organoid time course and primary adult human retinal tissue...In addition, we generated a single-cell transcriptome and chromatin accessibility timecourse dataset and inferred a gene regulatory network underlying organoid development. We integrated genomic data with spatially segmented nuclei into a multimodal atlas to explore organoid patterning and retinal ganglion cell (RGC) spatial neighborhoods, highlighting pathways involved in RGC cell death and showing that mosaic genetic perturbations in retinal organoids provide insight into cell fate regulation."
-```
+
+> "In this study, we generated multiplexed protein maps over a retinal organoid time course and primary adult human retinal tissue...In addition, we generated a single-cell transcriptome and chromatin accessibility timecourse dataset and inferred a gene regulatory network underlying organoid development. We integrated genomic data with spatially segmented nuclei into a multimodal atlas to explore organoid patterning and retinal ganglion cell (RGC) spatial neighborhoods, highlighting pathways involved in RGC cell death and showing that mosaic genetic perturbations in retinal organoids provide insight into cell fate regulation."
 
 <br>
 
