@@ -66,6 +66,8 @@ This repository houses coding practice, assignment/competition solutions based o
     - Or use Genrich to call peaks in the nucleosome-free open region
     - Or use MACS3/MACSr (R wrapper of MACS3) to [call peaks in the nucleosome-free open region](ATACSeq/CallPeak.Rmd)
     - Use ChIPseeker to [annotate peak regions with genomic features](ATACSeq/CallPeak.Rmd)
+  - For other types of downstream analyses, we can ...
+    - Use rGREAT to [functionally interpret the peak regions based on the GO database](ATACSeq/FunctionalAnalysis.Rmd) 
   - [Perform differential and enrichment analysis with peaks](ATACSeq/DifferentialAnalysis.Rmd)
   - [Search and visualize motifs](ATACSeq/Search_Visualize_Motif.Rmd)
   - [Map peaks to motifs](ATACSeq/IdentifyMotif.Rmd)
