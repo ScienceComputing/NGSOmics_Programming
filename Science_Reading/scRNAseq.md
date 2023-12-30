@@ -16,6 +16,12 @@ Weinberger, E., Lin, C. & Lee, SI. Isolating salient variations of interest in s
 
 <br>
 
+**Map single-cell fates in regeneration, reprogramming and disease without known directions**
+
+Lange, M., Bergen, V., Klein, M. et al. CellRank for directed single-cell fate mapping. Nat Methods 19, 159–170 (2022). https://doi.org/10.1038/s41592-021-01346-6
+
+<br>
+
 **Expression quantitative trait locus analysis using single cell RNA-Seq data**
 
 Bryois, J., Calini, D., Macnair, W. et al. Cell-type-specific cis-eQTLs in eight human brain cell types identify novel risk genes for psychiatric and neurological disorders. Nat Neurosci 25, 1104–1112 (2022). https://doi.org/10.1038/s41593-022-01128-z
