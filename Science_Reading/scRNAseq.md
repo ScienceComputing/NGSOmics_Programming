@@ -10,6 +10,12 @@ William DeGroat, Dinesh Mendhe, Atharva Bhusari, Habiba Abdelhalim, Saman Zeesha
 
 <br>
 
+**Seperate variations of gene expression enriched in treated single cells from those shared with controls**
+
+Weinberger, E., Lin, C. & Lee, SI. Isolating salient variations of interest in single-cell data with contrastiveVI. Nat Methods 20, 1336–1345 (2023). https://doi.org/10.1038/s41592-023-01955-3
+
+<br>
+
 **Expression quantitative trait locus analysis using single cell RNA-Seq data**
 
 Bryois, J., Calini, D., Macnair, W. et al. Cell-type-specific cis-eQTLs in eight human brain cell types identify novel risk genes for psychiatric and neurological disorders. Nat Neurosci 25, 1104–1112 (2022). https://doi.org/10.1038/s41593-022-01128-z
