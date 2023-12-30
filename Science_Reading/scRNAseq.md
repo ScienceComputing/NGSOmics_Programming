@@ -18,7 +18,7 @@ William DeGroat, Dinesh Mendhe, Atharva Bhusari, Habiba Abdelhalim, Saman Zeesha
 
 <br>
 
-**Identify single-nucleotide variant in scRNA-seq, snRNA-seq, snATAC-seq and scDNA-seq**
+**Identify single-nucleotide variant in scRNA-seq, snRNA-seq, snATAC-seq and scDNA-seq data**
 
 Dou, J., Tan, Y., Kock, K.H. et al. Single-nucleotide variant calling in single-cell sequencing data with Monopogen. Nat Biotechnol (2023). https://doi.org/10.1038/s41587-023-01873-x
 
