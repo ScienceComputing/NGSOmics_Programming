@@ -255,37 +255,23 @@ Notice that NOT remove blacklisted peaks earlier, as such removal will hide the 
 data.frame(Peak_blacklisted = sum(target_call %over% black_hg38), # %over%: Finding overlapping ranges
            Peak = sum(!target_call %over% black_hg38))
 
-peak_final <- target_call[!target_call %over% black_hg38]
+(peak_final <- target_call[!target_call %over% black_hg38])
+# GRanges object with 4334 ranges and 0 metadata columns:
+#          seqnames            ranges strand
+#             <Rle>         <IRanges>  <Rle>
+#      [1]    chr17       69625-69763      *
+#      [2]    chr17       76711-76993      *
+#      [3]    chr17     111994-112405      *
+#      [4]    chr17     117170-118055      *
+#      [5]    chr17     122955-123297      *
+#      ...      ...               ...    ...
+#   [4330]    chr17 83203172-83203459      *
+#   [4331]    chr17 83205621-83205771      *
+#   [4332]    chr17 83208395-83208833      *
+#   [4333]    chr17 83229113-83229258      *
+#   [4334]    chr17 83247185-83247332      *
+#   -------
+#   seqinfo: 1 sequence from an unspecified genome; no seqlengths
 
 saveRDS(peak_final, file = "peak_final.RData")
-```
-
-
-# Annotation
-## Annotate peaks
-```{r}
-library(ChIPseeker)
-library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-MacsCalls_Anno <- annotatePeak(MacsCalls, TxDb.Hsapiens.UCSC.hg19.knownGene)
-```
-
-## Annotate nucleosome free regions
-```{r}
-MacsGR_Anno <- as.GRanges(MacsCalls_Anno)
-
-# Subset the peaks on nucleosome free regions to those landing in TSS regions (+/-500)
-MacsGR_TSS <- MacsGR_Anno[abs(MacsGR_Anno$distanceToTSS) < 500]
-MacsGR_TSS[1, ]
-```
-
-# Functional analysis of peaks
-```{r}
-if (!require("rGREAT", quietly = TRUE)) { BiocManager::install("rGREAT"); library(rGREAT) } else { library(rGREAT) }
-great_Job <- submitGreatJob(MacsCalls, species = "hg19")
-availableCategories(great_Job)
-
-great_ResultTable <- getEnrichmentTables(great_Job)
-names(great_ResultTable)
-
-great_ResultTable[["GO Biological Process"]][1:4, ]
 ```
