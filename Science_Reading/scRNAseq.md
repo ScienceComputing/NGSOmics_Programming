@@ -18,6 +18,12 @@ William DeGroat, Dinesh Mendhe, Atharva Bhusari, Habiba Abdelhalim, Saman Zeesha
 
 <br>
 
+**Identify single-nucleotide variant in scRNA-seq, snRNA-seq, snATAC-seq and scDNA-seq**
+
+Dou, J., Tan, Y., Kock, K.H. et al. Single-nucleotide variant calling in single-cell sequencing data with Monopogen. Nat Biotechnol (2023). https://doi.org/10.1038/s41587-023-01873-x
+
+<br>
+ 
 **Seperate variations of gene expression enriched in treated single cells from those shared with controls**
 
 Weinberger, E., Lin, C. & Lee, SI. Isolating salient variations of interest in single-cell data with contrastiveVI. Nat Methods 20, 1336–1345 (2023). https://doi.org/10.1038/s41592-023-01955-3
