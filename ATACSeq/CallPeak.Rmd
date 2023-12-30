@@ -1,5 +1,5 @@
 ---
-title: "ATAC-Seq Data Analysis with Human Data - Call Peaks and Perform Quality Control"
+title: "ATAC-Seq Data Analysis with Human Data - Call Peaks, Perform Quality Control, and Annotate Peaks"
 author: "Anni Liu"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: 
@@ -274,4 +274,61 @@ data.frame(Peak_blacklisted = sum(target_call %over% black_hg38), # %over%: Find
 #   seqinfo: 1 sequence from an unspecified genome; no seqlengths
 
 saveRDS(peak_final, file = "peak_final.RData")
+```
+
+# Peak annotation 
+## Associate peaks with genomic features (e.g., genes, promoters, enhancers)
+```{r}
+# Annotate each peak region with its closest gene
+library(ChIPseeker)
+library(TxDb.Hsapiens.UCSC.hg38.knownGene)
+(peak_final_anno <- annotatePeak(peak = peak_final, TxDb = TxDb.Hsapiens.UCSC.hg38.knownGene))
+
+# Display the annotation information - where the peaks locate in the genome
+plotAnnoPie(peak_final_anno)
+# Promoter (<=1kb)	31.7951084		
+# 10	Promoter (1-2kb)	6.0913706		
+# 11	Promoter (2-3kb)	5.1453623	
+```
+
+
+## Annotate peaks in TSS regions with genomic features
+```{r}
+peak_final_anno_2 <- as.GRanges(peak_final_anno)
+
+# Select peaks landing in TSS regions (+/-500)
+(peak_final_anno_tss <- peak_final_anno_2[abs(peak_final_anno_2$distanceToTSS) < 500])
+
+# GRanges object with 1177 ranges and 9 metadata columns:
+#          seqnames            ranges strand |       annotation   geneChr geneStart   geneEnd geneLength
+#             <Rle>         <IRanges>  <Rle> |      <character> <integer> <integer> <integer>  <integer>
+#      [1]    chr17       76711-76993      * | Promoter (<=1kb)        17     64099     76866      12768
+#      [2]    chr17     215963-216247      * | Promoter (<=1kb)        17    213324    215933       2610
+#      [3]    chr17     334101-334582      * | Promoter (<=1kb)        17    319522    334066      14545
+#      [4]    chr17     409886-410730      * | Promoter (<=1kb)        17    404541    410031       5491
+#      [5]    chr17     560021-560327      * | Promoter (<=1kb)        17    551602    559898       8297
+#      ...      ...               ...    ... .              ...       ...       ...       ...        ...
+#   [1173]    chr17 82931632-82932035      * | Promoter (<=1kb)        17  82931949  82942571      10623
+#   [1174]    chr17 82932766-82933033      * | Promoter (<=1kb)        17  82932687  82937847       5161
+#   [1175]    chr17 83048574-83048763      * | Promoter (<=1kb)        17  82943791  83048782     104992
+#   [1176]    chr17 83051487-83052188      * | Promoter (<=1kb)        17  82942149  83051770     109622
+#   [1177]    chr17 83083363-83084219      * | Promoter (<=1kb)        17  83084073  83094844      10772
+#          geneStrand      geneId      transcriptId distanceToTSS
+#           <integer> <character>       <character>     <numeric>
+#      [1]          2   105377826 ENST00000623180.1             0
+#      [2]          2        9501 ENST00000572965.1           -30
+#      [3]          2        9501 ENST00000573588.5           -35
+#      [4]          2   105371430 ENST00000599026.1             0
+#      [5]          2       55275 ENST00000679978.1          -123
+#      ...        ...         ...               ...           ...
+#   [1173]          1        6904 ENST00000576603.5             0
+#   [1174]          1        6904 ENST00000573364.1            79
+#   [1175]          2      146712 ENST00000570947.5            19
+#   [1176]          2      146712 ENST00000320865.4             0
+#   [1177]          1      284207 ENST00000571814.1             0
+#   -------
+#   seqinfo: 1 sequence from hg38 genome
+
+# Use the geneId to examine if the genes associated with the peaks in TSS regions show some interesting functional enrichment
+peak_final_anno_tss$geneId 
 ```
