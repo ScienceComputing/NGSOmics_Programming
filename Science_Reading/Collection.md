@@ -11,8 +11,3 @@ Vanguri, R.S., Luo, J., Aukerman, A.T. et al. Multimodal integration of radiolog
 
 <br>
 
-**WGS and RNA-seq based machine learning pipeline for biomarker discovery and predictive analysis**
-
-William DeGroat, Dinesh Mendhe, Atharva Bhusari, Habiba Abdelhalim, Saman Zeeshan, Zeeshan Ahmed, IntelliGenes: A novel machine learning pipeline for biomarker discovery and predictive analysis using multi-genomic profiles, Bioinformatics, 2023;, btad755, https://doi.org/10.1093/bioinformatics/btad755
-
-
