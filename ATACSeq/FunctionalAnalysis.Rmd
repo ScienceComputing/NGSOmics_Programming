@@ -26,7 +26,8 @@ if (!require("rGREAT", quietly = TRUE)) {
 }
 
 # Perform online GREAT analysis: http://great.stanford.edu/public/html/ | http://bejerano.stanford.edu/papers/GREAT.pdf
-# "GREAT assigns biological meaning to a set of non-coding genomic regions by analyzing the annotations of the nearby genes. Thus, it is particularly useful in studying cis functions of sets of non-coding genomic regions. Cis-regulatory regions can be identified via both experimental methods (e.g. ChIP-seq) and by computational methods (e.g. comparative genomics). "
+# "GREAT assigns biological meaning to a set of non-coding genomic regions by analyzing the annotations of the nearby genes. Thus, it is particularly useful in studying cis functions of sets of non-coding genomic regions. Cis-regulatory regions can be identified via both experimental methods (e.g. ChIP-seq) and by computational methods (e.g. comparative genomics)."
+# "Whereas previous methods took into account only binding proximal to genes, GREAT is able to properly incorporate distal binding sites and control for false positives using a binomial test over the input genomic regions."
 job <- submitGreatJob(peak_final, species = "hg38")
 availableCategories(job)
 # [1] "GO"        "Phenotype" "Genes" 
