@@ -7,9 +7,9 @@ output:
     code_folding: show
 ---
 
-# !Differential ATACseq peaks - identify changes in read counts of non-redundant peaks in open regions between one condition and another condition
+# !Differential ATACseq peaks - to identify changes in read counts of non-redundant peaks in open regions between one condition and another condition
 Here we will establish a collection of unique peaks that are found in a minimum of 2 samples. These peaks will serve as the basis for evaluating alterations in nucleosome-free ATAC-seq data using `DESeq2`.
-Here is an alternative approach: [DiffBind](https://bioconductor.org/packages/release/bioc/vignettes/DiffBind/inst/doc/DiffBind.pdf)
+TD: alternative approach [DiffBind](https://bioconductor.org/packages/release/bioc/vignettes/DiffBind/inst/doc/DiffBind.pdf)
 
 ## Gplimpse the peak data across samples
 ```{r}
