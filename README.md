@@ -69,7 +69,7 @@ This repository houses coding practice, assignment/competition solutions based o
   - For other types of downstream analyses, we can ...
     - Use rGREAT to [functionally interpret the peak regions based on the GO database](ATACSeq/FunctionalAnalysis.Rmd) 
     - Use GenomicRanges and GenomicAlignments to [select and count non-redundant peaks](ATACSeq/DifferentialAnalysis.Rmd)
-    - Use DESeq2 and ChIPseeker to [perform differential analysis with gene annotations](ATACSeq/DifferentialAnalysis.Rmd)
+    - Use DESeq2/DESeq2-based DiffBind and ChIPseeker to [perform differential analysis with gene annotations](ATACSeq/DifferentialAnalysis.Rmd)
     - Use clusterProfiler to [perform enrichment analysis of differential peak regions](ATACSeq/DifferentialAnalysis.Rmd)
   - [Search and visualize motifs](ATACSeq/Search_Visualize_Motif.Rmd)
   - [Map peaks to motifs](ATACSeq/IdentifyMotif.Rmd)
