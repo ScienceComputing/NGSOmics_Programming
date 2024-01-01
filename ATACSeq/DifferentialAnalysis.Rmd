@@ -1,5 +1,5 @@
 ---
-title: "ATAC-Seq Data Analysis with Mouse Tissue Data - Perform Differential Anlaysis of Peaks"
+title: "ATAC-Seq Data Analysis with Mouse Tissue Data - Perform Differential and Functional Enrichment Analysis of Peaks"
 author: "Anni Liu"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: 
@@ -7,152 +7,78 @@ output:
     code_folding: show
 ---
 
-## !Differential ATACseq peaks - identify changes in open regions between one condition and another condition
-Here we will establish a collection of unique peaks that are found in a minimum of 2 samples. These peaks will serve as the basis for evaluating alterations in nucleosome-free ATAC-seq data using DESeq2.
+# !Differential ATACseq peaks - identify changes in read counts of non-redundant peaks in open regions between one condition and another condition
+Here we will establish a collection of unique peaks that are found in a minimum of 2 samples. These peaks will serve as the basis for evaluating alterations in nucleosome-free ATAC-seq data using `DESeq2`.
 Here is an alternative approach: [DiffBind](https://bioconductor.org/packages/release/bioc/vignettes/DiffBind/inst/doc/DiffBind.pdf)
+
+## Gplimpse the peak data across samples
 ```{r}
-##----We examine peaks across all our samples and condense them into a unified collection of unique peaks. Subsequently, we generate a matrix indicating whether each peak is present or absent in each sample----
+# Overall goal: to examine peaks across all our samples and condense them into a unified collection of unique peaks. Subsequently, we generate a matrix indicating whether each peak is present or absent in each sample.----
 library(GenomicRanges)
 library(rtracklayer)
-peaks <- dir("./data/ATAC_peaks_count")
-peaks_path <- paste0("./data/ATAC_peaks_count/", peaks)
-my_peaks <- lapply(peaks_path, ChIPQC:::GetGRanges, simple = T)
-my_peaks
-# [[1]]
-# GRanges object with 19273 ranges and 0 metadata columns:
-#           seqnames            ranges strand
-#              <Rle>         <IRanges>  <Rle>
-#       [1]     chr1   3672288-3672369      *
-#       [2]     chr1   3994901-3995006      *
-#       [3]     chr1   4142676-4142762      *
-#       [4]     chr1   4571603-4571748      *
-#       [5]     chr1   4571832-4572068      *
-#       ...      ...               ...    ...
-#   [19269]     chrY 90767896-90767990      *
-#   [19270]     chrY 90773333-90773411      *
-#   [19271]     chrY 90784957-90785094      *
-#   [19272]     chrY 90801538-90801651      *
-#   [19273]     chrY 90813083-90813224      *
-#   -------
-#   seqinfo: 22 sequences from an unspecified genome; no seqlengths
-# 
-# [[2]]
-# GRanges object with 19613 ranges and 0 metadata columns:
-#           seqnames            ranges strand
-#              <Rle>         <IRanges>  <Rle>
-#       [1]     chr1   3994858-3994957      *
-#       [2]     chr1   4560267-4560343      *
-#       [3]     chr1   4571695-4572204      *
-#       [4]     chr1   4785443-4785546      *
-#       [5]     chr1   4785789-4785866      *
-#       ...      ...               ...    ...
-#   [19609]     chrY 90761403-90761489      *
-#   [19610]     chrY 90767890-90767992      *
-#   [19611]     chrY 90784945-90785099      *
-#   [19612]     chrY 90808761-90808841      *
-#   [19613]     chrY 90813062-90813232      *
-#   -------
-#   seqinfo: 22 sequences from an unspecified genome; no seqlengths
-# 
-# [[3]]
-# GRanges object with 29497 ranges and 0 metadata columns:
-#           seqnames            ranges strand
-#              <Rle>         <IRanges>  <Rle>
-#       [1]     chr1   3433991-3434095      *
-#       [2]     chr1   3575895-3575972      *
-#       [3]     chr1   3670961-3671038      *
-#       [4]     chr1   3671534-3671880      *
-#       [5]     chr1   3831077-3831155      *
-#       ...      ...               ...    ...
-#   [29493]     chrY 90773923-90774009      *
-#   [29494]     chrY 90784955-90785077      *
-#   [29495]     chrY 90801505-90801611      *
-#   [29496]     chrY 90807391-90807495      *
-#   [29497]     chrY 90813057-90813234      *
-#   -------
-#   seqinfo: 22 sequences from an unspecified genome; no seqlengths
-# 
-# [[4]]
-# GRanges object with 36188 ranges and 0 metadata columns:
-#           seqnames            ranges strand
-#              <Rle>         <IRanges>  <Rle>
-#       [1]     chr1   3130336-3130413      *
-#       [2]     chr1   3400112-3400250      *
-#       [3]     chr1   3433954-3434042      *
-#       [4]     chr1   3515020-3515102      *
-#       [5]     chr1   3575937-3576078      *
-#       ...      ...               ...    ...
-#   [36184]     chrY 90784214-90784298      *
-#   [36185]     chrY 90784966-90785099      *
-#   [36186]     chrY 90785710-90785798      *
-#   [36187]     chrY 90801538-90801651      *
-#   [36188]     chrY 90829708-90829782      *
-#   -------
-#   seqinfo: 22 sequences from an unspecified genome; no seqlengths
-# 
-# [[5]]
-# GRanges object with 43393 ranges and 0 metadata columns:
-#           seqnames            ranges strand
-#              <Rle>         <IRanges>  <Rle>
-#       [1]     chr1   3671695-3671781      *
-#       [2]     chr1   4466776-4466928      *
-#       [3]     chr1   4602508-4602618      *
-#       [4]     chr1   4623435-4623519      *
-#       [5]     chr1   4735672-4735746      *
-#       ...      ...               ...    ...
-#   [43389]     chrY 90784944-90785099      *
-#   [43390]     chrY 90793946-90794025      *
-#   [43391]     chrY 90801529-90801640      *
-#   [43392]     chrY 90805058-90805151      *
-#   [43393]     chrY 90812961-90813237      *
-#   -------
-#   seqinfo: 22 sequences from an unspecified genome; no seqlengths
-# 
-# [[6]]
-# GRanges object with 27527 ranges and 0 metadata columns:
-#           seqnames            ranges strand
-#              <Rle>         <IRanges>  <Rle>
-#       [1]     chr1   4471412-4471506      *
-#       [2]     chr1   4785622-4785781      *
-#       [3]     chr1   4786096-4786271      *
-#       [4]     chr1   4807619-4807973      *
-#       [5]     chr1   4857557-4857828      *
-#       ...      ...               ...    ...
-#   [27523]     chrY 90773918-90774009      *
-#   [27524]     chrY 90784957-90785099      *
-#   [27525]     chrY 90801504-90801596      *
-#   [27526]     chrY 90807482-90807562      *
-#   [27527]     chrY 90813071-90813231      *
-#   -------
-#   seqinfo: 22 sequences from an unspecified genome; no seqlengths
 
-##----We return a single set of non-redundant peaks----
-all_peaks_set <- GRangesList(my_peaks) |> unlist() |> reduce()
-class(all_peaks_set)
-# [1] "GRanges"
-# attr(,"package")
-# [1] "GenomicRanges"
-# IRanges::reduce: transform all the ranges together as a set to produce a new set of ranges. 
+(peak_dir <- dir("peak_data", full.name = T)) # 6 samples
 
-# GRangesList(my_peaks) |> unlist() 
-# GRanges object with 175491 ranges and 0 metadata columns:
-#            seqnames            ranges strand
-#               <Rle>         <IRanges>  <Rle>
-#        [1]     chr1   3672288-3672369      *
-#        [2]     chr1   3994901-3995006      *
-#        [3]     chr1   4142676-4142762      *
-#        [4]     chr1   4571603-4571748      *
-#        [5]     chr1   4571832-4572068      *
-#        ...      ...               ...    ...
-#   [175487]     chrY 90773918-90774009      *
-#   [175488]     chrY 90784957-90785099      *
-#   [175489]     chrY 90801504-90801596      *
-#   [175490]     chrY 90807482-90807562      *
-#   [175491]     chrY 90813071-90813231      *
+peak_all <- lapply(peak_dir, ChIPQC:::GetGRanges, simple = T)
+lapply(1:length(peak_all), function (i) peak_all[[i]] |> head(3))
+for (i in 1:length(peak_all)) { print(peak_all[[i]] |> head(3)) }
+# GRanges object with 3 ranges and 0 metadata columns:
+#       seqnames          ranges strand
+#          <Rle>       <IRanges>  <Rle>
+#   [1]     chr1 3672288-3672369      *
+#   [2]     chr1 3994901-3995006      *
+#   [3]     chr1 4142676-4142762      *
 #   -------
 #   seqinfo: 22 sequences from an unspecified genome; no seqlengths
+# GRanges object with 3 ranges and 0 metadata columns:
+#       seqnames          ranges strand
+#          <Rle>       <IRanges>  <Rle>
+#   [1]     chr1 3994858-3994957      *
+#   [2]     chr1 4560267-4560343      *
+#   [3]     chr1 4571695-4572204      *
+#   -------
+#   seqinfo: 22 sequences from an unspecified genome; no seqlengths
+# GRanges object with 3 ranges and 0 metadata columns:
+#       seqnames          ranges strand
+#          <Rle>       <IRanges>  <Rle>
+#   [1]     chr1 3433991-3434095      *
+#   [2]     chr1 3575895-3575972      *
+#   [3]     chr1 3670961-3671038      *
+#   -------
+#   seqinfo: 22 sequences from an unspecified genome; no seqlengths
+# GRanges object with 3 ranges and 0 metadata columns:
+#       seqnames          ranges strand
+#          <Rle>       <IRanges>  <Rle>
+#   [1]     chr1 3130336-3130413      *
+#   [2]     chr1 3400112-3400250      *
+#   [3]     chr1 3433954-3434042      *
+#   -------
+#   seqinfo: 22 sequences from an unspecified genome; no seqlengths
+# GRanges object with 3 ranges and 0 metadata columns:
+#       seqnames          ranges strand
+#          <Rle>       <IRanges>  <Rle>
+#   [1]     chr1 3671695-3671781      *
+#   [2]     chr1 4466776-4466928      *
+#   [3]     chr1 4602508-4602618      *
+#   -------
+#   seqinfo: 22 sequences from an unspecified genome; no seqlengths
+# GRanges object with 3 ranges and 0 metadata columns:
+#       seqnames          ranges strand
+#          <Rle>       <IRanges>  <Rle>
+#   [1]     chr1 4471412-4471506      *
+#   [2]     chr1 4785622-4785781      *
+#   [3]     chr1 4786096-4786271      *
+#   -------
+#   seqinfo: 22 sequences from an unspecified genome; no seqlengths
+```
 
-# GRangesList(my_peaks) |> unlist() |> reduce()
+
+## Obtain a set of non-redundant peaks
+```{r}
+(peak_set <- GRangesList(peak_all) |> unlist() |> reduce(min.gapwidth=1L))
+# reduce first orders the ranges in x from left to right, then merges the overlapping or adjacent ones.
+# min.gapwidth: Ranges separated by a gap of at least min.gapwidth positions are not merged.
+
 # GRanges object with 89769 ranges and 0 metadata columns:
 #           seqnames            ranges strand
 #              <Rle>         <IRanges>  <Rle>
@@ -170,50 +96,67 @@ class(all_peaks_set)
 #   -------
 #   seqinfo: 22 sequences from an unspecified genome; no seqlengths
 
-##----*We estimate how often each of these non-redundant peaks occurs in each sample----
-overlap <- list()
-for (i in 1:length(my_peaks)) {
-  overlap[[i]] <- all_peaks_set %over% my_peaks[[i]]
-}
-# length(my_peaks): 6
-# Finding interval overlaps between two "range-based" objects: a query and a subject
+class(peak_set)
+# [1] "GRanges"
+# attr(,"package")
+# [1] "GenomicRanges"
+# IRanges::reduce: transform all the ranges together as a set to produce a new set of ranges. 
+```
+
+
+## Filter the non-redundant peaks
+```{r}
+##----We estimate how often each of these non-redundant peaks occurs in each sample----
+overlap_logic <- lapply(peak_all, function(peak_each) peak_set %over% peak_each)
 # query %over% subject; *if query overlaps with subject, return T; otherwise, return F.
-overlap_mat <- do.call(cbind, overlap)
+# Search for interval overlaps between two "range-based" objects: a query and a subject
+
+overlap_mat <- do.call(cbind, overlap_logic)
 dim(overlap_mat) # Return a T/F matrix with 89769 rows and 6 columns
-colnames(overlap_mat) <- basename(peaks)
-mcols(all_peaks_set) <- overlap_mat # Assign overlap_mat as metadata columns of all_peaks_set
+colnames(overlap_mat) <- basename(dir("peak_data"))
+overlap_mat[1:6, 1:6]
+mcols(peak_set) <- overlap_mat # Assign overlap_mat as metadata columns of all_peaks_set
 
-all_peaks_set[1:2, ]
+peak_set[1:2, ]
 
-##----We remove peaks found in blacklists and those on ChrM (mitochondrial chromosome) before conducting tests to eliminate the possibility of artifact differential call results----
-blacklist <- import.bed("./data/ATAC_blacklists/ENCFF547MET.bed.gz")
-eligble_peak <- all_peaks_set[(!all_peaks_set %over% blacklist) & (seqnames(all_peaks_set) != "chrM")]
-eligble_peak
+##----*We remove peaks found in the mm10 blacklist and on chrM (mitochondrial chromosome) before conducting differential tests, to eliminate the possibility of artifact differential call results----
+blacklist_mm10 <- import.bed("peak_data/ENCFF547MET.bed.gz")
+(peak_set_filter <- peak_set[(!peak_set %over% blacklist_mm10) & (seqnames(peak_set) != "chrM")])
 
-##----We determine how many times each of our non-redundant peaks appears in the samples----
-elementMetadata(eligble_peak)
+##----*We determine how many times each of our non-redundant/reduced peaks appears in the 6 samples, and select peaks found in a minimum of 2 samples----
+mcols(peak_set_filter)
 # DataFrame with 89654 rows and 6 columns
-peak_count <- elementMetadata(eligble_peak) |> as.data.frame() |> rowSums()
-eligble_peak_select <- eligble_peak[peak_count >= 2, ]
-eligble_peak_select # GRanges object with 36320 ranges and 6 metadata columns
+peak_count_across_samples <- mcols(peak_set_filter) |> as.data.frame() |> rowSums()
+table(peak_count_across_samples)
+(peak_set_filter_2 <- peak_set_filter[peak_count_across_samples >= 2, ])
+# GRanges object with 36320 ranges and 6 metadata columns
+```
 
-##----We count paired reads landing in peaks----
+
+## Estimate the number of reads affiliated with each non-redundant peak region
+```{r}
+##----*We count paired reads landing in unique/non-redundant/reduced peak regions that are found in a minimum of 2 samples----
 library(GenomicAlignments)
-bam2count <- dir("./data/ATAC_BAM/", full.names = T, pattern = "*.\\.bam$")
+bam2count <- dir("bam_data/", full.names = T, pattern = "*.\\.bam$")
 # *: Match any sequence of characters.
 # \\.: Match a literal dot (.) character. The double backslash (\\) is used to escape the dot because dot has a special meaning in regular expressions.
 # bam$: Match the string "bam" at the end of a file name, followed by the end of the line.
 
-my_count <- summarizeOverlaps(features = eligble_peak_select, 
-                              reads = bam2count, 
-                              singleEnd = F)
+read_count_per_peak <- summarizeOverlaps(features = peak_set_filter_2, 
+                                         reads = bam2count, 
+                                         singleEnd = F)
 # features is A GRanges or a GRangesList object of genomic regions of interest.
-colnames(my_count) <- c("hind_brain_1", "hind_brain_2", "kidney_1", "kidney_2", "liver_1", "liver_2")
+colnames(read_count_per_peak) <- c("hind_brain_1", "hind_brain_2", "kidney_1", "kidney_2", "liver_1", "liver_2")
+save(read_count_per_peak, 'peak_data/read_count_per_peak.RData') # Suitable for BMAseq
+```
 
+
+## Run `DESeq2`-based differential tests to examine changes in read counts of non-redundant peaks in open regions between one condition and another condition
+```{r}
 ##----We run DESeq2 for deriving differential ATACseq peaks----
 library(DESeq2)
-load("./data/my_count.RData")
-atac_count <- myCounts
+load("peak_data/read_count_per_peak.RData")
+atac_count <- read_count_per_peak
 meta_data <- data.frame(Group = factor(c("hind_brain", "hind_brain", "kidney", "kidney", "liver", "liver")),
                         row.names = colnames(atac_count))
 
@@ -224,7 +167,7 @@ atac_dds <- DESeqDataSetFromMatrix(countData = assay(atac_count),
 atac_dds <- DESeq(atac_dds)
 # estimating size factors
 # estimating dispersions
-# gene-wise dispersion estimates
+# gene-wise dispersion estimates # This should be changed into peak-wise dispersion estimates
 # mean-dispersion relationship
 # -- note: fitType='parametric', but the dispersion trend was not well captured by the
 #   function: y = a/x + b, and a local regression fit was automatically substituted.
@@ -232,10 +175,10 @@ atac_dds <- DESeq(atac_dds)
 # final dispersion estimates
 # fitting model and testing
 
-kidney_vs_hindbrain <- results(atac_dds, contrast = c("Group", "kidney", "hind_brain"), format = "GRanges")
+(kidney_vs_hindbrain <- results(atac_dds, contrast = c("Group", "kidney", "hind_brain"), format = "GRanges"))
 # format	
 # character, either "DataFrame", "GRanges", or "GRangesList", whether the results should be printed as a DESeqResults DataFrame, or if the results DataFrame should be attached as metadata columns to the **GRanges** or GRangesList rowRanges of the DESeqDataSet. If the rowRanges is a GRangesList, and GRanges is requested, the **range of each gene will be returned**
-# This GRanges format is very important, as it allows us to subset the results to specific open regions (e.g., promoters)
+# ! This GRanges format is very important, as it allows us to subset the results to specific open regions (e.g., promoters)
 
 # contrast	
 # this argument specifies what comparison to extract from the object to build a results table. one of either:
@@ -243,58 +186,38 @@ kidney_vs_hindbrain <- results(atac_dds, contrast = c("Group", "kidney", "hind_b
 # a list of 2 character vectors: the names of the fold changes for the numerator, and the names of the fold changes for the denominator. these names should be elements of resultsNames(object). if the list is length 1, a second element is added which is the empty character vector, character(). (more general case, can be to combine interaction terms and main effects)
 # a numeric contrast vector with one element for each element in resultsNames(object) (most general case)
 
-kidney_vs_hindbrain_order <- kidney_vs_hindbrain[order(kidney_vs_hindbrain$pvalue)]
-kidney_vs_hindbrain_order
+(kidney_vs_hindbrain_order <- kidney_vs_hindbrain[order(kidney_vs_hindbrain$pvalue)])
 
-# GRanges object with 36320 ranges and 6 metadata columns:
-#           seqnames              ranges strand |  baseMean log2FoldChange     lfcSE      stat      pvalue        padj
-#              <Rle>           <IRanges>  <Rle> | <numeric>      <numeric> <numeric> <numeric>   <numeric>   <numeric>
-#       [1]     chr4   22488379-22488925      * |   96.8199       -3.48476  0.272029 -12.81021 1.43736e-37 5.01798e-33
-#       [2]     chr1   24613428-24614006      * |  285.2533        1.46558  0.161832   9.05623 1.35040e-19 2.35719e-15
-#       [3]     chrX 143483004-143483128      * | 1130.4129       -1.22535  0.148502  -8.25140 1.56553e-16 1.82181e-12
-#       [4]     chr2 150644059-150644430      * |   36.0214       -4.17235  0.521845  -7.99539 1.29168e-15 1.12735e-11
-#       [5]    chr15   66239217-66239619      * |   32.3408       -4.44791  0.583590  -7.62164 2.50474e-14 1.74886e-10
-#       ...      ...                 ...    ... .       ...            ...       ...       ...         ...         ...
-#   [36316]     chrX   93897236-93897401      * |   2.85026              0   2.36122         0           1           1
-#   [36317]     chrX 100475652-100475834      * |   2.19112              0   2.56424         0           1          NA
-#   [36318]     chrX 153334237-153334437      * |   2.26341              0   2.54823         0           1          NA
-#   [36319]     chrX 164197795-164198006      * |   4.02077              0   2.22715         0           1           1
-#   [36320]     chrX 169047684-169047857      * |   2.55896              0   2.42940         0           1          NA
-#   -------
-#   seqinfo: 22 sequences from an unspecified genome; no seqlengths
-
-kidney_vs_hindbrain_up_region <- kidney_vs_hindbrain_order[kidney_vs_hindbrain_order$log2FoldChange > 0, ][1:500]
-kidney_vs_hindbrain_down_region <- kidney_vs_hindbrain_order[kidney_vs_hindbrain_order$log2FoldChange < 0, ][1:500]
+(kidney_vs_hindbrain_up_region_500 <- kidney_vs_hindbrain_order[kidney_vs_hindbrain_order$log2FoldChange > 0, ][1:500])
+(kidney_vs_hindbrain_down_region_500 <- kidney_vs_hindbrain_order[kidney_vs_hindbrain_order$log2FoldChange < 0, ][1:500])
 
 ##----We subset results to open regions within promoters----
 library(TxDb.Mmusculus.UCSC.mm10.knownGene)
-promoter_overlap <- promoters(x = TxDb.Mmusculus.UCSC.mm10.knownGene, 
+(promoter_region <- promoters(x = TxDb.Mmusculus.UCSC.mm10.knownGene, 
                               upstream = 500, 
-                              downstream = 500)
-# upstream defines the number of nucleotides toward the 5' end and downstream defines the number toward the 3' end, relative to the transcription start site (TSS). Promoter regions are formed by merging the upstream and downstream ranges.
+                              downstream = 500))
+# **upstream** defines the number of nucleotides toward the 5' end, and **downstream** defines the number toward the 3' end, relative to the transcription start site (TSS). Promoter regions are formed by merging the upstream and downstream ranges.
+# promoters: returns an object of the same type and length as x containing promoter ranges. Promoter ranges extend around the transcription start site (TSS) which is defined as start(x) for ranges on the + or * strand and as end(x) for ranges on the - strand. The upstream and downstream arguments define the number of nucleotides in the 5' and 3' direction, respectively. More precisely, the output range is defined as
+# (start(x) - upstream) to (start(x) + downstream - 1) -> for ranges on the + or * strand, and as
+# (end(x) - downstream + 1) to (end(x) + upstream) -> for ranges on the - strand.
 
-promoter_overlap
-# GRanges object with 142446 ranges and 2 metadata columns:
-#                              seqnames          ranges strand |     tx_id              tx_name
-#                                 <Rle>       <IRanges>  <Rle> | <integer>          <character>
-#   ENSMUST00000193812.1           chr1 3072753-3073752      + |         1 ENSMUST00000193812.1
-#   ENSMUST00000082908.1           chr1 3101516-3102515      + |         2 ENSMUST00000082908.1
-#   ENSMUST00000192857.1           chr1 3252257-3253256      + |         3 ENSMUST00000192857.1
-#   ENSMUST00000161581.1           chr1 3466087-3467086      + |         4 ENSMUST00000161581.1
-#   ENSMUST00000192183.1           chr1 3531295-3532294      + |         5 ENSMUST00000192183.1
-#                    ...            ...             ...    ... .       ...                  ...
-#   ENSMUST00000184505.1 chrUn_GL456381     16222-17221      - |    142442 ENSMUST00000184505.1
-#   ENSMUST00000178705.1 chrUn_GL456385     30743-31742      + |    142443 ENSMUST00000178705.1
-#   ENSMUST00000180206.1 chrUn_GL456385     32219-33218      + |    142444 ENSMUST00000180206.1
-#   ENSMUST00000179505.7 chrUn_JH584304     59168-60167      - |    142445 ENSMUST00000179505.7
-#   ENSMUST00000178343.1 chrUn_JH584304     59191-60190      - |    142446 ENSMUST00000178343.1
-#   -------
-#   seqinfo: 66 sequences (1 circular) from mm10 genome
+  #                            seqnames          ranges strand |     tx_id              tx_name
+  #                               <Rle>       <IRanges>  <Rle> | <integer>          <character>
+  # ENSMUST00000193812.1           chr1 3072753-3073752      + |         1 ENSMUST00000193812.1
+  # ENSMUST00000082908.1           chr1 3101516-3102515      + |         2 ENSMUST00000082908.1
+  # ENSMUST00000192857.1           chr1 3252257-3253256      + |         3 ENSMUST00000192857.1
+  # ENSMUST00000161581.1           chr1 3466087-3467086      + |         4 ENSMUST00000161581.1
+  # ENSMUST00000192183.1           chr1 3531295-3532294      + |         5 ENSMUST00000192183.1
+  #                  ...            ...             ...    ... .       ...                  ...
+  # ENSMUST00000184505.1 chrUn_GL456381     16222-17221      - |    142442 ENSMUST00000184505.1
+  # ENSMUST00000178705.1 chrUn_GL456385     30743-31742      + |    142443 ENSMUST00000178705.1
+  # ENSMUST00000180206.1 chrUn_GL456385     32219-33218      + |    142444 ENSMUST00000180206.1
+  # ENSMUST00000179505.7 chrUn_JH584304     59168-60167      - |    142445 ENSMUST00000179505.7
+  # ENSMUST00000178343.1 chrUn_JH584304     59191-60190      - |    142446 ENSMUST00000178343.1
+  # -------
+  # seqinfo: 66 sequences (1 circular) from mm10 genome
 
-kidney_vs_hindbrain_order_promoter <- kidney_vs_hindbrain_order[
-  (!is.na(kidney_vs_hindbrain_order$padj) & kidney_vs_hindbrain_order$padj < 0.05) & kidney_vs_hindbrain_order %over% promoter_overlap, 
-  ]
-kidney_vs_hindbrain_order_promoter
+(kidney_vs_hindbrain_order_promoter <- kidney_vs_hindbrain_order[(!is.na(kidney_vs_hindbrain_order$padj)) & (kidney_vs_hindbrain_order$padj < 0.05) & (kidney_vs_hindbrain_order %over% promoter_region), ])
 # GRanges object with 571 ranges and 6 metadata columns:
 #         seqnames            ranges strand |  baseMean log2FoldChange     lfcSE      stat      pvalue        padj
 #            <Rle>         <IRanges>  <Rle> | <numeric>      <numeric> <numeric> <numeric>   <numeric>   <numeric>
@@ -314,32 +237,25 @@ kidney_vs_hindbrain_order_promoter
 
 # Make a HTML table to review the results in IGV
 library(tracktables)
-a <- makebedtable(kidney_vs_hindbrain_order_promoter, "kidney_vs_hindbrain_order_promoter.html", getwd())
+a <- makebedtable(kidney_vs_hindbrain_order_promoter, "kidney_vs_hindbrain_order_promoter.html", 'peak_result')
 browseURL(a)
+```
 
-##----We annotate our differential ATACseq regions to genes----
+
+## Annotate differential ATACseq regions with gene information
+```{r}
 library(ChIPseeker)
 kidney_vs_hindbrain_order_promoter_annotate <- annotatePeak(
   peak = kidney_vs_hindbrain_order_promoter,
   TxDb = TxDb.Mmusculus.UCSC.mm10.knownGene, 
   verbose = F)
-atac_differential_binding <- as.data.frame(kidney_vs_hindbrain_order_promoter_annotate)
-atac_differential_binding |> tail()
-#     seqnames    start      end width strand  baseMean log2FoldChange     lfcSE      stat      pvalue       padj       annotation geneChr geneStart  geneEnd
-# 566     chr6  3385046  3385139    94      *  4.021103      5.0872542 1.7162279  2.964207 0.003034644 0.04873158 Promoter (<=1kb)       6   3376950  3385006
-# 567     chr5 77265720 77265949   230      * 16.821678      1.8593048 0.6276724  2.962222 0.003054279 0.04897929 Promoter (<=1kb)       5  77265491 77286432
-# 568     chr5 91402874 91403158   285      * 10.006383      2.5855403 0.8730432  2.961526 0.003061185 0.04904498 Promoter (<=1kb)       5  91357261 91402994
-# 569    chr12 11436515 11436838   324      * 26.041863     -1.1880090 0.4013677 -2.959902 0.003077372 0.04923654 Promoter (<=1kb)      12  11325242 11436613
-# 570    chr11 78550637 78550963   327      * 73.561172     -0.8073017 0.2732091 -2.954886 0.003127844 0.04988405 Promoter (<=1kb)      11  78541817 78550777
-# 571    chr17 44078643 44079094   452      * 28.985996     -1.3011045 0.4403507 -2.954701 0.003129726 0.04989126 Promoter (<=1kb)      17  44078813 44086567
-#     geneLength geneStrand geneId          transcriptId distanceToTSS
-# 566       8057          2 209086  ENSMUST00000201638.1           -40
-# 567      20942          1  19712 ENSMUST00000080359.11           229
-# 568      45734          2  12223  ENSMUST00000121044.5             0
-# 569     111372          2  26950  ENSMUST00000072299.6             0
-# 570       8961          2  69071  ENSMUST00000103242.4             0
-# 571       7755          1  83965  ENSMUST00000154166.7             0
+atac_promoter_differential_binding <- as.data.frame(kidney_vs_hindbrain_order_promoter_annotate)
+atac_promoter_differential_binding |> tail()
+```
 
+
+## Detect functional enrichment of differential ATACseq regions
+```{r}
 ##----We detect functional enrichment of differential ATACseq regions----
 library(clusterProfiler)
 atac_go <- enrichGO(gene = atac_differential_binding$geneId, 
@@ -347,5 +263,16 @@ atac_go <- enrichGO(gene = atac_differential_binding$geneId,
                     ont = "BP",
                     maxGSSize = 5000) # maximal size of genes annotated for testing
 atac_go@result |> View()
+```
+
+
+## Save DESeq2 and enrichGO results in an excel workbook
+```{r}
+wb <- createWorkbook()
+addWorksheet(wb, sheetName = "Differential_Peaks_Annotated")
+addWorksheet(wb, sheetName = "Functional_Enrichment")
+writeData(wb, sheet = 1, atac_promoter_differential_binding)
+writeData(wb, sheet = 2, atac_go)
+saveWorkbook(wb, file = "peak_result/promoter_diff_atac_result.xlsx")
 ```
 
