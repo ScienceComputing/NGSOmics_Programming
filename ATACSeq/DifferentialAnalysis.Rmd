@@ -256,12 +256,11 @@ atac_promoter_differential_binding |> tail()
 
 ## Detect functional enrichment of differential ATACseq regions
 ```{r}
-##----We detect functional enrichment of differential ATACseq regions----
 library(clusterProfiler)
 atac_go <- enrichGO(gene = atac_differential_binding$geneId, 
                     OrgDb = "org.Mm.eg.db",
                     ont = "BP",
-                    maxGSSize = 5000) # maximal size of genes annotated for testing
+                    maxGSSize = 5000) # Maximal size of genes annotated for testing
 atac_go@result |> View()
 ```
 
