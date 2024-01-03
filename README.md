@@ -52,7 +52,7 @@ This repository houses coding practice, assignment/competition solutions based o
 
 
 ### Analyze ATAC-seq data
-  - [Practical guidance](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-1929-3)
+  - [Practical guide](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-1929-3)
   - Run [ENCODE ATAC-seq pipeline](https://github.com/ScienceComputing/atac-seq-pipeline/blob/master/README.md) to perform alignment, quality assurance, peaking calling, and signal track generation
   - If we're interested in inspecting every step in each analytical phase, or even leveraging advanced/unique features of other tools that the current pipeline ignores, ...
   - For alignment and post-alignment phases, we can ...
@@ -73,9 +73,9 @@ This repository houses coding practice, assignment/competition solutions based o
     - Use clusterProfiler to [perform enrichment analysis of differential peak regions](ATACSeq/DifferentialAnalysis.Rmd)
     - However, functional insights gained by peak annotations can hardly illustrate what key regulators shape the transcription mechanism. 
   - So, to further infer transcription factors acting in peak regions, we can ...
-    - [Search and visualize motifs](ATACSeq/Search_Visualize_Motif.Rmd)
-    - [Map peaks to motifs](ATACSeq/IdentifyMotif.Rmd)
-    - [Analyze differences in motifs across conditions](ATACSeq/Detect_Difference_Motif.Rmd)
+    - Use MotifDb/JASPAR2022 and seqLogo/ggseqlogo, [Search and visualize motifs](ATACSeq/Search_Visualize_Motif.Rmd)
+    - Use motifmatchr to [map peaks to motifs](ATACSeq/IdentifyMotif.Rmd)
+    - Use chromVAR to [analyze differences in motifs across conditions](ATACSeq/Detect_Difference_Motif.Rmd)
 
 <hr>
 
