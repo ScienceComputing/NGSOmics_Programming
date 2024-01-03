@@ -19,6 +19,7 @@ output:
 [JASPAR](https://jaspar.elixir.no)
 [MotifDB](https://bioconductor.org/packages/release/bioc/vignettes/MotifDb/inst/doc/MotifDb.html)
 
+
 ## Structures and operations of motif databases
 ### MotifDb
 ```{r}
@@ -85,107 +86,141 @@ values(MotifDb)[12657, ]
 # Mmusculus-UniPROBE-Zscan4.UP00026 SCI09/Zscan4_pwm_pri..     UP00026    UniPROBE      Zscan4          NA          NA          NA            NA   Mmusculus            NA              NA      ZnF_C2H2          NA protein binding micr..    19443739
 
 ##----We retrieve the MotifList by restricting the metadata information----
-# Only select MotifList whose metadata includes CTCF
-ctcf <- query(object = MotifDb, 
-              andStrings = c("CTCF")) # CTCF must be found in the metadata
-ctcf
-# MotifDb object of length 24
+# Only select MotifList whose metadata includes FOX
+(fox <- query(object = MotifDb, 
+              andStrings = c("FOX"))) # CTCF must be found in the metadata
+
+# MotifDb object of length 353
 # | Created from downloaded public sources, last update: 2022-Mar-04
-# | 24 position frequency matrices from 10 sources:
-# |        HOCOMOCOv10:    3
-# | HOCOMOCOv11-core-A:    2
-# |              HOMER:    3
-# |        JASPAR_2014:    2
-# |        JASPAR_CORE:    1
-# |         jaspar2016:    2
-# |         jaspar2018:    3
-# |         jaspar2022:    5
-# |          jolma2013:    1
-# |       SwissRegulon:    2
-# | 4 organism/s
-# |           Hsapiens:   16
-# |      Dmelanogaster:    4
-# |          Mmusculus:    1
-# |              other:    3
-# Hsapiens-HOCOMOCOv10-CTCFL_HUMAN.H10MO.A 
-# Hsapiens-HOCOMOCOv10-CTCF_HUMAN.H10MO.A 
-# Mmusculus-HOCOMOCOv10-CTCF_MOUSE.H10MO.A 
-# Hsapiens-HOCOMOCOv11-core-A-CTCFL_HUMAN.H11MO.0.A 
-# Hsapiens-HOCOMOCOv11-core-A-CTCF_HUMAN.H11MO.0.A 
+# | 353 position frequency matrices from 17 sources:
+# |    FlyFactorSurvey:    1
+# |        HOCOMOCOv10:   47
+# | HOCOMOCOv11-core-A:    8
+# | HOCOMOCOv11-core-B:    3
+# | HOCOMOCOv11-core-C:    5
+# | HOCOMOCOv11-secondary-B:    1
+# | HOCOMOCOv11-secondary-D:   11
+# |              HOMER:   14
+# |               hPDI:    4
+# |        JASPAR_2014:   14
+# |        JASPAR_CORE:   10
+# |         jaspar2016:   40
+# |         jaspar2018:   43
+# |         jaspar2022:   68
+# |          jolma2013:   51
+# |       SwissRegulon:   28
+# |           UniPROBE:    5
+# | 10 organism/s
+# |           Hsapiens:  224
+# |          Mmusculus:   57
+# |                 NA:   20
+# |        Scerevisiae:   12
+# |        Rnorvegicus:   11
+# |      Dmelanogaster:    7
+# |              other:   22
+# Dmelanogaster-FlyFactorSurvey-foxo_SANGER_10_FBgn0038197 
+# Hsapiens-HOCOMOCOv10-FOXA1_HUMAN.H10MO.A 
+# Hsapiens-HOCOMOCOv10-FOXA2_HUMAN.H10MO.A 
+# Hsapiens-HOCOMOCOv10-FOXA3_HUMAN.H10MO.C 
+# Hsapiens-HOCOMOCOv10-FOXB1_HUMAN.H10MO.D 
 # ...
-# Hsapiens-jaspar2022-CTCF-MA1929.1 
-# Hsapiens-jaspar2022-CTCF-MA1930.1 
-# Hsapiens-jolma2013-CTCF 
-# Hsapiens-SwissRegulon-CTCFL.SwissRegulon 
-# Hsapiens-SwissRegulon-CTCF.SwissRegulon 
+# Mmusculus-UniPROBE-Foxa2.UP00073 
+# Mmusculus-UniPROBE-Foxj1.UP00041 
+# Mmusculus-UniPROBE-Foxj3.UP00039 
+# Mmusculus-UniPROBE-Foxk1.UP00025 
+# Mmusculus-UniPROBE-Foxl1.UP00061 
 
-values(ctcf)[1, ]
+values(fox)[1, ]
 # DataFrame with 1 row and 15 columns
-#                                                 providerName          providerId  dataSource  geneSymbol      geneId  geneIdType   proteinId proteinIdType    organism sequenceCount bindingSequence bindingDomain    tfFamily         experimentType    pubmedID
-#                                                  <character>         <character> <character> <character> <character> <character> <character>   <character> <character>   <character>     <character>   <character> <character>            <character> <character>
-# Hsapiens-HOCOMOCOv10-CTCFL_HUMAN.H10MO.A CTCFL_HUMAN.H10MO.A CTCFL_HUMAN.H10MO.A HOCOMOCOv10       CTCFL          NA          NA      Q8NI51       UNIPROT    Hsapiens           500              NA            NA          NA low- and high-throug..    26586801
+#                                                                    providerName  providerId      dataSource  geneSymbol      geneId  geneIdType   proteinId proteinIdType      organism sequenceCount bindingSequence bindingDomain    tfFamily
+#                                                                     <character> <character>     <character> <character> <character> <character> <character>   <character>   <character>   <character>     <character>   <character> <character>
+# Dmelanogaster-FlyFactorSurvey-foxo_SANGER_10_FBgn0038197 foxo_SANGER_10_FBgn0.. FBgn0038197 FlyFactorSurvey        foxo       41709      ENTREZ      Q95V55       UNIPROT Dmelanogaster            20              NA     Fork_head          NA
+#                                                                  experimentType    pubmedID
+#                                                                     <character> <character>
+# Dmelanogaster-FlyFactorSurvey-foxo_SANGER_10_FBgn0038197 bacterial 1-hybrid, ..          NA
 
-values(ctcf)[10, ]
-# DataFrame with 1 row and 15 columns
-#                                    providerName  providerId  dataSource  geneSymbol      geneId  geneIdType   proteinId proteinIdType    organism sequenceCount bindingSequence     bindingDomain               tfFamily experimentType    pubmedID
-#                                     <character> <character> <character> <character> <character> <character> <character>   <character> <character>   <character>     <character>       <character>            <character>    <character> <character>
-# Hsapiens-JASPAR_2014-CTCF-MA0139.1         CTCF    MA0139.1 JASPAR_2014        CTCF       10664      ENTREZ      P49711       UNIPROT    Hsapiens           911              NA Zinc-coordinating BetaBetaAlpha-zinc f..       ChiP-seq    17512414
 
-# Only select MotifList whose metadata includes CTCF, hsapiens, jaspar2022
-ctcf_2 <- query(object = MotifDb, 
-                andStrings = c("CTCF", "hsapiens", "jaspar2022"))
-# MotifDb object of length 4
+# Only select MotifList whose metadata includes FOX, hsapiens, jaspar2022
+(fox_2 <- query(object = MotifDb, 
+                andStrings = c("FOX", "hsapiens", "jaspar2022")))
+
+# MotifDb object of length 34
 # | Created from downloaded public sources, last update: 2022-Mar-04
-# | 4 position frequency matrices from 1 source:
-# |         jaspar2022:    4
+# | 34 position frequency matrices from 1 source:
+# |         jaspar2022:   34
 # | 1 organism/s
-# |           Hsapiens:    4
-# Hsapiens-jaspar2022-CTCF-MA0139.1 
-# Hsapiens-jaspar2022-CTCFL-MA1102.2 
-# Hsapiens-jaspar2022-CTCF-MA1929.1 
-# Hsapiens-jaspar2022-CTCF-MA1930.1 
+# |           Hsapiens:   34
+# Hsapiens-jaspar2022-FOXF2-MA0030.1 
+# Hsapiens-jaspar2022-FOXD1-MA0031.1 
+# Hsapiens-jaspar2022-FOXH1-MA0479.1 
+# Hsapiens-jaspar2022-FOXP2-MA0593.1 
+# Hsapiens-jaspar2022-FOXG1-MA0613.1 
+# ...
+# Hsapiens-jaspar2022-FOXO1::ELK3-MA1955.1 
+# Hsapiens-jaspar2022-FOXO1::FLI1-MA1956.1 
+# Hsapiens-jaspar2022-FOXD3-MA0041.2 
+# Hsapiens-jaspar2022-FOXD2-MA0847.3 
+# Hsapiens-jaspar2022-FOXE1-MA1487.2 
 
-values(ctcf_2)[1, ]
+values(fox_2)[1, ]
 # DataFrame with 1 row and 15 columns
-#                                   providerName  providerId  dataSource  geneSymbol      geneId  geneIdType   proteinId proteinIdType    organism sequenceCount bindingSequence bindingDomain               tfFamily experimentType    pubmedID
-#                                    <character> <character> <character> <character> <character> <character> <character>   <character> <character>   <character>     <character>   <character>            <character>    <character> <character>
-# Hsapiens-jaspar2022-CTCF-MA0139.1     MA0139.1    MA0139.1  jaspar2022        CTCF          NA          NA          NA            NA    Hsapiens           913              NA            NA More than 3 adjacent..       ChIP-seq    17512414
+#                                    providerName  providerId  dataSource  geneSymbol      geneId  geneIdType   proteinId proteinIdType    organism sequenceCount bindingSequence bindingDomain    tfFamily experimentType    pubmedID
+#                                     <character> <character> <character> <character> <character> <character> <character>   <character> <character>   <character>     <character>   <character> <character>    <character> <character>
+# Hsapiens-jaspar2022-FOXF2-MA0030.1     MA0030.1    MA0030.1  jaspar2022       FOXF2          NA          NA          NA            NA    Hsapiens            28              NA            NA         FOX          SELEX     7957066
 ```
 
 
-### JASPAR
+### [JASPAR](https://jaspar.elixir.no)
+[JASPAR 2022: the 9th release of the open-access database of transcription factor binding profiles](https://academic.oup.com/nar/article/50/D1/D165/6446529)
 The JASPAR packages are updated more frequently, and may include motifs not captured in the MotifDb package. 
 ```{r}
 ##----We load JASPAR2022 database----
 BiocManager::install(version = "3.18")
 devtools::install_github("da-bar/JASPAR2022")
 library(JASPAR2022)
-JASPAR2022
 
-##----We use TFBStools to interact with JASPAR2022----
+##----We use TFBStools to access and manipulate information from JASPAR2022----
 library(TFBSTools)
-?getMatrixSet
-?getMatrixByID # Take the JASPAR database object and a JASPAR ID
-?getMatrixByName # Take the JASPAR database object and a transcription factor name
-gata2_mat <- getMatrixByName(JASPAR2022, "GATA2")
-class(gata2_mat)
+?getMatrixSet # This function fetches matrix data for all matrices in the database matching criteria defined by the named arguments and returns a PFMatrixList object
+?getMatrixByID # This method fetches matrix data under the given ID or name from the database and returns a XMatrix object.
+?getMatrixByName # This method fetches matrix data under the given ID or name from the database and returns a XMatrix object.
+hoxb1_mat <- getMatrixByName(x = JASPAR2022, name = "HOXB1") # name: transcription factor name; https://en.wikipedia.org/wiki/List_of_human_transcription_factors
+class(hoxb1_mat)
 # [1] "PFMatrix" # This is different from the common matrix in R
 # attr(,"package")
 # [1] "TFBSTools"
-NR2F1_mat <- getMatrixByID(JASPAR2022, "MA0017.1") # Select the exact motif
-ID(NR2F1_mat) # [1] "MA0017.1"
+ID(hoxb1_mat) # "UN0124.1"
+
+spi1_mat <- getMatrixByID(x = JASPAR2022, ID = "MA0080.1") # Select the exact motif ID of HOXB1; sourced from https://jaspar.elixir.no
+ID(spi1_mat) # "MA0080.1"
 
 ##----We retrieve the position frequency matrix----
-mat <- Matrix(NR2F1_mat)
-mat_2 <- as.matrix(NR2F1_mat)
+(mat <- Matrix(spi1_mat))
+# 
+#   [,1] [,2] [,3] [,4] [,5] [,6]
+# A   14    4    3   56   56    3
+# C   21    2    0    1    0   18
+# G   19   48   52    0    0   34
+# T    3    3    2    0    1    2
 
-#   [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12] [,13] [,14]
-# A    0    1   12    6    0    0    0    1    2     6     6     1     3     0
-# C    0    0    0    7   13    3    2    0    0     4     5    10     6     3
-# G    2   12    1    0    0    0    0    0   11     3     1     1     0     3
-# T   11    0    0    0    0   10   11   12    0     0     1     1     4     7
+mat_2 <- as.matrix(spi1_mat)
+mat == mat_2
+#   [,1] [,2] [,3] [,4] [,5] [,6]
+# A TRUE TRUE TRUE TRUE TRUE TRUE
+# C TRUE TRUE TRUE TRUE TRUE TRUE
+# G TRUE TRUE TRUE TRUE TRUE TRUE
+# T TRUE TRUE TRUE TRUE TRUE TRUE
 
-# Among 13 motifs, 11 of those motifs have the first position carrying T. The probability of T in the first position = 11/13
+# ! What do those numbers in the mat?
+# Among 57 motifs, 21 of those motifs have the first position carrying the nucleotide C. The probability of C in the first position = 21/57
+
+##----We transform a position frequency matrix into a position probability matrix----
+mat/colSums(mat)
+#         [,1]       [,2]       [,3]       [,4]       [,5]       [,6]
+# A 0.24561404 0.07017544 0.05263158 0.98245614 0.98245614 0.05263158
+# C 0.36842105 0.03508772 0.00000000 0.01754386 0.00000000 0.31578947
+# G 0.33333333 0.84210526 0.91228070 0.00000000 0.00000000 0.59649123
+# T 0.05263158 0.05263158 0.03508772 0.00000000 0.01754386 0.03508772
 
 ##----We retrieve sets of motifs----
 # opts: a search options list. 
@@ -196,54 +231,67 @@ mat_2 <- as.matrix(NR2F1_mat)
 opts <- list()
 opts[["collection"]] <- "CORE"
 opts[["tax_group"]] <- "vertebrates"
-motif_list <- getMatrixSet(JASPAR2022, opts)
-motif_list
+(motif_list <- getMatrixSet(x=JASPAR2022, opts=opts))
 # PFMatrixList of length 841
 # names(841): MA0004.1 MA0006.1 MA0019.1 MA0029.1 ... MA1633.2 MA1647.2 MA0597.2 MA1540.2
 ```
 
-## Visualize motifs
-A seqLogo illustrates the relative frequency of a base at each motif position by representing the base's size relative to other bases at that particular position.
-### MotifDb
+
+# Visualize motifs from 2 motif databases
+A `seqLogo` illustrates the relative frequency of a base at each motif position by representing the base's size relative to other bases at that particular position. The larger a base is at a position, the more likely this position carries this base.
+
+## MotifDb
 ```{r}
 library(seqLogo)
-ctcf[[1]] # This is the position probability matrix (PPM)
-#       1     2     3     4     5     6     7     8     9    10    11    12    13    14    15
-# A 0.100 0.162 0.302 0.072 0.012 0.786 0.024 0.122 0.914 0.012 0.376 0.022 0.028 0.024 0.096
-# C 0.356 0.214 0.100 0.826 0.966 0.024 0.620 0.494 0.010 0.008 0.010 0.022 0.002 0.016 0.818
-# G 0.122 0.406 0.436 0.050 0.012 0.108 0.336 0.056 0.048 0.976 0.602 0.606 0.962 0.880 0.038
-# T 0.422 0.218 0.162 0.052 0.010 0.082 0.020 0.328 0.028 0.004 0.012 0.350 0.008 0.080 0.048
-#      16    17    18    19
-# A 0.424 0.086 0.122 0.342
-# C 0.024 0.532 0.348 0.260
-# G 0.522 0.326 0.122 0.318
-# T 0.030 0.056 0.408 0.080
-seqLogo::seqLogo(pwm = ctcf[[1]], ic.scale = F) # ic.scale = F -> show the probability
-seqLogo::seqLogo(pwm = ctcf[[1]], ic.scale = T) # ic.scale = T -> help identify the important bases: positions with equal probabilities for each base A/T/C/G will score 0, while positions with only 1 possible base will score 2. 
-```
+fox[[1]] # Return a position probability matrix (PPM) per base
+#   1   2 3   4    5   6    7    8    9
+# A 0 0.1 0 0.0 0.15 0.6 0.05 0.10 0.55
+# C 0 0.0 0 0.0 0.00 0.0 0.55 0.15 0.15
+# G 0 0.9 0 0.2 0.05 0.0 0.00 0.60 0.30
+# T 1 0.0 1 0.8 0.80 0.4 0.40 0.15 0.00
+seqLogo::seqLogo(pwm = fox[[1]], ic.scale = F) # ic.scale = F -> show the probability
+seqLogo::seqLogo(pwm = fox[[1]], ic.scale = T) # Recommend ic.scale = T -> easily identify the important bases: positions with equal probabilities for each base A/T/C/G will score 0, while positions with only 1 possible base will score 2. 
 
-### JASPAR
-```{r}
-# Covert the position frequency matrix to the position probability matrix
-mat_prob <- mat/colSums(mat)
-mat_prob
-#        [,1]       [,2]       [,3]      [,4] [,5]      [,6]      [,7]       [,8]      [,9]     [,10]      [,11]      [,12]     [,13]     [,14]
-# A 0.0000000 0.07692308 0.92307692 0.4615385    0 0.0000000 0.0000000 0.07692308 0.1538462 0.4615385 0.46153846 0.07692308 0.2307692 0.0000000
-# C 0.0000000 0.00000000 0.00000000 0.5384615    1 0.2307692 0.1538462 0.00000000 0.0000000 0.3076923 0.38461538 0.76923077 0.4615385 0.2307692
-# G 0.1538462 0.92307692 0.07692308 0.0000000    0 0.0000000 0.0000000 0.00000000 0.8461538 0.2307692 0.07692308 0.07692308 0.0000000 0.2307692
-# T 0.8461538 0.00000000 0.00000000 0.0000000    0 0.7692308 0.8461538 0.92307692 0.0000000 0.0000000 0.07692308 0.07692308 0.3076923 0.5384615
-
-seqLogo::seqLogo(pwm = mat_prob, ic.scale = F) 
-seqLogo::seqLogo(pwm = mat_prob, ic.scale = T)
-
-# Alternative approach 1 - the resulting visuals are the same
-mat_icm <- toICM(NR2F1_mat) # Convert a raw frequency matrix (PFMatrix) to a information content matrix (ICMatrix).
-TFBSTools::seqLogo(x = mat_icm, ic.scale = F)
-TFBSTools::seqLogo(x = mat_icm, ic.scale = T)
-
-# Alternative approach 2
+# Alternative approach 2 - can customize the seqlogo graph under the ggplot2 framework
+# More info: https://omarwagih.github.io/ggseqlogo/
+devtools::install_github("omarwagih/ggseqlogo")
 library(ggseqlogo)
 library(ggplot2)
-ggseqlogo(mat) + # Either a position probability matrix or a position frequency matrix is OK
+ggseqlogo(fox[[1]], method = 'bits') + # position probability matrix
+  theme_minimal()
+ggseqlogo(fox[[1]], method = 'prob') + # position probability matrix
+  theme_minimal()
+```
+
+
+## JASPAR
+```{r}
+# Covert the position frequency matrix to the position probability matrix
+(spi1_mat_prob <- mat/colSums(mat))
+#         [,1]       [,2]       [,3]       [,4]       [,5]       [,6]
+# A 0.24561404 0.07017544 0.05263158 0.98245614 0.98245614 0.05263158
+# C 0.36842105 0.03508772 0.00000000 0.01754386 0.00000000 0.31578947
+# G 0.33333333 0.84210526 0.91228070 0.00000000 0.00000000 0.59649123
+# T 0.05263158 0.05263158 0.03508772 0.00000000 0.01754386 0.03508772
+
+seqLogo::seqLogo(pwm = spi1_mat_prob, ic.scale = F) 
+seqLogo::seqLogo(pwm = spi1_mat_prob, ic.scale = T)
+
+# Alternative approach 1: the resulting visuals are the same
+spi1_mat_icm <- toICM(mat) # Convert a raw frequency matrix (PFMatrix) to a information content matrix (ICMatrix).
+TFBSTools::seqLogo(x = spi1_mat_icm, ic.scale = F)
+TFBSTools::seqLogo(x = spi1_mat_icm, ic.scale = T)
+
+# Alternative approach 2 - can customize the seqlogo graph under the ggplot2 framework
+# The following 2 output graph are the same
+ggseqlogo(mat, method = 'prob') + # position frequency matrix 
+  theme_minimal()
+ggseqlogo(spi1_mat_prob, method = 'prob') + # position probability matrix
+  theme_minimal()
+
+# The following 2 output graph are the same
+ggseqlogo(mat, method = 'bits') + # position frequency matrix
+  theme_minimal()
+ggseqlogo(spi1_mat_prob, method = 'bits') + # position probability matrix
   theme_minimal()
 ```
