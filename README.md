@@ -52,7 +52,7 @@ This repository houses coding practice, assignment/competition solutions based o
 
 
 ### Analyze ATAC-seq data
-
+  - [Practical guidance](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-1929-3)
   - Run [ENCODE ATAC-seq pipeline](https://github.com/ScienceComputing/atac-seq-pipeline/blob/master/README.md) to perform alignment, quality assurance, peaking calling, and signal track generation
   - If we're interested in inspecting every step in each analytical phase, or even leveraging advanced/unique features of other tools that the current pipeline ignores, ...
   - For alignment and post-alignment phases, we can ...
