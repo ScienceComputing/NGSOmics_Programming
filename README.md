@@ -73,7 +73,7 @@ This repository houses coding practice, assignment/competition solutions based o
     - Use clusterProfiler to [perform enrichment analysis of differential peak regions](ATACSeq/DifferentialAnalysis.Rmd)
     - However, functional insights gained by peak annotations can hardly illustrate what key regulators shape the transcription mechanism. 
   - So, to further infer transcription factors acting in peak regions, we can ...
-    - Use MotifDb/JASPAR2022 and seqLogo/ggseqlogo to [search and visualize motifs](ATACSeq/Search_Visualize_Motif.Rmd)
+    - Use MotifDb/JASPAR2022 and seqLogo/ [recommend] ggseqlogo to [search and visualize motifs](ATACSeq/Search_Visualize_Motif.Rmd)
     - Use motifmatchr to [map peaks to motifs](ATACSeq/IdentifyMotif.Rmd)
     - Use chromVAR to [analyze differences in motifs across conditions](ATACSeq/Detect_Difference_Motif.Rmd)
 
