@@ -71,7 +71,8 @@ This repository houses coding practice, assignment/competition solutions based o
     - Use GenomicRanges and GenomicAlignments to [select and count non-redundant peaks](ATACSeq/DifferentialAnalysis.Rmd)
     - Use DESeq2/DESeq2-based DiffBind and ChIPseeker to [perform differential analysis with gene annotations](ATACSeq/DifferentialAnalysis.Rmd)
     - Use clusterProfiler to [perform enrichment analysis of differential peak regions](ATACSeq/DifferentialAnalysis.Rmd)
-  - For inferring transcription factors acting in peak regions, we can ...
+    - However, functional insights gained by peak annotations can hardly illustrate what key regulators are in shaping the transcription mechanism. 
+  - So, to further infer transcription factors acting in peak regions, we can ...
     - [Search and visualize motifs](ATACSeq/Search_Visualize_Motif.Rmd)
     - [Map peaks to motifs](ATACSeq/IdentifyMotif.Rmd)
     - [Analyze differences in motifs across conditions](ATACSeq/Detect_Difference_Motif.Rmd)
