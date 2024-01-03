@@ -7,7 +7,7 @@ output:
     code_folding: show
 ---
 
-# Find motifs
+# Find motifs (set of related, short sequences preferred by a given transcription factor)
 * Why identify motifs in ATAC-seq?
   + Motif analysis allows us to predict the potential binding sites for transcription factors (TFs) in the accessible chromatin regions. TFs play a crucial role in gene regulation by binding to specific DNA motifs. Identifying these motifs can help us understand which TFs are likely to be active in a given cell type or condition.
   + ATAC-seq data can reveal regions of open chromatin associated with regulatory elements such as enhancers and promoters. Motif analysis can help in pinpointing the specific motifs that are enriched in these regions. This information can be used to infer the regulatory networks and pathways active in the analyzed samples.
@@ -24,7 +24,9 @@ output:
 ```{r}
 ##----We load MotifDb----
 library(MotifDb)
-MotifDb # 12657 position/motif frequency matrices from 22 sources
+MotifDb 
+# MotifDb object of length 12657
+# | Created from downloaded public sources, last update: 2022-Mar-04
 class(MotifDb)
 # [1] "MotifList"
 # attr(,"package")
@@ -40,8 +42,15 @@ motif_names |> tail()
 # [5] "Mmusculus-UniPROBE-Zic3.UP00006"  
 # [6] "Mmusculus-UniPROBE-Zscan4.UP00026"
 
-##----We retrieve the second MotifList----
+##----We retrieve the last MotifList----
 MotifDb[12657]
+# MotifDb object of length 1
+# | Created from downloaded public sources, last update: 2022-Mar-04
+# | 1 position frequency matrices from 1 source:
+# |           UniPROBE:    1
+# | 1 organism/s
+# |          Mmusculus:    1
+# Mmusculus-UniPROBE-Zscan4.UP00026 
 
 ##----We retrieve the position probability matrix (PPM); each column represents the position of a motif----
 MotifDb[[12657]]
@@ -61,16 +70,24 @@ MotifDb[[12657]]
 # G 0.04292044 0.04448209 0.08537279 0.2172844 0.1958724
 # T 0.52996466 0.15678104 0.32298669 0.2346011 0.2148237
 
-colSums(MotifDb[[1]])
+colSums(MotifDb[[12657]])
+ # 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 
+ # 1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1 
 
-##----We retrieve a DataFrame of all the motif metadata information----
+##----We retrieve the motif metadata information----
 values(MotifDb) # DataFrame with 12657 rows and 15 columns
-# geneSymbol shows the gene name associated with each motif
+# ! geneSymbol shows the gene name of transcription factor associated with each motif
 
-##----We partially retrieve the MotifList by restricting the metadata information----
-# Only select MotifList with CTCF
+values(MotifDb)[12657, ]
+# DataFrame with 1 row and 15 columns
+#                                             providerName  providerId  dataSource  geneSymbol      geneId  geneIdType   proteinId proteinIdType    organism sequenceCount bindingSequence bindingDomain    tfFamily         experimentType    pubmedID
+#                                              <character> <character> <character> <character> <character> <character> <character>   <character> <character>   <character>     <character>   <character> <character>            <character> <character>
+# Mmusculus-UniPROBE-Zscan4.UP00026 SCI09/Zscan4_pwm_pri..     UP00026    UniPROBE      Zscan4          NA          NA          NA            NA   Mmusculus            NA              NA      ZnF_C2H2          NA protein binding micr..    19443739
+
+##----We retrieve the MotifList by restricting the metadata information----
+# Only select MotifList whose metadata includes CTCF
 ctcf <- query(object = MotifDb, 
-              andStrings = c("CTCF"))
+              andStrings = c("CTCF")) # CTCF must be found in the metadata
 ctcf
 # MotifDb object of length 24
 # | Created from downloaded public sources, last update: 2022-Mar-04
@@ -102,7 +119,19 @@ ctcf
 # Hsapiens-SwissRegulon-CTCFL.SwissRegulon 
 # Hsapiens-SwissRegulon-CTCF.SwissRegulon 
 
-# Only select MotifList with CTCF, hsapiens, jaspar2018
+values(ctcf)[1, ]
+# DataFrame with 1 row and 15 columns
+#                                                 providerName          providerId  dataSource  geneSymbol      geneId  geneIdType   proteinId proteinIdType    organism sequenceCount bindingSequence bindingDomain    tfFamily         experimentType    pubmedID
+#                                                  <character>         <character> <character> <character> <character> <character> <character>   <character> <character>   <character>     <character>   <character> <character>            <character> <character>
+# Hsapiens-HOCOMOCOv10-CTCFL_HUMAN.H10MO.A CTCFL_HUMAN.H10MO.A CTCFL_HUMAN.H10MO.A HOCOMOCOv10       CTCFL          NA          NA      Q8NI51       UNIPROT    Hsapiens           500              NA            NA          NA low- and high-throug..    26586801
+
+values(ctcf)[10, ]
+# DataFrame with 1 row and 15 columns
+#                                    providerName  providerId  dataSource  geneSymbol      geneId  geneIdType   proteinId proteinIdType    organism sequenceCount bindingSequence     bindingDomain               tfFamily experimentType    pubmedID
+#                                     <character> <character> <character> <character> <character> <character> <character>   <character> <character>   <character>     <character>       <character>            <character>    <character> <character>
+# Hsapiens-JASPAR_2014-CTCF-MA0139.1         CTCF    MA0139.1 JASPAR_2014        CTCF       10664      ENTREZ      P49711       UNIPROT    Hsapiens           911              NA Zinc-coordinating BetaBetaAlpha-zinc f..       ChiP-seq    17512414
+
+# Only select MotifList whose metadata includes CTCF, hsapiens, jaspar2022
 ctcf_2 <- query(object = MotifDb, 
                 andStrings = c("CTCF", "hsapiens", "jaspar2022"))
 # MotifDb object of length 4
@@ -115,7 +144,14 @@ ctcf_2 <- query(object = MotifDb,
 # Hsapiens-jaspar2022-CTCFL-MA1102.2 
 # Hsapiens-jaspar2022-CTCF-MA1929.1 
 # Hsapiens-jaspar2022-CTCF-MA1930.1 
+
+values(ctcf_2)[1, ]
+# DataFrame with 1 row and 15 columns
+#                                   providerName  providerId  dataSource  geneSymbol      geneId  geneIdType   proteinId proteinIdType    organism sequenceCount bindingSequence bindingDomain               tfFamily experimentType    pubmedID
+#                                    <character> <character> <character> <character> <character> <character> <character>   <character> <character>   <character>     <character>   <character>            <character>    <character> <character>
+# Hsapiens-jaspar2022-CTCF-MA0139.1     MA0139.1    MA0139.1  jaspar2022        CTCF          NA          NA          NA            NA    Hsapiens           913              NA            NA More than 3 adjacent..       ChIP-seq    17512414
 ```
+
 
 ### JASPAR
 The JASPAR packages are updated more frequently, and may include motifs not captured in the MotifDb package. 
