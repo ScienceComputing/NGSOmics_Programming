@@ -74,7 +74,7 @@ This repository houses coding practice, assignment/competition solutions based o
     - However, functional insights gained by peak annotations can hardly illustrate what key regulators shape the transcription mechanism. 
   - So, to further infer transcription factors acting in peak regions, we can ...
     - Use MotifDb/JASPAR2022 and seqLogo/ [recommend] ggseqlogo to [search and visualize motifs](ATACSeq/Search_Visualize_Motif.Rmd)
-    - Use motifmatchr (R wrapper of MOODS) to [map peaks to motifs](ATACSeq/IdentifyMotif.Rmd)
+    - Use motifmatchr (R wrapper of MOODS) to [map peaks to motifs](ATACSeq/IdentifyMotif.Rmd), DNA sequences preferred by transcription factors
     - Use chromVAR to [analyze differences in motifs across conditions](ATACSeq/Detect_Difference_Motif.Rmd)
 
 <hr>
