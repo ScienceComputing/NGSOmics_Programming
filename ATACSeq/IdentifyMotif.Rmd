@@ -7,62 +7,108 @@ output:
     code_folding: show
 ---
 
-## Map peaks to motifs
+# Map peaks to motifs using `motifmatchr`
 ```{r}
 library(motifmatchr)
 opts <- list()
 opts[["tax_group"]] <- "vertebrates"
 opts[["collection"]] <- "CORE"
 opts[["all_versions"]] <- F # Only include the latest version of a motif
-motifs_to_scan <- getMatrixSet(JASPAR2022, opts)
-?matchMotifs
+motifs_database <- getMatrixSet(JASPAR2022, opts)
+?matchMotifs # Find motif matches; matchMotifs(pwms, subject, ...)
 
-load("./data/my_count.RData")
-atac_count <- myCounts
-atac_count
+load("./peak_data/read_count_per_peak.RData")
+(atac_count <- read_count_per_peak)
+(peak_range <- rowRanges(atac_count))
+```
 
-peak_ranges <- rowRanges(atac_count)
-peak_ranges 
 
+## Center the GRanges of peak regions
+```{r}
 library(BSgenome.Mmusculus.UCSC.mm10)
-peak_ranges_center <- resize(peak_ranges, fix = "center", width = 100)
-peak_ranges_center |> class() # GRanges
-peak_seqs <- getSeq(BSgenome.Mmusculus.UCSC.mm10, peak_ranges_center) # Retrieve sequences from a BSGenome object using a GRange object, to define the regions of interest
-peak_seqs
-names(peak_seqs) <- as.character(peak_ranges_center)
-peak_seqs 
-length(peak_seqs)
+genome_mm <- BSgenome.Mmusculus.UCSC.mm10
+(peak_range_center <- resize(peak_range, fix = "center", width = 100)) # Retrieve the middle range with left 50 and right 50 positions
+# (peak_range_center_pos <- resize(peak_range, fix = "center", width = 1))
+peak_range_center |> class() 
+# [1] "GRanges"
+# attr(,"package")
+# [1] "GenomicRanges"
+```
 
-##----We locate the motif positions by scanning for 10 selected motifs from JASPAR2022 using the sequence under the first 200 ATACseq peaks----
-motif_positions <- matchMotifs(motifs_to_scan[1:10], peak_seqs[1:200], out = "positions")
+
+## Get sequences of peak regions
+```{r}
+(peak_sequence <- getSeq(genome_mm , peak_range_center)) # Retrieve sequences of peak regions by aligning the GRanges of peak data with the GRanges of a reference BSGenome object
+names(peak_sequence) <- as.character(peak_range_center) # Assign the chromosome:ranges to each sequence
+peak_sequence
+length(peak_sequence) # [1] 36320
+```
+
+
+## Find where the peaks match the motifs - `out = 'positions'`
+```{r}
+##----We locate the motif positions by scanning for 10 selected motifs from JASPAR2022 using the sequence of the first 200 ATACseq peaks----
+motifs_position <- matchMotifs(motifs_database[1:10], peak_sequence[1:200], out = "positions")
+# Value
+# Either returns a SummarizedExperiment with a sparse matrix with values set to TRUE for a match (if out == 'matches'), a SummarizedExperiment with a matches matrix as well as matrices with the maximum motif score and total motif counts (if out == 'scores'), or a GenomicRangesList or a list of IRangesList with all the positions of matches (if out == 'positions')
 length(motif_positions) # 10
-names(motifs_to_scan[1:10])
-names(motif_positions)
-motif_positions$MA0006.1 # Each motif has 200 elements, each of which shows the start, end, width, strand, and score of the matched motif in each centered ATACseq peak with width 100; if element is empty, suggesting there is no motif in this peak
+lapply(1:length(motifs_position), function (i) motifs_position[[i]] |> head(3)) # In each selected motifs from the database, each of 200 ATACseq peak regions are examined if they match the motif sequence
+names(motifs_database[1:10]) == names(motifs_position)
+motif_position$MA0006.1 # Each motif has 200 elements, each of which shows the start, end, width, strand, and score of the matched motif in each centered ATACseq peak with width 100; if element is empty, suggesting there is no motif in this peak
 
-# View the peaks showing the matched motif
-ma0006 <- motif_positions$MA0006.1
-names(ma0006) <- names(peak_seqs[1:200])
-unlist(ma0006, use.names = T)
+##----We view the peaks that match a particular motif----
+ma0006.1_hit <- motifs_position$MA0006.1
+names(ma0006.1_hit) <- names(peak_sequence[1:200])
+unlist(ma0006.1_hit, use.names = T)
+# IRanges object with 6 ranges and 2 metadata columns:
+#                              start       end     width |      strand     score
+#                          <integer> <integer> <integer> | <character> <numeric>
+#     chr1:4785445-4785544        42        47         6 |           -   10.8638
+#     chr1:4785445-4785544        67        72         6 |           -   10.8638
+#     chr1:4807733-4807832        10        15         6 |           -   10.8638
+#     chr1:4807733-4807832        82        87         6 |           -   10.8638
+#   chr1:16619333-16619432        45        50         6 |           +   10.8638
+#   chr1:16665174-16665273        13        18         6 |           +   10.8638
 
-##----We map the motifs to ATACseq peaks----
-motif_hits <- matchMotifs(motifs_to_scan, peak_seqs, out = "matches")
-motif_hits  # class: SummarizedExperiment 
-dim(motif_hits) # Row: peak; column: motif
-peak_motif_mat <- motifMatches(motif_hits)
-peak_motif_mat[1:6, 1:6] # This is a sparse matrix: . -> there is no motif in this peak; | -> there is a motif in this peak
+# !What can we gain from the above results?
+# The position of first peak hit which matches the motif MA0006.1 starts from (4785445 + 42) to (4785445 + 47).
+```
 
-##----We estimate how many peaks map to each motif----
+
+## Find if the peaks match the motifs, with no interest in matching positions - `out = 'matches'`
+```{r}
+##----We examine if the first 200 ATACseq peaks match 10 selected motifs----
+(motif_hit <- matchMotifs(motifs_database[1:10], peak_sequence[1:200], out = "matches"))
+# class: SummarizedExperiment 
+# dim: 200 10 # ! # Row: number of examined peaks; column: number of selected motifs
+# metadata(0):
+# assays(1): motifMatches
+# rownames: NULL
+# rowData names(0):
+# colnames(10): MA0004.1 MA0006.1 ... MA0059.1 MA0066.1
+# colData names(1): name
+
+peak_map_motif_mat <- motifMatches(motif_hit)
+peak_map_motif_mat[1:6, 1:6] # This is a sparse matrix: . -> there is no motif in this peak; | -> there is a motif in this peak
+# 6 x 6 sparse Matrix of class "lgCMatrix"
+#      MA0004.1 MA0006.1 MA0019.1 MA0029.1 MA0030.1 MA0031.1
+# [1,]        .        .        .        .        .        .
+# [2,]        .        .        .        .        .        .
+# [3,]        .        .        .        .        .        .
+# [4,]        .        .        .        .        .        .
+# [5,]        .        .        .        .        .        .
+# [6,]        .        .        .        .        .        .
+
+##----We estimate the number of peaks matching each motif----
 library(Matrix)
-colSums(peak_motif_mat[, 1:6]) 
-# Error in .local(x, na.rm, dims, ...) :
-#  object 'CRsparse_colSums' not found
+colSums(peak_map_motif_mat) 
+# MA0004.1 MA0006.1 MA0019.1 MA0029.1 MA0030.1 MA0031.1 MA0040.1 MA0051.1 MA0059.1 MA0066.1 
+#        7        4        0        3        2        2        6        0        2        2 
 
-# Solution
-colSums(as.array(peak_motif_mat[, 1:6]))
+# Alternative way without attaching the Matrix library
+colSums(as.array(peak_map_motif_mat))
 
-##----We detect peaks which map to the selected motif----
-# peak_ranges_center <- resize(peak_ranges, fix = "center", width = 100)
-peak_map_ma0006 <- peak_ranges_center[peak_motif_mat[, "MA0006.1"] == 1]
-peak_map_ma0006
+##----We retrieve the seqnames, ranges and other meta data information of peaks which map to a particular motif----
+# peak_range_center <- resize(peak_ranges, fix = "center", width = 100)
+(peak_map_ma0006.1 <- peak_range_center[peak_map_motif_mat[, "MA0006.1"] == 1]) # GRanges object with 727 ranges and 6 metadata columns
 ```
