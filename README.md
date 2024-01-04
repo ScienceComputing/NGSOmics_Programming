@@ -69,7 +69,7 @@ This repository houses coding practice, assignment/competition solutions based o
   - For functional analysis phase, we can ...
     - Use rGREAT to [functionally interpret the peak regions based on the GO database](ATACSeq/FunctionalAnalysis.Rmd) 
     - Use GenomicRanges and GenomicAlignments to [select and count non-redundant peaks](ATACSeq/DifferentialAnalysis.Rmd)
-    - Use DESeq2/DESeq2-based DiffBind and ChIPseeker to [perform differential analysis with gene annotations](ATACSeq/DifferentialAnalysis.Rmd)
+    - Use DESeq2/DESeq2-based DiffBind and ChIPseeker to [analyze differences in peaks with gene annotations across conditions](ATACSeq/DifferentialAnalysis.Rmd)
     - Use clusterProfiler to [perform enrichment analysis of differential peak regions](ATACSeq/DifferentialAnalysis.Rmd)
     - However, functional insights gained by peak annotations can hardly illustrate what key regulators shape the transcription mechanism. 
   - So, to further infer transcription factors acting in peak regions, we can ...
