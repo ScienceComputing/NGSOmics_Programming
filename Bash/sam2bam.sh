@@ -14,7 +14,7 @@ for sam_file in *.sam; do
         bam_file="${sam_file%.sam}.bam" # Remove .sam in the value contained in sam_file
         # Convert SAM to BAM, sort and index the BAM file
         if samtools view -b "$sam_file" | samtools sort -o "$bam_file" - && samtools index "$bam_file"; then
-            echo "Done!"
+            echo "Complete converting ${sam_file} to ${bam_file}, sorting and indexing ${bam_file}"
         else
             echo "Error occurred while converting ${sam_file}"
         fi
