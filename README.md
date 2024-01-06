@@ -1,6 +1,6 @@
 # The world becomes wonderfully enriched through the lens of quantitative biology!
 
-This repository houses coding practice, assignment/competition solutions based on the materials from a variety of computational biology/bioinformatics courses, workshops, technical manuals, academic articles, and others. 
+This repository houses conceptual viewpoints, coding practice, assignment/competition solutions based on the materials from a variety of computational biology/bioinformatics courses, workshops, technical manuals, academic articles, and others. 
 
 ## Featured contents
 
