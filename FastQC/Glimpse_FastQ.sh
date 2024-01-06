@@ -5,5 +5,8 @@ gzip -cd SRR_number.fastq.gz | head -n 12
 grep -B 1 -A 2 N SRR_number.fq
 grep -B 1 -A 2 N SRR*
 
+# View the whole records of N bases in the compressed FASTQ file
+gzip -cd SRR_number.fastq.gz | grep -B 1 -A 2 N
+
 
 
