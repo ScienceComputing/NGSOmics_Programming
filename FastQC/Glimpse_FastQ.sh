@@ -8,5 +8,9 @@ grep -B 1 -A 2 N SRR*
 # View the whole records of N bases in the compressed FASTQ file
 gzip -cd SRR_number.fastq.gz | grep -B 1 -A 2 N
 
+# Remove the group separator (--), when viewing the whole records of N bases in the compressed FASTQ file
+brew install grep
+gzip -cd SRR_number.fastq.gz | ggrep -B 1 -A 2 --no-group-separator N
+
 
 
