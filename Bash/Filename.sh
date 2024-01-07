@@ -1,3 +1,7 @@
+srr_id=`basename ~/scRNAseq/SRRXXX.fastq.gz .fastq.gz`
+echo $srr_id
+# srr_id=`basename ~/SRR*.fastq.gz .fastq.gz` # Issue
+
 # Batch view the filenames
 for filename in relative_path/*.fastq.gz; do echo $filename; done
 # The following code saves typing and makes errors less likely
