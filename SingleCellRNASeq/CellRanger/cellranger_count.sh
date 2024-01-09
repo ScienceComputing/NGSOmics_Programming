@@ -18,3 +18,4 @@ cellranger count --id=pbmc_1k_count \
 # List the output
 ls -1 pbmc_1k_count/outs # Display one entry per line
 ls -Flha pbmc_1k_count/outs # Thoroughly examine the output
+du -sh
