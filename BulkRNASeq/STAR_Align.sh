@@ -1,17 +1,15 @@
 # https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf
+# http://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/
 # The workflow of STAR: 1) build a reference genome index; 2) map reads to the reference genome
 # STAR’s default parameters are optimized for mammalian genomes (e.g., human genome)
 
-# Download latest STAR source
 wget https://github.com/alexdobin/STAR/archive/2.7.11a.tar.gz
 tar -xzf 2.7.11a.tar.gz
 cd STAR-2.7.11a
-
-# Compile under Mac OS X
-brew install gcc
-cd source
-make STARforMacStatic CXX=/usr/local/Cellar/gcc/8.2.0/bin/g++-8
-cp STAR /usr/local/bin
+alias STAR="/Users/your_name/STAR-2.7.11a/bin/MacOSX_x86_64/STAR"
+# echo "export PATH=/Users/your_name/STAR-2.7.11a/bin/MacOSX_x86_64:$PATH" > .bashrc
+# source .bashrc
+which STAR
 
 # Build a reference genome index
 mkdir -p bulk_RNAseq/hg38_chr1_index
