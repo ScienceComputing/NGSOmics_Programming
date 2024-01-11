@@ -16,9 +16,9 @@ mkdir -p bulk_RNAseq/hg38_chr1_index
 
 STAR --runThreadN 20 \
 --runMode genomeGenerate \ 
---genomeDir bulk_RNAseq/hg38_chr1_index \
---genomeFastaFiles bulk_RNAseq/reference_data/homo_sapiens.GRCh38.dna.chromosome.1.fa \
---sjdbGTFfile bulk_RNAseq/reference_data/homo_sapiens.GRCh38.92.gtf \
+--genomeDir /Users/your_name/bulk_RNAseq/hg38_chr1_index \
+--genomeFastaFiles /Users/your_name/bulk_RNAseq/reference_data/homo_sapiens.GRCh38.dna.chromosome.1.fa \
+--sjdbGTFfile /Users/ali4006/bulk_RNAseq/reference_data/homo_sapiens.GRCh38.92.gtf \
 --sjdbOverhang 99
 
 # genomeDir: provide the path to store the genome indices
@@ -27,10 +27,10 @@ STAR --runThreadN 20 \
 # sjdbOverhang: this is the length of the genomic sequence around the annotated junction to be used in constructing the splice junctions database. Ideally, this length should equal to the max(ReadLength)-1, where ReadLength is the length of the reads. e.g., for Illumina 2x100b paired-end reads, the ideal value is 100-1=99. Often, 100 works quite well.
 
 # Map reads to the reference genome
-STAR --genomeDir bulk_RNAseq/hg38_chr1_index \
+STAR --genomeDir /Users/your_name/bulk_RNAseq/hg38_chr1_index \
 --runThreadN 20 \
---readFilesIn bulk_RNAseq/raw_data/s1read1.fq.gz,s2read1.fq.gz s1read2.fq.gz,s2read2.fq.gz \
---outFileNamePrefix bulk_RNAseq/results/STAR/Human_Infectious_Disease_ \
+--readFilesIn /Users/your_name/bulk_RNAseq/raw_data/s1read1.fq.gz,s2read1.fq.gz s1read2.fq.gz,s2read2.fq.gz \
+--outFileNamePrefix /Users/your_name/bulk_RNAseq/results/STAR/Human_Infectious_Disease_ \
 --outSAMtype BAM SortedByCoordinate \
 --outSAMunmapped Within \
 --outSAMattributes Standard 
