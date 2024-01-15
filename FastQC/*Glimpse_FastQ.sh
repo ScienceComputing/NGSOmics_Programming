@@ -33,7 +33,8 @@ gzip -cd *.fastq.gz | ggrep -B 1 -A 2 --no-group-separator N >> low_quality_read
 
 # Count the number of reads detected with a N base in one/multiple FASTQ/compressed FASTQ files
 grep N SRR_number.fastq | wc -l # or grep -c N SRR_number.fastq
-grep N *.fastq | wc -l # or grep -c N *.fastq
+grep N *.fastq | wc -l # or grep -cH N *.fastq.gz
+
 gzip -cd SRR_number.fastq.gz | grep N | wc -l # or gzip -cd SRR_number.fastq.gz | grep -c N
 gzip -cd *.fastq.gz | grep N | wc -l # or gzip -cd *.fastq.gz | grep -c N
 
