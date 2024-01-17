@@ -6,6 +6,12 @@ Wahle, P., Brancati, G., Harmel, C. et al. Multimodal spatiotemporal phenotyping
 
 <br>
 
+**scDesign3 generates realistic in silico data for multimodal single-cell and spatial omics**
+
+Song, D., Wang, Q., Yan, G. et al. scDesign3 generates realistic in silico data for multimodal single-cell and spatial omics. Nat Biotechnol (2023). https://doi.org/10.1038/s41587-023-01772-1
+
+<br>
+
 **Accurately spot cell-free droplets, and provide noise-free scRNAseq quantification**
 
 Fleming, S.J., Chaffin, M.D., Arduini, A. et al. Unsupervised removal of systematic background noise from droplet-based single-cell experiments using CellBender. Nat Methods 20, 1323–1335 (2023). https://doi.org/10.1038/s41592-023-01943-7
