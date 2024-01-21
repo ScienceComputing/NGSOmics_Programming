@@ -1,34 +1,80 @@
+---
+title: "Single Cell RNA-Seq Data Analysis with Human Data"
+author: "Anni Liu"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: 
+  html_document:
+    code_folding: show
+---
+
+```{r}
 library(Seurat)
+```
 
 # Load the dataset
+```{r}
 sc_data <- Read10X(data.dir = "~/scRNA_analysis/data/filtered_gene_bc_matrices/hg19/")")
+```
 
 # Create a Seurat object
+```{r}
 seurat_obj <- CreateSeuratObject(counts = sc_data, project = "scRNAseq", min.cells = 3, min.features = 200)
+```
+
+# Scale: load multiple samples, create multiple Seurat objects, and merge all Seurat objects
+```{r}
+for (folder_name in c("wt_raw_feature_bc_matrix", "kd_raw_feature_bc_matrix", "over_raw_feature_bc_matrix")){
+  sc_data <- Read10X(data.dir = paste0("~/scRNA_analysis/data/", folder_name))
+  seurat_obj <- CreateSeuratObject(counts = sc_data, 
+                                   min.features = 100, 
+                                   project = folder_name)
+  assign(folder_name, seurat_obj)
+}
+
+merged_seurat_obj <- merge(x = wt_raw_feature_bc_matrix, 
+                           y = c(kd_raw_feature_bc_matrix, over_raw_feature_bc_matrix),
+                           add.cell.id = c("wt", "kd", "over"))
+```
 
 # QC and filter out low-quality cells
+```{r}
 seurat_obj[["percent.mt"]] <- PercentageFeatureSet(seurat_obj, pattern = "^MT-")
 seurat_obj <- subset(seurat_obj, subset = nFeature_RNA > 200 & nFeature_RNA < 2500 & percent.mt < 5)
+```
 
 # Normalize the data
+```{r}
 seurat_obj <- NormalizeData(seurat_obj, normalization.method = "LogNormalize", scale.factor = 10000)
+```
 
 # Find variable features
+```{r}
 seurat_obj <- FindVariableFeatures(seurat_obj, selection.method = "vst", nfeatures = 2000)
 top10 <- head(VariableFeatures(seurat_obj), 10)
+```
 
 # Scale the data
+```{r}
 seurat_obj <- ScaleData(seurat_obj, features = rownames(seurat_obj))
+```
 
 # Perform linear dimensional reduction
+```{r}
 seurat_obj <- RunPCA(seurat_obj, features = VariableFeatures(object = seurat_obj))
+```
 
 # Cluster the cells
+```{r}
 seurat_obj <- FindNeighbors(seurat_obj, dims = 1:10)
 seurat_obj <- FindClusters(seurat_obj, resolution = 0.5)
+```
 
 # Run non-linear dimensional reduction (t-SNE or UMAP)
+```{r}
 seurat_obj <- RunUMAP(seurat_obj, dims = 1:10)
+```
 
 # Save results
+```{r}
 saveRDS(seurat_obj, file = "seurat_obj.rds")
+```
