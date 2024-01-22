@@ -62,14 +62,14 @@ multi_seurat_obj$percent_mt <- PercentageFeatureSet(multi_seurat_obj, pattern = 
 
 ## Cell counts per sample
 multi_seurat_obj@meta.data |>
-  ggplot(aes(x = group, fill = group)) + 
+  ggplot(mapping = aes(x = group, fill = group)) + 
   geom_bar() +
   ggtitle("Number of unique cellular barcodes detected") + 
   theme_bw()
 
 ## UMI counts per cell
 multi_seurat_obj@meta.data |>
-  ggplot(aes(color = group, x = nCount_RNA, fill = group)) + 
+  ggplot(mapping = aes(color = group, x = nCount_RNA, fill = group)) + 
   geom_density(alpha = 0.6) + 
   geom_vline(xintercept = 500)
   scale_x_log10() + 
