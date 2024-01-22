@@ -11,9 +11,9 @@ output:
 library(Seurat)
 ```
 
-# Load the dataset
+# Load the matrix.mtx, features.tsv, and barcodes.tsv files generated from 10x Genomics 
 ```{r}
-sc_data <- Read10X(data.dir = "~/scRNA_analysis/data/filtered_gene_bc_matrices/hg19/")")
+sc_data <- Read10X(data.dir = "~/scRNA_analysis/data/filtered_gene_bc_matrices/hg19/")
 ```
 
 # Create a Seurat object
