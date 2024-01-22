@@ -16,6 +16,8 @@ Ashuach, T., Gabitto, M.I., Koodli, R.V. et al. MultiVI: deep generative model f
 
 Song, D., Wang, Q., Yan, G. et al. scDesign3 generates realistic in silico data for multimodal single-cell and spatial omics. Nat Biotechnol (2023). https://doi.org/10.1038/s41587-023-01772-1
 
+> "We present a statistical simulator, scDesign3, to generate realistic single-cell and spatial omics data, including various cell states, experimental designs and feature modalities, by learning interpretable parameters from real data. Using a unified probabilistic model for single-cell and spatial omics data, scDesign3 infers biologically meaningful parameters; assesses the goodness-of-fit of inferred cell clusters, trajectories and spatial locations; and generates in silico negative and positive controls for benchmarking computational tools."
+
 <br>
 
 **Accurately spot cell-free droplets, and provide noise-free scRNAseq quantification**
