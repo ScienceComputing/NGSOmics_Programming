@@ -36,10 +36,12 @@ merged_seurat_obj <- merge(x = wt_raw_feature_bc_matrix,
                            add.cell.id = c("wt", "kd", "over"))
 ```
 
-# QC and filter out low-quality cells
+# Estimate QC metrics and filter out low-quality cells
 ```{r}
-seurat_obj[["percent.mt"]] <- PercentageFeatureSet(seurat_obj, pattern = "^MT-")
-seurat_obj <- subset(seurat_obj, subset = nFeature_RNA > 200 & nFeature_RNA < 2500 & percent.mt < 5)
+View(seurat_obj@meta.data) # nCount_RNA: number of UMIs per cell; nFeature_RNA: number of genes detected per cell
+seurat_obj[["log10_gene_per_UMI"]] <- log10(seurat_obj$nFeature_RNA) / log10(seurat_obj$nCount_RNA)
+seurat_obj[["percent_mt"]] <- PercentageFeatureSet(seurat_obj, pattern = "^MT-")
+seurat_obj <- subset(x = seurat_obj, subset = nFeature_RNA >= 200 & nFeature_RNA >= 500 & log10_gene_per_UMI > 0.8 & percent_mt < 5)
 ```
 
 # Normalize the data
