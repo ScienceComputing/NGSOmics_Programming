@@ -74,6 +74,17 @@ multi_seurat_obj@meta.data |>
   geom_vline(xintercept = 500)
   scale_x_log10() + 
   ylab("Density") +
+  ggtitle("Number of transcripts per cell") + 
+  theme_bw()
+
+## Number of genes detected per cell
+multi_seurat_obj@meta.data |>
+  ggplot(mapping = aes(color = group, x = nFeature_RNA, fill = group)) + 
+  geom_density(alpha = 0.6) + 
+  geom_vline(xintercept = 200)
+  scale_x_log10() + 
+  ylab("Density") +
+  ggtitle("Number of genes detected per cell") + 
   theme_bw()
 
 ## Filtering
