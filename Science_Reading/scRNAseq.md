@@ -6,6 +6,12 @@ Wahle, P., Brancati, G., Harmel, C. et al. Multimodal spatiotemporal phenotyping
 
 <br>
 
+**MultiVI creates a joint representation allowing an analysis of all single cell omics modalities, even for cells for which one or more modalities are missing**
+
+Ashuach, T., Gabitto, M.I., Koodli, R.V. et al. MultiVI: deep generative model for the integration of multimodal data. Nat Methods 20, 1222–1231 (2023). https://doi.org/10.1038/s41592-023-01909-9
+
+<br>
+
 **scDesign3 generates realistic in silico data for multimodal single-cell and spatial omics**
 
 Song, D., Wang, Q., Yan, G. et al. scDesign3 generates realistic in silico data for multimodal single-cell and spatial omics. Nat Biotechnol (2023). https://doi.org/10.1038/s41587-023-01772-1
@@ -29,6 +35,12 @@ William DeGroat, Dinesh Mendhe, Atharva Bhusari, Habiba Abdelhalim, Saman Zeesha
 Dou, J., Tan, Y., Kock, K.H. et al. Single-nucleotide variant calling in single-cell sequencing data with Monopogen. Nat Biotechnol (2023). https://doi.org/10.1038/s41587-023-01873-x
 
 > ??? Develop algorithms capable of detecting intronic variants for scRNA-seq, snRNA-seq, snATAC-seq and scDNA-seq data
+
+<br>
+
+**SCENIC+ predicts genomic enhancers along with candidate upstream transcription factors and links these enhancers to candidate target genes**
+
+> We exploit SCENIC+ predictions to study conserved TFs, enhancers and GRNs between human and mouse cell types in the cerebral cortex. We use SCENIC+ to study the dynamics of gene regulation along differentiation trajectories and the effect of TF perturbations on cell state.
 
 <br>
  
