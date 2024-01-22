@@ -36,6 +36,16 @@ multi_seurat_obj <- merge(x = wt_raw_feature_bc_matrix,
                           add.cell.id = c("wt", "kd", "over"))
 ```
 
+# Add meta data
+```{r}
+meta_data <- multi_seurat_obj@meta.data
+meta_data$cell_id <- rownames(meta_data)
+meta_data$group <- gsub("^wt_.*", "wt",
+  gsub("^kd_.*", "kd",
+    gsub("^over_.*", "over", meta_data$cell_id)))
+multi_seurat_obj@meta.data <- meta_data
+```
+
 # Estimate QC metrics and filter out low-quality cells
 ```{r}
 # QC a single sample
