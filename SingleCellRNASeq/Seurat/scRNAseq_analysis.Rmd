@@ -21,7 +21,7 @@ sc_data <- Read10X(data.dir = "~/scRNA_analysis/data/filtered_gene_bc_matrices/h
 seurat_obj <- CreateSeuratObject(counts = sc_data, project = "scRNAseq", min.cells = 3, min.features = 200)
 ```
 
-# Scale: load multiple samples, create multiple Seurat objects, and merge all Seurat objects
+# Scale: load 10x Genomics data from multiple samples, create multiple Seurat objects, and merge all Seurat objects
 ```{r}
 for (folder_name in c("wt_raw_feature_bc_matrix", "kd_raw_feature_bc_matrix", "over_raw_feature_bc_matrix")){
   sc_data <- Read10X(data.dir = paste0("~/scRNA_analysis/data/", folder_name))
