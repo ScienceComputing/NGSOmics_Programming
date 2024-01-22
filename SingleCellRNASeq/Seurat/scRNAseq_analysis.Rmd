@@ -9,6 +9,7 @@ output:
 
 ```{r}
 library(Seurat)
+library(ggplot2)
 ```
 
 # Load the matrix.mtx, features.tsv, and barcodes.tsv files generated from 10x Genomics 
@@ -46,7 +47,7 @@ meta_data$group <- gsub("^wt_.*", "wt",
 multi_seurat_obj@meta.data <- meta_data
 ```
 
-# Estimate QC metrics and filter out low-quality cells
+# Estimate and visualize QC metrics; filter out low-quality cells
 ```{r}
 # QC a single sample
 View(seurat_obj@meta.data) # nCount_RNA: number of UMIs per cell; nFeature_RNA: number of genes detected per cell
@@ -58,6 +59,24 @@ seurat_obj <- subset(x = seurat_obj, subset = nFeature_RNA >= 200 & nFeature_RNA
 View(multi_seurat_obj@meta.data)
 multi_seurat_obj$log10_gene_per_UMI <- log10(multi_seurat_obj$nFeature_RNA) / log10(multi_seurat_obj$nCount_RNA)
 multi_seurat_obj$percent_mt <- PercentageFeatureSet(multi_seurat_obj, pattern = "^MT-")
+
+## Cell counts per sample
+multi_seurat_obj@meta.data |>
+  ggplot(aes(x = group, fill = group)) + 
+  geom_bar() +
+  ggtitle("Number of unique cellular barcodes detected") + 
+  theme_bw()
+
+## UMI counts per cell
+multi_seurat_obj@meta.data |>
+  ggplot(aes(color = group, x = nCount_RNA, fill = group)) + 
+  geom_density(alpha = 0.6) + 
+  geom_vline(xintercept = 500)
+  scale_y_log10() + 
+  ylab("Log 10 density") +
+  theme_bw()
+
+## Filtering
 multi_seurat_obj <- subset(x = multi_seurat_obj, subset = nFeature_RNA >= 200 & nFeature_RNA >= 500 & log10_gene_per_UMI > 0.8 & percent_mt < 5)
 ```
 
