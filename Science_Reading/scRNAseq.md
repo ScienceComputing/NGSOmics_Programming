@@ -20,6 +20,22 @@ Song, D., Wang, Q., Yan, G. et al. scDesign3 generates realistic in silico data 
 
 <br>
 
+**MISAR-seq for spatially resolved joint profiling of chromatin accessibility and gene expression**
+
+Jiang, F., Zhou, X., Qian, Y. et al. Simultaneous profiling of spatial gene expression and chromatin accessibility during mouse brain development. Nat Methods 20, 1048–1057 (2023). https://doi.org/10.1038/s41592-023-01884-1
+
+> "By applying MISAR-seq to the developing mouse brain, we study tissue organization and spatiotemporal regulatory logics during mouse brain development."
+
+<br>
+
+**GPSA aligns spatial genomics data, allowing for downstream spatially aware analyses**
+
+Jones, A., Townes, F.W., Li, D. et al. Alignment of spatial genomics data using deep Gaussian processes. Nat Methods 20, 1379–1387 (2023). https://doi.org/10.1038/s41592-023-01972-2
+
+> "It remains difficult to precisely align spatial observations across slices, samples, scales, individuals and technologies. Here, we propose a probabilistic model that aligns spatially-resolved samples onto a known or unknown common coordinate system (CCS) with respect to phenotypic readouts (for example, gene expression). Our method, Gaussian Process Spatial Alignment (GPSA), consists of a two-layer Gaussian process: the first layer maps observed samples’ spatial locations onto a CCS, and the second layer maps from the CCS to the observed readouts. Our approach enables complex downstream spatially aware analyses that are impossible or inaccurate with unaligned data, including an analysis of variance, creation of a dense three-dimensional (3D) atlas from sparse two-dimensional (2D) slices or association tests across data modalities."
+
+<br>
+
 **Accurately spot cell-free droplets, and provide noise-free scRNAseq quantification**
 
 Fleming, S.J., Chaffin, M.D., Arduini, A. et al. Unsupervised removal of systematic background noise from droplet-based single-cell experiments using CellBender. Nat Methods 20, 1323–1335 (2023). https://doi.org/10.1038/s41592-023-01943-7
