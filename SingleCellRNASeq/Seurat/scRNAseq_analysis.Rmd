@@ -72,8 +72,8 @@ multi_seurat_obj@meta.data |>
   ggplot(aes(color = group, x = nCount_RNA, fill = group)) + 
   geom_density(alpha = 0.6) + 
   geom_vline(xintercept = 500)
-  scale_y_log10() + 
-  ylab("Log 10 density") +
+  scale_x_log10() + 
+  ylab("Density") +
   theme_bw()
 
 ## Filtering
