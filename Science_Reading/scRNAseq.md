@@ -1,8 +1,8 @@
 **Multimodal spatiotemporal phenotyping of human retinal organoid development**
 
-> "In this study, we generated multiplexed protein maps over a retinal organoid time course and primary adult human retinal tissue...In addition, we generated a single-cell transcriptome and chromatin accessibility timecourse dataset and inferred a gene regulatory network underlying organoid development. We integrated genomic data with spatially segmented nuclei into a multimodal atlas to explore organoid patterning and retinal ganglion cell (RGC) spatial neighborhoods, highlighting pathways involved in RGC cell death and showing that mosaic genetic perturbations in retinal organoids provide insight into cell fate regulation."
-
 Wahle, P., Brancati, G., Harmel, C. et al. Multimodal spatiotemporal phenotyping of human retinal organoid development. Nat Biotechnol 41, 1765–1775 (2023). https://doi.org/10.1038/s41587-023-01747-2
+
+> "In this study, we generated multiplexed protein maps over a retinal organoid time course and primary adult human retinal tissue...In addition, we generated a single-cell transcriptome and chromatin accessibility timecourse dataset and inferred a gene regulatory network underlying organoid development. We integrated genomic data with spatially segmented nuclei into a multimodal atlas to explore organoid patterning and retinal ganglion cell (RGC) spatial neighborhoods, highlighting pathways involved in RGC cell death and showing that mosaic genetic perturbations in retinal organoids provide insight into cell fate regulation."
 
 <br>
 
@@ -40,7 +40,9 @@ Dou, J., Tan, Y., Kock, K.H. et al. Single-nucleotide variant calling in single-
 
 **SCENIC+ predicts genomic enhancers along with candidate upstream transcription factors and links these enhancers to candidate target genes**
 
-> We exploit SCENIC+ predictions to study conserved TFs, enhancers and GRNs between human and mouse cell types in the cerebral cortex. We use SCENIC+ to study the dynamics of gene regulation along differentiation trajectories and the effect of TF perturbations on cell state.
+Bravo González-Blas, C., De Winter, S., Hulselmans, G. et al. SCENIC+: single-cell multiomic inference of enhancers and gene regulatory networks. Nat Methods 20, 1355–1367 (2023). https://doi.org/10.1038/s41592-023-01938-4
+
+> "We exploit SCENIC+ predictions to study conserved TFs, enhancers and GRNs between human and mouse cell types in the cerebral cortex. We use SCENIC+ to study the dynamics of gene regulation along differentiation trajectories and the effect of TF perturbations on cell state."
 
 <br>
  
