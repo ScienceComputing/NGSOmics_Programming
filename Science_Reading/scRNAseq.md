@@ -72,6 +72,13 @@ Weinberger, E., Lin, C. & Lee, SI. Isolating salient variations of interest in s
 
 <br>
 
+**GEARS integrates deep learning with a knowledge graph of gene–gene relationships to predict transcriptional responses to both single and multigene perturbations**
+
+Roohani, Y., Huang, K. & Leskovec, J. Predicting transcriptional outcomes of novel multigene perturbations with GEARS. Nat Biotechnol (2023). https://doi.org/10.1038/s41587-023-01905-6
+
+<br>
+
+
 ## Methodology progress in 2022
 
 **Map single-cell fates in regeneration, reprogramming and disease without known directions**
