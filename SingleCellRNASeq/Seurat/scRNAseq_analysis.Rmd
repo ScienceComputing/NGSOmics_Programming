@@ -87,6 +87,23 @@ multi_seurat_obj@meta.data |>
   ggtitle("Number of genes detected per cell") + 
   theme_bw()
 
+## Number of genes detected per UMI in a cell
+multi_seurat_obj@meta.data |>
+  	ggplot(mapping = aes(x = log10_gene_per_UMI, color = group, fill = group)) +
+  	geom_density(alpha = 0.6) +
+  	geom_vline(xintercept = 0.8) + 
+    ggtitle("Number of genes detected per UMI in a cell") + 
+    theme_bw()
+
+## Mitochondrial percentage
+multi_seurat_obj@meta.data |>
+  	ggplot(mapping = aes(color = group, x = percent_mt, fill = group)) + 
+  	geom_density(alpha = 0.6) + 
+    geom_vline(xintercept = 5) + 
+  	scale_x_log10() + 
+    ggtitle("Percentage of transcripts mapping to mitochondrial genes per cell") + 
+  	theme_bw()
+
 ## Filtering
 multi_seurat_obj <- subset(x = multi_seurat_obj, subset = nFeature_RNA >= 200 & nFeature_RNA >= 500 & log10_gene_per_UMI > 0.8 & percent_mt < 5)
 ```
