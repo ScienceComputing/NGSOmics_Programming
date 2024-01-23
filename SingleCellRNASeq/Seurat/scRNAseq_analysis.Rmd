@@ -108,12 +108,12 @@ multi_seurat_obj@meta.data |>
 multi_seurat_obj@meta.data |>
   ggplot(mapping = aes(x = nCount_RNA, y = nFeature_RNA, color = percent_mt)) + 
   geom_point() + 
-  scale_colour_gradient(low = "gray80", high = "black") +
+  geom_vline(xintercept = 500) +
+  geom_hline(yintercept = 200) +
   stat_smooth(method = lm) +
   scale_x_log10() + 
   scale_y_log10() + 
-  geom_vline(xintercept = 500) +
-  geom_hline(yintercept = 200) +
+  scale_colour_gradient(low = "gray80", high = "black") +
   facet_wrap(~group) + 
   ggtitle("Joint QC metrics") + 
   theme_bw()
