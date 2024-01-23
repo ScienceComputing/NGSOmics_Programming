@@ -47,7 +47,7 @@ meta_data$group <- gsub("^wt_.*", "wt",
 multi_seurat_obj@meta.data <- meta_data
 ```
 
-# Estimate and visualize QC metrics; filter out low-quality cells
+# Estimate and visualize QC metrics individually and jointly; filter out low-quality cells
 ```{r}
 # QC a single sample
 View(seurat_obj@meta.data) # nCount_RNA: number of UMIs per cell; nFeature_RNA: number of genes detected per cell
@@ -103,6 +103,19 @@ multi_seurat_obj@meta.data |>
   	scale_x_log10() + 
     ggtitle("Percentage of transcripts mapping to mitochondrial genes per cell") + 
   	theme_bw()
+
+## ! Joint visualization of UMI counts per cell, number of genes detected per cell, and mitochondrial percentage
+multi_seurat_obj@meta.data |>
+  	ggplot(mapping = aes(x = nCount_RNA, y = nFeature_RNA, color = percent_mt)) + 
+  	geom_point() + 
+	  scale_colour_gradient(low = "gray80", high = "black") +
+  	stat_smooth(method = lm) +
+  	scale_x_log10() + 
+  	scale_y_log10() + 
+  	geom_vline(xintercept = 500) +
+  	geom_hline(yintercept = 200) +
+  	facet_wrap(~group) + 
+    theme_bw()
 
 ## Filtering
 multi_seurat_obj <- subset(x = multi_seurat_obj, subset = nFeature_RNA >= 200 & nFeature_RNA >= 500 & log10_gene_per_UMI > 0.8 & percent_mt < 5)
