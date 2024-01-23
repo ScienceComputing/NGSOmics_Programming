@@ -115,11 +115,33 @@ multi_seurat_obj@meta.data |>
   scale_y_log10() + 
   scale_colour_gradient(low = "gray80", high = "black") +
   facet_wrap(~group) + 
-  ggtitle("Joint QC metrics") + 
+  ggtitle("The distributions of joint QC metrics") + 
   theme_bw()
 
-## Filtering
+## Filtering using above estimated QC metrics
 multi_seurat_obj <- subset(x = multi_seurat_obj, subset = nFeature_RNA >= 200 & nFeature_RNA >= 500 & log10_gene_per_UMI > 0.8 & percent_mt < 5)
+multi_seurat_obj_filter <- multi_seurat_obj
+
+## Select genes with a non-zero count appearing in 10 or more cells
+count_obj <- GetAssayData(object = multi_seurat_obj_filter, slot = "counts")
+count_obj_filter <- count_obj[Matrix::rowSums(count_obj > 0) >= 10, ]
+multi_seurat_obj_filter <- CreateSeuratObject(counts = count_obj_filter, meta.data = multi_seurat_obj_filter@meta.data)
+
+## Re-evaluate the most important QC metrics
+multi_seurat_obj_filter@meta.data |>
+  ggplot(mapping = aes(x = nCount_RNA, y = nFeature_RNA, color = percent_mt)) + 
+  geom_point() + 
+  geom_vline(xintercept = 500) +
+  geom_hline(yintercept = 200) +
+  stat_smooth(method = lm) +
+  scale_x_log10() + 
+  scale_y_log10() + 
+  scale_colour_gradient(low = "gray80", high = "black") +
+  facet_wrap(~group) + 
+  ggtitle("The distributions of joint QC metrics after filtering") + 
+  theme_bw()
+
+save(multi_seurat_obj_filter, file="~/scRNA_analysis/data/derived/multi_seurat_obj_filter.RData")
 ```
 
 # Normalize the data
