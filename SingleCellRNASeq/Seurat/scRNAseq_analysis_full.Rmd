@@ -190,7 +190,7 @@ multi_seurat_obj_split <- SplitObject(multi_seurat_obj_lognorm, split.by = "grou
 for (i in 1:length(split_seurat)) {
   multi_seurat_obj_split[[i]] <- SCTransform(multi_seurat_obj_split[[i]], vars.to.regress = c("percent_mt"), vst.flavor = "v2") 
   multi_seurat_obj_split[[i]] <- ScaleData(multi_seurat_obj_split[[i]], vars.to.regress = c("S.Score", "G2M.Score"), features = rownames(multi_seurat_obj_split[[i]]))
-  multi_seurat_obj_split[[i]] <- RunPCA(multi_seurat_obj_split[[i]], features = c(s_genes, g2m_genes), verbose = FALSE)
+  multi_seurat_obj_split[[i]] <- RunPCA(multi_seurat_obj_split[[i]], features = c(s_genes, g2m_genes), verbose = FALSE) # Check if cell cycle impact is regressed out
   DimPlot(multi_seurat_obj_split[[i]], reduction = "pca", group.by = "Phase", split.by = "Phase")
 }
 
@@ -201,7 +201,7 @@ multi_seurat_obj_split$over@assays
 saveRDS(multi_seurat_obj_split, file = "~/scRNA_analysis/data/derived/multi_seurat_obj_split.rds")
 ```
 
-# Old fashioned normalization on counts
+# Old fashioned normalization on counts in a single sample
 ## Normalize the data
 ```{r}
 seurat_obj <- NormalizeData(seurat_obj, normalization.method = "LogNormalize", scale.factor = 10000)
