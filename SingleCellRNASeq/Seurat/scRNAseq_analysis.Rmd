@@ -144,6 +144,38 @@ multi_seurat_obj_filter@meta.data |>
 save(multi_seurat_obj_filter, file="~/scRNA_analysis/data/derived/multi_seurat_obj_filter.RData")
 ```
 
+# Assess the sources of variations in the gene expression profiles
+## Log normalize the data
+```{r}
+multi_seurat_obj_lognorm <- NormalizeData(multi_seurat_obj_filter, normalization.method = "LogNormalize", scale.factor = 10000)
+# scale.factor: to ensure the uniform UMI counts across all cells, here we multiple each UMI count per cell by a cell-specific factor (initial step of normalization); after this initial step, the log transformation will be applied to each UMI count per gene
+```
+
+## See if the cell cycle contributes to the major variations in our dataset
+```{r}
+load("~/scRNA_analysis/data/cycle_marker.rda")
+
+# Assign the cell cycle score to each cell
+multi_seurat_obj_lognorm <- CellCycleScoring(object = multi_seurat_obj_lognorm, 
+                                             g2m.features = g2m_genes, 
+                                             s.features = s_genes)
+# s.features: a vector of features associated with S phase
+# g2m.features: a vector of features associated with G2M phase
+
+# Check the cell cycle score and cell cycle phase assigned to each cell                             
+View(multi_seurat_obj_lognorm@meta.data)  
+
+# Spot the most variable genes
+multi_seurat_obj_lognorm <- FindVariableFeatures(multi_seurat_obj_lognorm, selection.method = "vst", nfeatures = 2000, verbose = FALSE)
+		     
+# Scale the counts for PCA, such that the average expression level of each gene across cells equals 0, and the variance of expression levels of each gene across cells is 1
+multi_seurat_obj_lognorm <- ScaleData(multi_seurat_obj_lognorm)
+
+# Run and visualize PCA colored by cell cycle phase
+multi_seurat_obj_lognorm <- RunPCA(multi_seurat_obj_lognorm)
+DimPlot(multi_seurat_obj_lognorm, reduction = "pca", group.by= "Phase", split.by = "Phase")
+```
+
 # Normalize the data
 ```{r}
 seurat_obj <- NormalizeData(seurat_obj, normalization.method = "LogNormalize", scale.factor = 10000)
