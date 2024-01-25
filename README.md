@@ -24,7 +24,7 @@ This repository houses conceptual viewpoints, coding practice, assignment/compet
     - Use Cell Ranger pipelines to perform [sequence alignment and generate the count matrix](SingleCellRNASeq/CellRanger/cellranger_count.sh)
 - After having the `feature-barcode matrices` at hand, we can ...
   - Use Scanpy workflow to perform [quality assurance, cell clustering, marker gene detection](SingleCellRNASeq/Scanpy/PBMC), and [trajectory inference](SingleCellRNASeq/Scanpy/Bone_Marrow)
-  - Use Seurat workflow to perform [quality assurance, cell clustering, and marker gene detection](SingleCellRNASeq/Seurat/SkinCell.Rmd)
+  - Use Seurat workflow to perform quality assurance, cell clustering, and marker gene detection [Material 1](SingleCellRNASeq/Seurat/SkinCell.Rmd) | [Material 2](SingleCellRNASeq/Seurat/scRNAseq_analysis_full.Rmd)
   - Use Bioconductor packages to [perform single cell RNA-Seq data analysis](SingleCellRNASeq/Bioconductor/BioconductorSkinCell.Rmd)
   - Generate [pseudobulk](SingleCellRNASeq/Scanpy/Pseudobulk.py), which aggregates the gene expression levels specific to each cell type within an individual
   - Perform pseudobulk-based [differentially gene expression analysis](SingleCellRNASeq/Scanpy/scRNAseq_DE_Part1.ipynb)
