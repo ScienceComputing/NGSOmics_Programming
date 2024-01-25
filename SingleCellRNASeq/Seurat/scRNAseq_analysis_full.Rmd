@@ -141,7 +141,7 @@ multi_seurat_obj_filter@meta.data |>
   ggtitle("The distributions of joint QC metrics after filtering") + 
   theme_bw()
 
-save(multi_seurat_obj_filter, file="~/scRNA_analysis/data/derived/multi_seurat_obj_filter.RData")
+save(multi_seurat_obj_filter, file = "~/scRNA_analysis/data/derived/multi_seurat_obj_filter.RData")
 ```
 
 # Assess the sources of variations in the gene expression profiles
@@ -173,21 +173,47 @@ multi_seurat_obj_lognorm <- ScaleData(multi_seurat_obj_lognorm)
 
 # Run and visualize PCA colored by cell cycle phase
 multi_seurat_obj_lognorm <- RunPCA(multi_seurat_obj_lognorm)
-DimPlot(multi_seurat_obj_lognorm, reduction = "pca", group.by= "Phase", split.by = "Phase")
+DimPlot(multi_seurat_obj_lognorm, reduction = "pca", group.by = "Phase", split.by = "Phase")
 ```
 
-# Normalize the data
+## See if the mitochondrial gene expression contributes to the major variations in our dataset
+```{r}
+percent_mt_q <- quantile(multi_seurat_obj_lognorm@meta.data$percent_mt) 
+cut(multi_seurat_obj_lognorm@meta.data$percent_mt_c <- cut(multi_seurat_obj_lognorm@meta.data$percent_mt, breaks = c(-Inf, percent_mt_q[2], percent_mt_q[3], percent_mt_q[4], Inf), labels = c("Low", "Medium", "Medium high", "High"))
+DimPlot(multi_seurat_obj_lognorm, reduction = "pca", group.by = "percent_mt_c", split.by = "percent_mt_c")
+```
+
+# ! Normalize counts and remove sources of uninteresting variations per condition using sctransform and scaling
+```{r}
+options(future.globals.maxSize = 4000 * 1024^2)
+multi_seurat_obj_split <- SplitObject(multi_seurat_obj_lognorm, split.by = "group")
+for (i in 1:length(split_seurat)) {
+  multi_seurat_obj_split[[i]] <- SCTransform(multi_seurat_obj_split[[i]], vars.to.regress = c("percent_mt"), vst.flavor = "v2") 
+  multi_seurat_obj_split[[i]] <- ScaleData(multi_seurat_obj_split[[i]], vars.to.regress = c("S.Score", "G2M.Score"), features = rownames(multi_seurat_obj_split[[i]]))
+  multi_seurat_obj_split[[i]] <- RunPCA(multi_seurat_obj_split[[i]], features = c(s_genes, g2m_genes), verbose = FALSE)
+  DimPlot(multi_seurat_obj_split[[i]], reduction = "pca", group.by = "Phase", split.by = "Phase")
+}
+
+multi_seurat_obj_split$wt@assays
+multi_seurat_obj_split$kd@assays
+multi_seurat_obj_split$over@assays
+
+saveRDS(multi_seurat_obj_split, file = "~/scRNA_analysis/data/derived/multi_seurat_obj_split.rds")
+```
+
+# Old fashioned normalization on counts
+## Normalize the data
 ```{r}
 seurat_obj <- NormalizeData(seurat_obj, normalization.method = "LogNormalize", scale.factor = 10000)
 ```
 
-# Find variable features
+## Find variable features
 ```{r}
 seurat_obj <- FindVariableFeatures(seurat_obj, selection.method = "vst", nfeatures = 2000)
 top10 <- head(VariableFeatures(seurat_obj), 10)
 ```
 
-# Scale the data
+## Scale the data
 ```{r}
 seurat_obj <- ScaleData(seurat_obj, features = rownames(seurat_obj))
 ```
