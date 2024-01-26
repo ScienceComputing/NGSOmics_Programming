@@ -44,6 +44,9 @@ meta_data$cell_id <- rownames(meta_data)
 meta_data$group <- gsub("^wt_.*", "wt",
   gsub("^kd_.*", "kd",
     gsub("^over_.*", "over", meta_data$cell_id)))
+meta_data$batch_id <- gsub("wt", 1,
+  gsub("kd", 2,
+    gsub("over", 3, meta_data$group)))
 multi_seurat_obj@meta.data <- meta_data
 ```
 
@@ -228,6 +231,25 @@ DimPlot(multi_seurat_obj_integrate, split.by = "group")
 saveRDS(multi_seurat_obj_integrate, "~/scRNA_analysis/data/derived/multi_seurat_obj_integrate.rds")
 ```
 
+## ! Integrate cells across multiple confounding factors (e.g., experimental conditions donor, tissue/location, species, protocol) 
+using `Harmony`
+```{r}
+BiocManager::install("harmony", version = "3.8")
+library(harmony)
+multi_seurat_obj_split <- readRDS("~/scRNA_analysis/data/derived/multi_seurat_obj_split.rds")
+feature_integrate <- SelectIntegrationFeatures(object.list = multi_seurat_obj_split, nfeatures = 3000)
+multi_seurat_obj_merge <- merge(x = multi_seurat_obj_split[[1]], y = multi_seurat_obj_split[2:length(multi_seurat_obj_split)],
+		                merge.data = TRUE)
+DefaultAssay(multi_seurat_obj_merge) <- "SCT"
+VariableFeatures(multi_seurat_obj_merge) <- feature_integrate
+multi_seurat_obj_merge <- RunPCA(multi_seurat_obj_merge, assay = "SCT", npcs = 50)
+multi_seurat_obj_harmony <- RunHarmony(multi_seurat_obj_merge, group.by.vars = c("group", "batch_id"), reduction = "pca", assay.use = "SCT", reduction.save = "harmony")
+
+# See if Harmony integration is effective in aligning cells across multiple factors
+multi_seurat_obj_harmony <- RunUMAP(multi_seurat_obj_harmony, reduction = "harmony", assay = "SCT", dims = 1:40)
+DimPlot(multi_seurat_obj_harmony) 
+```
+
 # Old fashioned normalization on counts in a single sample
 ## Normalize the data
 ```{r}
@@ -252,8 +274,12 @@ seurat_obj <- RunPCA(seurat_obj, features = VariableFeatures(object = seurat_obj
 
 # Cluster the cells
 ```{r}
-seurat_obj <- FindNeighbors(seurat_obj, dims = 1:10)
-seurat_obj <- FindClusters(seurat_obj, resolution = 0.5)
+seurat_obj <- FindNeighbors(seurat_obj, dims = 1:40)
+seurat_obj <- FindClusters(seurat_obj, resolution = seq(0.2, 1.2, 0.2))
+
+# If using the harmony integration before 
+seurat_obj_harmony <- FindNeighbors(object = seurat_obj_harmony, reduction = "harmony")
+seurat_obj_harmony <- FindClusters(seurat_obj_harmony, resolution = seq(0.2, 1.2, 0.2))
 ```
 
 # Run non-linear dimensional reduction (t-SNE or UMAP)
