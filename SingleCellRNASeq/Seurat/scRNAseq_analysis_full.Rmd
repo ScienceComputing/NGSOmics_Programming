@@ -201,6 +201,33 @@ multi_seurat_obj_split$over@assays
 saveRDS(multi_seurat_obj_split, file = "~/scRNA_analysis/data/derived/multi_seurat_obj_split.rds")
 ```
 
+# Integrate cells across conditions
+## See if there is any condition-specific clustering of the cells
+```{r}
+multi_seurat_obj_lognorm <- RunUMAP(multi_seurat_obj_lognorm, dims = 1:40, reduction = "pca")
+DimPlot(multi_seurat_obj_lognorm)
+```
+
+## Perform integration using canonical correlation analysis
+```{r}
+feature_integrate <- SelectIntegrationFeatures(object.list = multi_seurat_obj_split, nfeatures = 3000) # Choose the most variable features used in integration
+multi_seurat_obj_split <- PrepSCTIntegration(object.list = multi_seurat_obj_split, anchor.features = feature_integrate)
+anchor_integrate <- FindIntegrationAnchors(object.list = multi_seurat_obj_split, normalization.method = "SCT", anchor.features = feature_integrate)
+multi_seurat_obj_integrate <- IntegrateData(anchorset = anchor_integrate, normalization.method = "SCT")
+```
+
+## See if integration works well such that each cluster is made up of cells from both conditions
+```{r}
+multi_seurat_obj_integrate <- RunPCA(object = multi_seurat_obj_integrate)
+PCAPlot(multi_seurat_obj_integrate, split.by = "group")  
+set.seed(98966)
+multi_seurat_obj_integrate <- RunUMAP(multi_seurat_obj_integrate, dims = 1:40, reduction = "pca")
+DimPlot(multi_seurat_obj_integrate) 
+DimPlot(multi_seurat_obj_integrate, split.by = "group") 
+
+saveRDS(multi_seurat_obj_integrate, "~/scRNA_analysis/data/derived/multi_seurat_obj_integrate.rds")
+```
+
 # Old fashioned normalization on counts in a single sample
 ## Normalize the data
 ```{r}
