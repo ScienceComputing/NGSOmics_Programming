@@ -272,9 +272,26 @@ seurat_obj <- RunPCA(seurat_obj, features = VariableFeatures(object = seurat_obj
 ```
 
 # Cluster the cells
+## Decide how many principal components are going to be used in the cell clustering, which are assumed to capture the major source of variations driving the cell types?
 ```{r}
-seurat_obj <- FindNeighbors(seurat_obj, dims = 1:40)
-seurat_obj <- FindClusters(seurat_obj, resolution = seq(0.2, 1.2, 0.2))
+ElbowPlot(object = multi_seurat_obj_harmony, ndims = 40)
+percent_variation_per_pc <- multi_seurat_obj_harmony[["pca"]]@stdev / sum(multi_seurat_obj_harmony[["pca"]]@stdev) * 100
+cumulative_percent_variation_per_pc <- cumsum(percent_variation_per_pc)
+pc_number_1 <- which(percent_variation_per_pc < 5 & cumulative_percent_variation_per_pc > 90)[1]
+pc_number_2 <- sort(which((percent_variation_per_pc[1:length(percent_variation_per_pc) - 1] - percent_variation_per_pc[2:length(percent_variation_per_pc)]) > 0.1), decreasing = T)[1] + 1
+min(pc_number_1, pc_number_2)
+
+elbow_data <- data.frame(pct_pc = percent_variation_per_pc, cum_pc = cumulative_percent_variation_per_pc, rank_pc = 1:length(percent_variation_per_pc))
+elbow_data |>
+  ggplot(mapping = aes(cum_pc, pct_pc, label = rank_pc, color = rank_pc > min(pc_number_1, pc_number_2))) + 
+  geom_text() + 
+  geom_hline(yintercept = min(pct_pc[pct_pc > 5]), color = "red") +
+  geom_vline(xintercept = 90, color = "red") + 
+  labs(x = "Cumulative percent variation per pc", y = "Percent variation per pc", title = "Elbow plot with additional quantitative info") + 
+  theme_bw()
+
+# seurat_obj <- FindNeighbors(seurat_obj, dims = 1:40)
+# seurat_obj <- FindClusters(seurat_obj, resolution = seq(0.2, 1.2, 0.2))
 
 # If using the harmony integration before 
 seurat_obj_harmony <- FindNeighbors(object = seurat_obj_harmony, reduction = "harmony")
