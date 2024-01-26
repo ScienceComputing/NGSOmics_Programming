@@ -231,8 +231,7 @@ DimPlot(multi_seurat_obj_integrate, split.by = "group")
 saveRDS(multi_seurat_obj_integrate, "~/scRNA_analysis/data/derived/multi_seurat_obj_integrate.rds")
 ```
 
-## ! Integrate cells across multiple confounding factors (e.g., experimental conditions donor, tissue/location, species, protocol) 
-using `Harmony`
+## ! Integrate cells across multiple confounding factors (e.g., experimental conditions donor, tissue/location, species, protocol) using `Harmony`
 ```{r}
 BiocManager::install("harmony", version = "3.8")
 library(harmony)
