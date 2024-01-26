@@ -142,7 +142,7 @@ obj <- ScaleData(obj, vars.to.regress = c("percent.mt", "S.score", "G2M.score", 
 ```
 
 
-# Principal component analysis 
+# Construct the principal component analysis 
 ```{r}
 set.seed(1000)
 obj <- RunPCA(obj, npcs = 30, verbose = FALSE)
