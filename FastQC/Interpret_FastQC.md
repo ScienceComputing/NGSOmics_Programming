@@ -58,7 +58,11 @@ The plot displaying per base N content illustrates the percentage of bases at ea
 </p>
 
 ## Sequence Length Distribution
-The graph displaying sequence length distribution illustrates the variation in read lengths. Typically in single-cell chemistry methods, reads are of uniform length. However, if trimming occurred prior to quality assessment, this might introduce slight differences in read lengths.
+The graph displaying sequence length distribution illustrates the variation in read lengths. Typically in single-cell/bulk chemistry methods, reads are of uniform length. However, if trimming occurred prior to quality assessment, this might introduce slight differences in read lengths.
+
+<p align="center">
+  <img src="fastqc_sequence_length_distribution_plot.jpeg" width="600" title="plot of sequence length distribution">
+</p>
 
 ## Sequence Duplication Levels
 The sequence duplication level chart shows the distribution of duplication rates in read sequences (indicated by the blue line) before and after deduplication. Due to the necessity of multiple PCR rounds in most single-cell platforms and the tendency of highly expressed genes to produce numerous transcripts, it's common for a small group of sequences to show high duplication levels. Although FastQC does not recognize UMI and might flag this as a warning or failure, it isn't always indicative of poor data quality. However, it's expected that most sequences will display low levels of duplication.
