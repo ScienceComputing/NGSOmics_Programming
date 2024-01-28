@@ -39,6 +39,10 @@ The per sequence quality score plot displays each read's average quality score d
 ## Per Base Sequence Content
 The per base sequence content plot displays the percentage distribution of each nucleotide at every base position across all reads in the file. In single-cell data, variations often occur at the beginning of reads due to the non-random nature of priming site sequences. Such fluctuations are common in RNA-seq libraries and may lead to warnings or failures in FastQC, despite being a frequent occurrence.
 
+<p align="center">
+  <img src="fastqc_per_base_sequence_content_plot.jpeg" width="600" title="plot of per base sequence content">
+</p>
+
 ## Per Sequence GC Content
 The per sequence GC content plot displays the actual GC content distribution of all reads in red, alongside a theoretical expected distribution in blue. Typically, the observed distribution's main peak should align with the transcriptome's overall GC content. Deviations in the width of the observed distribution from the theoretical one, which is expected to follow the genome's distribution, are not unusual. This can occur because the transcriptome's GC content might differ from the genome's. Although such discrepancies might trigger warnings or failures, they are generally not concerning. However, a complex or highly varied distribution often suggests library contamination. It's important to note that interpreting GC content plots in transcriptomics is challenging. This is because the expected distribution depends on both the transcriptome's sequence content and the unknown gene expression levels in the sample.
 
