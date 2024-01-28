@@ -48,11 +48,11 @@ The graph displaying sequence length distribution illustrates the variation in r
 The sequence duplication level chart shows the distribution of duplication rates in read sequences (indicated by the blue line) before and after deduplication. Due to the necessity of multiple PCR rounds in most single-cell platforms and the tendency of highly expressed genes to produce numerous transcripts, it's common for a small group of sequences to show high duplication levels. Although FastQC does not recognize UMI and might flag this as a warning or failure, it isn't always indicative of poor data quality. However, it's expected that most sequences will display low levels of duplication.
 
 ## Overrepresented Sequences
-The module identifying overrepresented sequences highlights any reads that constitute a significant portion of the total number of sequences (> 0.1%). While overrepresentation might occur due to highly expressed genes post-PCR amplification, it's generally expected that most sequences won't be overrepresented. It's important to note that if the source of these overrepresented sequences is identified as something other than 'No Hit', this could suggest contamination of the library by that specific source type."
+The module identifying overrepresented sequences highlights any reads that constitute a significant portion of the total number of sequences (> 0.1%). While overrepresentation might occur due to highly expressed genes post-PCR amplification, it's generally expected that most sequences won't be overrepresented. It's important to note that if the source of these overrepresented sequences is identified as something other than 'No Hit', this could suggest contamination of the library by that specific source type.
 
 ## Adapter Content
 The adapter content module displays the cumulative percentage of reads with adapter sequences at each base position. Ideally, these adapter sequences should not be prevalent in the data.
 
-## More reading
+## Further reading
 - [Common next-generation sequencing problems](https://sequencing.qcfail.com)
 - [FastQC Tutorial & FAQ](https://rtsf.natsci.msu.edu/genomics/technical-documents/fastqc-tutorial-and-faq.aspx)
