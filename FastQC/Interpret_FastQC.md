@@ -23,7 +23,7 @@
 - If we observe the poor quality calls, we may consider performing the quality trimming of reads.
 
 <p align="center">
-  <img src="fastqc_per_base_sequence_quality_plot.jpeg" width="600" title="hover text">
+  <img src="fastqc_per_base_sequence_quality_plot.jpeg" width="600" title="plot variant of per base sequence quality">
 </p>
 
 ## Per Tile Sequence Quality
