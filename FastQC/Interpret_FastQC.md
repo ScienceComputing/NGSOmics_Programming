@@ -11,6 +11,7 @@
 * [Sequence Duplication Levels](#Sequence-Duplication-Levels)
 * [Overrepresented Sequences](#Overrepresented-Sequences)
 * [Adapter Content](#Adapter-Content)
+* [Global View](#Global-View-of-Multiple-FastQC-Metrics-across-All-Sequences)
 
 ## Basic Statistics
 - High-quality single-cell/bulk RNA-seq data typically exhibit minimal instances of low-quality sequences and frequently have consistent sequence lengths. 
@@ -85,7 +86,7 @@ The adapter content module displays the cumulative percentage of reads with adap
   <img src="fastqc_adapter_content_plot.jpeg" width="600" title="plot of adapter content">
 </p>
 
-## Global View of multiple FastQC metrics across all sequences
+## Global View of Multiple FastQC Metrics across All Sequences
 Green: results seem entirely normal; orange: results seem slightly abnormal; red: results seem very unusual
 <p align="center">
   <img src="fastqc-status-check-heatmap.jpeg" width="600" title="plot of multiple FastQC metrics across all sequences">
