@@ -96,8 +96,9 @@ FeatureScatter(obj, feature1 = "nCount_RNA", feature2 = "percent.mt")
 ```
 
 
-# Determine the cell cycle phase
+# Determine the cell cycle phase 
 ```{r}
+# TD: update the following codes
 # Convert the human marker genes for S phase and G2/M phase into the corresponding mouse genes
 # Ref: https://bioconductor.org/packages/release/bioc/vignettes/biomaRt/inst/doc/accessing_ensembl.html#step1-identifying-the-database-you-need
 convertHumanGeneList <- function(x){
