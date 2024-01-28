@@ -13,7 +13,7 @@
 * [Adapter Content](#Adapter-Content)
 
 ## Basic Statistics
-- High-quality single-cell/bulk data typically exhibit minimal instances of low-quality sequences and frequently have consistent sequence lengths. 
+- High-quality single-cell/bulk RNA-seq data typically exhibit minimal instances of low-quality sequences and frequently have consistent sequence lengths. 
 - The GC content should closely align with the overall GC composition of the genome or transcriptome specific to the species being sequenced. 
 
 ## Per Base Sequence Quality
@@ -51,7 +51,11 @@ The per sequence GC content plot displays the actual GC content distribution of 
 </p>
 
 ## Per Base N Content
-The plot displaying per base N content illustrates the percentage of bases at each position where an N is identified, typically due to the sequencer's lack of confidence in making a base call. Ideally, in a high-quality library, there should be minimal to no non-zero N content across the entire line.
+The plot displaying per base N content illustrates the percentage of bases at each position where an N is identified, typically due to the sequencer's lack of confidence in making a base call. Ideally, in a high-quality library, there should be minimal to zero N content across the entire line.
+
+<p align="center">
+  <img src="fastqc_per_base_n_content_plot.jpeg" width="600" title="plot of per base n content">
+</p>
 
 ## Sequence Length Distribution
 The graph displaying sequence length distribution illustrates the variation in read lengths. Typically in single-cell chemistry methods, reads are of uniform length. However, if trimming occurred prior to quality assessment, this might introduce slight differences in read lengths.
