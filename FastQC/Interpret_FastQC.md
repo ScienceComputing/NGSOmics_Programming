@@ -46,6 +46,10 @@ The per base sequence content plot displays the percentage distribution of each 
 ## Per Sequence GC Content
 The per sequence GC content plot displays the actual GC content distribution of all reads in red, alongside a theoretical expected distribution in blue. Typically, the observed distribution's main peak should align with the transcriptome's overall GC content. Deviations in the width of the observed distribution from the theoretical one, which is expected to follow the genome's distribution, are not unusual. This can occur because the transcriptome's GC content might differ from the genome's. Although such discrepancies might trigger warnings or failures, they are generally not concerning. However, a complex or highly varied distribution often suggests library contamination. It's important to note that interpreting GC content plots in transcriptomics is challenging. This is because the expected distribution depends on both the transcriptome's sequence content and the unknown gene expression levels in the sample.
 
+<p align="center">
+  <img src="fastqc_per_sequence_gc_content_plot.jpeg" width="600" title="plot of per sequence gc content">
+</p>
+
 ## Per Base N Content
 The plot displaying per base N content illustrates the percentage of bases at each position where an N is identified, typically due to the sequencer's lack of confidence in making a base call. Ideally, in a high-quality library, there should be minimal to no non-zero N content across the entire line.
 
