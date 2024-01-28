@@ -28,6 +28,8 @@ The per tile sequence quality plot indicates the variation in read quality acros
 ## Per Sequence Quality Scores
 The per sequence quality score plot displays each read's average quality score distribution in the file. The x-axis represents average quality scores, while the y-axis indicates the occurrence frequency of each score. Ideally, this plot should exhibit a single peak towards the end, signifying good data quality. The emergence of additional peaks may suggest quality issues in a subset of the reads.
 
+![fastqc_per_base_sequence_quality_plot](FastQC/fastqc_per_base_sequence_quality_plot.jpeg)
+
 ## Per Base Sequence Content
 The per base sequence content plot displays the percentage distribution of each nucleotide at every base position across all reads in the file. In single-cell data, variations often occur at the beginning of reads due to the non-random nature of priming site sequences. Such fluctuations are common in RNA-seq libraries and may lead to warnings or failures in FastQC, despite being a frequent occurrence
 
