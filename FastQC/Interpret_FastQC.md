@@ -74,8 +74,16 @@ The sequence duplication level chart shows the distribution of duplication rates
 ## Overrepresented Sequences
 The module identifying overrepresented sequences highlights any reads that constitute a significant portion of the total number of sequences (> 0.1%). While overrepresentation might occur due to highly expressed genes post-PCR amplification, it's generally expected that most sequences won't be overrepresented. It's important to note that if the source of these overrepresented sequences is identified as something other than 'No Hit', this could suggest contamination of the library by that specific source type.
 
+<p align="center">
+  <img src="fastqc_overrepresented_sequence_plot.jpeg" width="600" title="plot of overrepresented sequence">
+</p>
+
 ## Adapter Content
 The adapter content module displays the cumulative percentage of reads with adapter sequences at each base position. Ideally, these adapter sequences should not be prevalent in the data.
+
+<p align="center">
+  <img src="fastqc_adapter_content_plot.jpeg" width="600" title="plot of adapter content">
+</p>
 
 ## Further reading
 - [Common next-generation sequencing problems](https://sequencing.qcfail.com)
