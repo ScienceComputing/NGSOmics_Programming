@@ -22,4 +22,4 @@ echo "barcode locations (on 5' or 3' end of reads): $prime"
 echo "average read length: $read_length"
 echo "possible confouders: $covariate"
 
-Organize_Metadata.sh -o ~/scrnaseq/output
+# Organize_Metadata.sh -o ~/scrnaseq/output
