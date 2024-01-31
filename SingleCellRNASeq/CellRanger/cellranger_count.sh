@@ -19,3 +19,12 @@ cellranger count --id=pbmc_1k_count \
 ls -1 pbmc_1k_count/outs # Display one entry per line
 ls -Flha pbmc_1k_count/outs # Thoroughly examine the output
 du -sh
+
+# Run cell ranger in HPC
+cellranger count --id=mouse_human_intron \
+--transcriptome=/scratch/your_account/scrnaseq/data/index/refdata-gex-GRCh38-and-mm10-2020-A/ \
+--fastqs=/home/your_account/scrnaseq/data/fastq/ \
+--expect-cells=10000 \
+--include-introns \
+--localmem=80 \
+--localcores=16
