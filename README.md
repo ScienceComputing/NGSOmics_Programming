@@ -37,6 +37,8 @@ This repository houses conceptual viewpoints, coding practice, assignment/compet
 ### Analyze bulk RNA-seq data
 
   - [Recommend] Use STAR to [align the reads](BulkRNASeq/STAR_Align.sh)
+      - Other splice-aware alignment tool options: Olego, HISAT2, MapSplice, ABMapper, Passion, BLAT, RUM ...
+      - Other alignment tools that disregard isoforms: BWA, Bowtie2 ...
   - Use Rsubread to [align the reads](BulkRNASeq/AlignmentCountingTCell.Rmd)
     - **Why align?** To pinpoint the specific location on the human genome from which our reads originated
   - Use Qualimap to perform [quality assurance](BulkRNASeq/Qualimap_QC.sh) on the aligned reads
