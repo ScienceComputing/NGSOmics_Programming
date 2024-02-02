@@ -314,12 +314,33 @@ for (i in seq(0.2, 1.2, 0.2)) {
 }
 ```
 
-# Examine the QC metrics of clusters
-## Distribution of cells per cluster in each sample
+# Examine the QC metrics of cell clusters
+## Distribution of cells per cluster in each condition/sample
 ```{r}
 count_cell_cluster_condition <- FetchData(multi_seurat_obj_harmony, vars = c("ident", "orig.ident")) |> 
   dplyr::count(ident, orig.ident) |>
   tidyr::spread(key = ident, value = n)
 
 View(count_cell_cluster_condition )
+```
+
+## Plot cell clustering per condition/sample
+```{r}
+DimPlot(multi_seurat_obj_harmony, label = TRUE, split.by = "group")  + NoLegend()
+```
+
+## Plot cell clustering by the different cell cycle phases
+```{r}
+DimPlot(multi_seurat_obj_harmony, label = TRUE, split.by = "Phase")  + NoLegend()
+```
+
+## Plot cell clustering by additional metrics
+```{r}
+FeaturePlot(multi_seurat_obj_harmony, 
+            reduction = "umap", 
+            features = c("nCount_RNA", "nFeature_RNA", "percent_mt", "S.Score", "G2M.Score"),
+            pt.size = 0.7, 
+            order = TRUE,
+            min.cutoff = 'q10',
+            label = TRUE)
 ```
