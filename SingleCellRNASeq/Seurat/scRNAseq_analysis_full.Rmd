@@ -268,7 +268,7 @@ seurat_obj <- ScaleData(seurat_obj, features = rownames(seurat_obj))
 ```
 
 # Cluster the cells
-## Decide how many principal components are going to be used in the cell clustering, which are assumed to capture the major source of variations driving the cell types?
+## Determine the number of principal components used in the cell clustering; these principal components are assumed to capture the major source of variations driving the cell types
 ```{r}
 ElbowPlot(object = multi_seurat_obj_harmony, ndims = 40)
 percent_variation_per_pc <- multi_seurat_obj_harmony[["pca"]]@stdev / sum(multi_seurat_obj_harmony[["pca"]]@stdev) * 100
@@ -287,12 +287,16 @@ elbow_data |>
   theme_bw()
 ```
 
-## Cluster the cells
+## Start clustering under different resolutions
 ```{r}
 # seurat_obj <- FindNeighbors(seurat_obj, dims = 1:40)
 # seurat_obj <- FindClusters(seurat_obj, resolution = seq(0.2, 1.2, 0.2))
 
-# If using the harmony integration before 
+# If integrate cells using canonical correlation analysis
+multi_seurat_obj_integrate <- FindNeighbors(multi_seurat_obj_integrate, dims = 1:40)
+multi_seurat_obj_integrate <- FindClusters(multi_seurat_obj_integrate, resolution = seq(0.2, 1.2, 0.2))
+
+# If integrate cells using harmony integration
 multi_seurat_obj_harmony <- FindNeighbors(object = multi_seurat_obj_harmony, reduction = "harmony")
 multi_seurat_obj_harmony <- FindClusters(multi_seurat_obj_harmony, resolution = seq(0.2, 1.2, 0.2))
 ```
@@ -300,8 +304,8 @@ multi_seurat_obj_harmony <- FindClusters(multi_seurat_obj_harmony, resolution = 
 ## Plot the cell clustering
 ```{r}
 multi_seurat_obj_harmony@meta.data |> View()
-Idents(object = multi_seurat_obj_harmony) <- "integrated_snn_res.0.6" # ? harmony_res.0.6
-# multi_seurat_obj_harmony <- RunUMAP(multi_seurat_obj_harmony, reduction = "harmony", assay = "SCT", dims = 1:40)
+Idents(object = multi_seurat_obj_harmony) <- "integrated_snn_res.0.6" # TD
+# Recap: multi_seurat_obj_harmony <- RunUMAP(multi_seurat_obj_harmony, reduction = "harmony", assay = "SCT", dims = 1:40)
 DimPlot(multi_seurat_obj_harmony, reduction = "umap", label = TRUE, label.size = 7)
 
 for (i in seq(0.2, 1.2, 0.2)) {
