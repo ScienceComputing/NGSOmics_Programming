@@ -339,8 +339,5 @@ DimPlot(multi_seurat_obj_harmony, label = TRUE, split.by = "Phase")  + NoLegend(
 FeaturePlot(multi_seurat_obj_harmony, 
             reduction = "umap", 
             features = c("nCount_RNA", "nFeature_RNA", "percent_mt", "S.Score", "G2M.Score"),
-            pt.size = 0.7, 
-            order = TRUE,
-            min.cutoff = 'q10',
-            label = TRUE)
+            pt.size = 0.7, order = TRUE, min.cutoff = "q10", label = TRUE)
 ```
