@@ -321,7 +321,7 @@ count_cell_cluster_condition <- FetchData(multi_seurat_obj_harmony, vars = c("id
   dplyr::count(ident, orig.ident) |>
   tidyr::spread(key = ident, value = n)
 
-View(count_cell_cluster_condition )
+View(count_cell_cluster_condition)
 ```
 
 ## Plot cell clustering per condition/sample
