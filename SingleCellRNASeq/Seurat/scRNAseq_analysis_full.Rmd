@@ -313,3 +313,13 @@ for (i in seq(0.2, 1.2, 0.2)) {
   DimPlot(multi_seurat_obj_harmony, reduction = "umap", label = TRUE, label.size = 7)
 }
 ```
+
+# Examine the QC metrics of clusters
+## Distribution of cells per cluster in each sample
+```{r}
+count_cell_cluster_condition <- FetchData(multi_seurat_obj_harmony, vars = c("ident", "orig.ident")) |> 
+  dplyr::count(ident, orig.ident) |>
+  tidyr::spread(key = ident, value = n)
+
+View(count_cell_cluster_condition )
+```
