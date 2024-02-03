@@ -30,7 +30,7 @@ This repository houses conceptual viewpoints, coding practice, assignment/compet
   - Use Bioconductor packages to [perform single cell RNA-Seq data analysis](SingleCellRNASeq/Bioconductor/BioconductorSkinCell.Rmd)
   - Generate [pseudobulk](SingleCellRNASeq/Scanpy/Pseudobulk.py), which aggregates the gene expression levels specific to each cell type within an individual
   - Perform pseudobulk-based [differentially gene expression analysis](SingleCellRNASeq/Scanpy/scRNAseq_DE_Part1.ipynb)
-  - Use GSEApy to evaluate if a predefined set of genes shows statistically significant and consistent variations between two biological conditions
+  - Use bulk RNAseq-based pathway analysis tools (e.g., clusterProfiler, GSEA, GSVA) or single cell RNAseq-based Pagoda2 to evaluate if a predefined set of genes shows statistically significant and consistent variations between biological conditions
   - Use scGen to model [perturbation responses](SingleCellRNASeq/Perturbation/scGen)  
 
 <hr>
