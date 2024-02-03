@@ -1,0 +1,26 @@
+---
+title: "Pseudobulk Differential Expression Analysis in Single Cell RNA-Seq Data"
+author: "Anni Liu"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: 
+  html_document:
+    code_folding: show
+---
+
+# Attach the libraries
+```{r}
+# Reference: https://github.com/ScienceComputing/Project_Programming/blob/main/UsefulR/Attach_Download_Package.R
+bio_pkgs <- c("edgeR", "S4Vectors", "SingleCellExperiment", "apeglm", "DESeq2")
+gen_pkgs <- c("data.table", "tidyverse", "Matrix.utils", "Matrix", "reshape2", "pheatmap", "png", "RColorBrewer", "cowplot")
+for (pkg in c(bio_pkgs, gen_pkgs)) {
+  if (!require(pkg, character.only = T) & (pkg %in% bio_pkgs)) {
+    BiocManager::install(pkg)
+    library(pkg, character.only = T)
+  } else if (!require(pkg, character.only = T) & (pkg %in% gen_pkgs)) {
+    install.packages(pkg)
+    library(pkg, character.only = T)
+  } else {
+    library(pkg, character.only = T)
+  }
+}
+```
