@@ -15,6 +15,7 @@ library(ggplot2)
 library(cowplot)
 library(purrr)
 library(AnnotationHub)
+library(readr)
 ```
 
 # Load the matrix.mtx, features.tsv, and barcodes.tsv files generated from 10x Genomics 
@@ -182,6 +183,7 @@ multi_seurat_obj_lognorm <- ScaleData(multi_seurat_obj_lognorm)
 # Run and visualize PCA colored by cell cycle phase
 multi_seurat_obj_lognorm <- RunPCA(multi_seurat_obj_lognorm)
 DimPlot(object = multi_seurat_obj_lognorm, reduction = "pca", group.by = "Phase", split.by = "Phase")
+# Reference: https://satijalab.org/seurat/reference/dimplot
 ```
 
 ## See if the mitochondrial gene expression contributes to the major variations in our dataset
@@ -340,6 +342,7 @@ DimPlot(multi_seurat_obj_harmony, label = TRUE, split.by = "Phase")  + NoLegend(
 
 ## Plot cell clustering by additional metrics
 ```{r}
+# Reference: https://satijalab.org/seurat/reference/featureplot
 FeaturePlot(object = multi_seurat_obj_harmony, 
             reduction = "umap", 
             features = c("nCount_RNA", "nFeature_RNA", "percent_mt", "S.Score", "G2M.Score"),
@@ -421,17 +424,84 @@ cluster0_derived_marker_anno |> View()
 # Find conserved markers for all clusters
 cluster_derived_marker_anno_fun <- function(cluster_num) {
   # This function estimates the conserved markers for any cluster
-  FindConservedMarkers(multi_seurat_obj_harmony, ident.1 = cluster_id, grouping.var = "group", only.pos = TRUE) |>
+  FindConservedMarkers(multi_seurat_obj_harmony, ident.1 = cluster_num, grouping.var = "group", only.pos = TRUE) |>
     rownames_to_column(var = "gene") |>
     left_join(y = unique(anno_data[, c("gene_name", "description")]),
               by = c("gene" = "gene_name")) |>
     cbind(cluster_id = cluster_num, .)
 }
-map_dfr(1:12, cluster_derived_marker_anno_fun)
+all_cluster_derived_marker_anno <- map_dfr(1:12, cluster_derived_marker_anno_fun)
+
+# Determine top 20 markers per cluster
+all_cluster_derived_marker_anno_top20 <- all_cluster_derived_marker_anno |>
+  mutate(avg_log2FC = (kd_avg_log2FC + over_avg_log2FC + wt_avg_log2FC) / 3) |>
+  group_by(cluster_id) |>
+  top_n(n = 20, 
+        wt = avg_log2FC) # wt: the variable to use for ordering
+
+all_cluster_derived_marker_anno_top20 |> View()
+
+# Plot top derived marker genes of interest
+FeaturePlot(object = multi_seurat_obj_harmony, features = c("CCR7", "CD3D", "LTB"),
+            order = TRUE, min.cutoff = 'q10', label = TRUE, repel = TRUE)
+
+VlnPlot(object = multi_seurat_obj_harmony, features = c("CCR7", "CD3D", "LTB"))
 ```
 
 ### Identify subpopulations of the same cell types - `FindMarkers()`
 ```{r}
+cluster_derived_marker_anno_omnipotent <- function(cluster_num_1, cluster_num_2, marker_type = c("all", "conserved", "subpopulation")) {
+  # This function estimates the all/conserved/subpopulation markers for any cluster
+  marker_type <- match.arg(marker_type, c("all", "conserved", "subpopulation"))
+  if (marker_type == "all") {
+    FindAllMarkers(multi_seurat_obj_harmony, only.pos = TRUE, logfc.threshold = 0.25)   
+  } else if (marker_type == "conserved") { 
+      FindConservedMarkers(multi_seurat_obj_harmony, ident.1 = cluster_num_1, grouping.var = "group", only.pos = TRUE) |>
+        rownames_to_column(var = "gene") |>
+        left_join(y = unique(anno_data[, c("gene_name", "description")]),
+                  by = c("gene" = "gene_name")) |>
+        cbind(cluster_id = cluster_num_1, .)
+  } else {
+    FindMarkers(multi_seurat_obj_harmony, ident.1 = cluster_num_1, ident.2 = cluster_num_2) |>
+      rownames_to_column(var = "gene") |>
+      left_join(y = unique(anno_data[, c("gene_name", "description")]),
+                by = c("gene" = "gene_name"))
+  }
+}
 
+cluster0_derived_marker_anno <- cluster_derived_marker_anno_omnipotent(cluster_num_1 = 0, cluster_num_2 = c(5, 6, 8), marker_type = "subpopulation")
+
+cluster0_derived_marker_anno |>
+  dplyr::arrange(p_val_adj) 
 ```
 
+### Label identity of each cluster
+```{r}
+multi_seurat_obj_harmony <- RenameIdents(object = multi_seurat_obj_harmony, 
+                                         "0" = "CD4+ Naive cells",
+                                  	 "1" = "CD4+ Th1 cells",
+                                 	 "2" = "CD4+ Th17 cells",
+                                  	 "3" = "CD4+ Treg cells",
+	                                 "4" = "CD8+ Naive cells",
+	                                 "5" = "CD8+ CM cells",
+	                                 "6" = "CD8+ EM cells",
+	                                 "7" = "CD8+ TEMRA cells",
+	                                 "8" = "NK cells",
+	                                 "9" = "B cells",
+	                                 "10" = "Activated T cells",
+	                                 "11" = "MAIT",
+	                                 "12" = "CD14+ monocytes",
+	                                 "13" = "Myeloid dendritic cells",
+	                                 "14" = "Plasmacytoid dendritic cells",
+	                                 "15" = "Unknown")
+
+DimPlot(object = multi_seurat_obj_harmony, reduction = "umap", label = TRUE, label.size = 3.5, repel = TRUE)
+
+# Remove unknown cells
+multi_seurat_obj_harmony_2 <- subset(multi_seurat_obj_harmony, idents = "Unknown", invert = TRUE)
+
+DimPlot(object = multi_seurat_obj_harmony_2, reduction = "umap", label = TRUE, label.size = 3.5, repel = TRUE)
+
+# write_rds() is a wrapper of saveRDS(), which does not compress the file by default
+write_rds(multi_seurat_obj_harmony_2, file = "multi_seurat_obj_harmony_2.rds")
+```
