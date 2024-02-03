@@ -46,7 +46,7 @@ sce_meta <- colData(sce_obj)
 dim(sce_meta); head(sce_meta)
 ```
 
-# Generate the pseudobulk data
+# Generate the pseudobulk count by cell type
 ```{r}
 (cluster_name <- levels(sce_meta$cluster_id))
 (sample_name <- levels(sce_meta$sample_id))
@@ -54,6 +54,29 @@ col_name <- c("cluster_id", "sample_id")
 pb_group <- sce_meta[, col_name]; head(pb_group) # Record the sample id and cluster id per barcode/cell
 pb_count <- aggregate.Matrix(t(sce_count), groupings = pb_group, fun = "sum") 
 structure(pb_count); pb_count[1:10, 1:10]
+
+pb_count_t <- t(pb_count)
+col_prefix <- sub("_.*", "", colnames(pb_count_t)) # tstrsplit(colnames(pb_count_t), "_")[[1]]
+
+num_cluster <- length(cluster_name)
+pb_count_list <- vector(mode = "list", length = num_cluster)
+for (i in 1:num_cluster) {
+ col_target <- which(col_prefix == cluster_name[i])
+ pb_count_t[, col_target] -> pb_count_list[[i]]
+ cluster_name[i] -> names(pb_count_list)[i]
+}
+```
+
+# Format the metadata
+```{r}
+col_name <- c("group_id", "patient_id", "sample_id")
+pb_meta <- as.data.frame(sce_meta)[, col_name]
+pb_meta <- pb_meta[!duplicated(pb_meta), ]
+dim(pb_meta); head(pb_meta)
+rownames(pb_meta) <- pb_meta$sample_id
+
+# Estimate the frequency of cells mapping to each cluster per sample
+freq_cell_cluster_sample <- table(sce_meta$cluster_id, sce_meta$sample_id)
 ```
 
 
