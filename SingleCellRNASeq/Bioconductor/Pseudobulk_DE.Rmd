@@ -65,11 +65,12 @@ for (i in 1:num_cluster) {
  pb_count_t[, col_target] -> pb_count_list[[i]]
  cluster_name[i] -> names(pb_count_list)[i]
 }
+write_rds(pb_count_list, file = "pb_count_list.rds")
 ```
 
 # Format the metadata
 ```{r}
-col_name <- c("group_id", "patient_id", "sample_id")
+col_name <- c("group_id", "patient_id", "sample_id") # !
 pb_meta <- as.data.frame(sce_meta)[, col_name]
 pb_meta <- pb_meta[!duplicated(pb_meta), ]
 dim(pb_meta); head(pb_meta)
@@ -77,7 +78,77 @@ rownames(pb_meta) <- pb_meta$sample_id
 
 # Estimate the frequency of cells mapping to each cluster per sample
 freq_cell_cluster_sample <- table(sce_meta$cluster_id, sce_meta$sample_id)
+
+pb_meta_list <- vector(mode = "list", length = num_cluster)
+for (i in 1:num_cluster) {
+ meta_df <- data.frame(cluster_sample_id = colnames(pb_count_list[[i]]))
+ meta_df$cluster_id <- sub("_.*", "", meta_df$cluster_sample_id) # !
+ meta_df$sample_id  <- sub(".*_", "", meta_df$cluster_sample_id) # !
+ cell_count_per_sample <- freq_cell_cluster_sample[which(rownames(freq_cell_cluster_sample) == unique(meta_df$cluster_id)), ]
+ cell_count_per_sample_filter <- cell_count_per_sample[cell_count_per_sample > 0]
+ sample_order <- match(meta_df$sample_id, colnames(cell_count_per_sample_filter))
+ cell_count_per_sample_order <- cell_count_per_sample_filter[, sample_order]
+ meta_df$cell_count <- cell_count_per_sample_order
+ meta_df_2 <- plyr::join(x = meta_df, y = pb_meta, by = intersect(colnames(meta_df), colnames(pb_meta)), type = "left")
+ rownames(meta_df_2) <- meta_df_2$cluster_sample_id
+ pb_meta_list[[i]] <- meta_df_2
+ names(pb_meta_list)[i] <- unique(meta_df_2$cluster_id)
+}
+str(pb_meta_list)
+write_rds(pb_meta_list, file = "pb_meta_list.rds")
 ```
+
+# Perform DESeq2-based differential expression analysis
+## Build a DESeq2 object
+```{r}
+all(names(pb_count_list) == names(pb_meta_list))
+cluster_target <- which(names(pb_count_list) == "NK cells")
+nk_count <- pb_count_list[[cluster_target]]; nk_count[1:10, 1:10]
+nk_meta <- pb_meta_list[[cluster_target]]; head(nk_meta)
+all(colnames(nk_count) == rownames(nk_meta))
+dds <- DESeqDataSetFromMatrix(countData = nk_count, colData = nk_meta, design = ~ group_id)
+```
+
+## Sample-level quality control
+```{r}
+vsd <- vst(dds, blind = T)
+DESeq2::plotPCA(vsd, ntop = 500, intgroup = "group_id")
+DESeq2::plotPCA(vsd, ntop = 500, intgroup = "cell_count")
+
+vsd_cor <- cor(assay(vsd))
+pheatmap(vsd_cor, annotation = nk_meta[, c("group_id"), drop = F])
+```
+
+## Model raw counts per gene using `DESeq`
+```{r}
+dds <- DESeq(dds)
+plotDispEsts(dds)
+```
+
+## Test for differential expression
+```{r}
+resultsNames(dds)
+res <- results(dds, name = "group_id_kd_vs_wt",
+               alpha = 0.05)
+
+res_shrink <- lfcShrink(dds = dds, coef = "group_id_kd_vs_wt", res = res, type = "apeglm")
+
+res_all <- res_shrink |>
+  data.frame() |>
+  rownames_to_column(var = "gene") |>
+  as_tibble() |>
+  dplyr::arrange(padj)
+
+res_sig <- dplyr::filter(res_all, padj < 0.05) |>
+  dplyr::arrange(padj)
+
+log2FC_up <- 0.58
+log2FC_down <- -1
+res_sig_up <- dplyr::filter(res_sig, log2FoldChange >= log2FC_up) 
+res_sig_down <- dplyr::filter(res_sig, log2FoldChange <= log2FC_down) 
+```
+
+# Visualization
 
 
 
