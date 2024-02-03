@@ -10,10 +10,11 @@ output:
 # Attach the libraries
 ```{r}
 library(Seurat)
-# Seurat function manual: https://satijalab.org/seurat/articles/essential_commands.html
+# Seurat function manual: https://satijalab.org/seurat/articles/essential_commands.html; https://satijalab.org/seurat/reference/
 library(ggplot2)
 library(cowplot)
 library(purrr)
+library(AnnotationHub)
 ```
 
 # Load the matrix.mtx, features.tsv, and barcodes.tsv files generated from 10x Genomics 
@@ -396,5 +397,41 @@ map(known_gene_marker_set, feature_plot_fun)
 ### Identify unknown clusters and increase confidence in hypothesized cell types for a single sample group/condition - `FindAllMarkers()`
 ```{r}
 derived_gene_marker <- FindAllMarkers(object = multi_seurat_obj_harmony, only.pos = TRUE, logfc.threshold = 0.25)   
+```
+
+### Identify clusters that are conserved across conditions for multiple sample groups/conditions - `FindConservedMarkers()`
+```{r}
+# Find conserved markers for one cluster
+cluster0_derived_marker <- FindConservedMarkers(object = multi_seurat_obj_harmony, ident.1 = 0, grouping.var = "group", only.pos = TRUE, logfc.threshold = 0.25)
+# ident.2: a second identity class for comparison. If NULL (default) - use all other cells for comparison.
+# logfc.threshold = 0.25 -> ~20% increase in gene expression
+
+anno_con <- AnnotationHub()
+anno_db <- query(ah, pattern = c("Homo sapiens", "EnsDb"), ignore.case = TRUE)
+latest_id <- tail(rownames(mcols(anno_db)), n = 1)
+ensemble_db <- anno_con[[latest_id]]
+anno_data <- genes(ensemble_db, return.type = "data.frame")[, c("gene_id", "gene_name", "seq_name", "gene_biotype", "description")]
+cluster0_derived_marker_anno <- cluster0_derived_marker |> 
+  rownames_to_column(var = "gene") |>
+  left_join(y = unique(anno_data[, c("gene_name", "description")]),
+            by = c("gene" = "gene_name"))
+
+cluster0_derived_marker_anno |> View()
+
+# Find conserved markers for all clusters
+cluster_derived_marker_anno_fun <- function(cluster_num) {
+  # This function estimates the conserved markers for any cluster
+  FindConservedMarkers(multi_seurat_obj_harmony, ident.1 = cluster_id, grouping.var = "group", only.pos = TRUE) |>
+    rownames_to_column(var = "gene") |>
+    left_join(y = unique(anno_data[, c("gene_name", "description")]),
+              by = c("gene" = "gene_name")) |>
+    cbind(cluster_id = cluster_num, .)
+}
+map_dfr(1:12, cluster_derived_marker_anno_fun)
+```
+
+### Identify subpopulations of the same cell types - `FindMarkers()`
+```{r}
+
 ```
 
