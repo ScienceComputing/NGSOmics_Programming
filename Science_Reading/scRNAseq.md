@@ -1,3 +1,13 @@
+## Methodology progress in 2024
+
+**Harmonized single-cell perturbation data**
+
+Peidli, S., Green, T.D., Shen, C. et al. scPerturb: harmonized single-cell perturbation data. Nat Methods (2024). https://doi.org/10.1038/s41592-023-02144-y
+
+> "The resulting information resource, scPerturb, enables development and testing of computational methods, and facilitates comparison and integration across datasets. We describe energy statistics (E-statistics) for quantification of perturbation effects and significance testing, and demonstrate E-distance as a general distance measure between sets of single-cell expression profiles. We illustrate the application of E-statistics for quantifying similarity and efficacy of perturbations."
+
+<br>
+
 ## Methodology progress in 2023
 
 **Multimodal spatiotemporal phenotyping of human retinal organoid development**
