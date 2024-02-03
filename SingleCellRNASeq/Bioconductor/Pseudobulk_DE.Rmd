@@ -11,7 +11,7 @@ output:
 ```{r}
 # Reference: https://github.com/ScienceComputing/Project_Programming/blob/main/UsefulR/Attach_Download_Package.R
 bio_pkgs <- c("edgeR", "S4Vectors", "SingleCellExperiment", "apeglm", "DESeq2")
-gen_pkgs <- c("data.table", "tidyverse", "Matrix.utils", "Matrix", "reshape2", "pheatmap", "png", "RColorBrewer", "cowplot")
+gen_pkgs <- c("data.table", "tidyverse", "Matrix.utils", "Matrix", "reshape2", "pheatmap", "png", "RColorBrewer", "cowplot", "readr")
 for (pkg in c(bio_pkgs, gen_pkgs)) {
   if (!require(pkg, character.only = T) & (pkg %in% bio_pkgs)) {
     BiocManager::install(pkg)
@@ -24,3 +24,37 @@ for (pkg in c(bio_pkgs, gen_pkgs)) {
   }
 }
 ```
+
+# Load the data
+```{r}
+# Reference: https://github.com/satijalab/seurat/wiki/Assay
+seurat_obj <- read_rds(multi_seurat_obj_harmony_2.rds)
+seurat_count <- seurat_obj@assays$RNA@counts 
+seurat_meta <- seurat_obj@meta.data
+seurat_meta$cluster_id <- factor(seurat_obj@active.ident)
+sce_obj <- SingleCellExperiment(assays = list(counts = seurat_count), colData = seurat_meta)
+write_rds(sce_obj, file = "sce_obj.rds")
+```
+
+# Explore the data
+```{r}
+assays(sce_obj)
+sce_count <- counts(sce_obj)
+dim(sce_count); sce_count[1:10, 1:10]
+
+sce_meta <- colData(sce_obj)
+dim(sce_meta); head(sce_meta)
+```
+
+# Generate the pseudobulk data
+```{r}
+(cluster_name <- levels(sce_meta$cluster_id))
+(sample_name <- levels(sce_meta$sample_id))
+col_name <- c("cluster_id", "sample_id")
+pb_group <- sce_meta[, col_name]; head(pb_group) # Record the sample id and cluster id per barcode/cell
+pb_count <- aggregate.Matrix(t(sce_count), groupings = pb_group, fun = "sum") 
+structure(pb_count); pb_count[1:10, 1:10]
+```
+
+
+
