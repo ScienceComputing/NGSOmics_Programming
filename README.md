@@ -37,13 +37,14 @@ This repository houses conceptual viewpoints, coding practice, assignment/compet
 <hr>
 
 ### Analyze bulk RNA-seq data
-
+  - Run FastQC to [evaluate sequence quality and content](FastQC/Run_FastQC.sh)
   - [Recommend] Use splice-aware genome aligner STAR to [align the reads](BulkRNASeq/STAR_Align.sh)
       - Other splice-aware alignment tool options: Olego, HISAT2, MapSplice, ABMapper, Passion, BLAT, RUM ...
       - Other alignment tools that disregard isoforms: BWA, Bowtie2 ...
   - Use Rsubread to [align the reads](BulkRNASeq/AlignmentCountingTCell.Rmd)
     - **Why align?** To pinpoint the specific location on the human genome from which our reads originated
   - Use Qualimap to perform [quality assurance](BulkRNASeq/Qualimap_QC.sh) on the aligned reads
+  - Use MultiQC to harmonize all QC and alignment metadata from FastQC, STAR, and Qualimap and other [tools](https://multiqc.info/modules/)
   - Use GenomicAlignments for aligned reads to [obtain the gene-level or exon-level quantification](BulkRNASeq/AlignmentCountingTCell.Rmd)
   - Use featureCounts for aligned reads to [count the fragments](BulkRNASeq/featureCounts.sh)
   - [Recommend] Use Salmon for unaligned reads to [obtain the transcript-level quantification](BulkRNASeq/Salmon_quant.sh)
