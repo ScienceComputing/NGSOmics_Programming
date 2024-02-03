@@ -25,8 +25,9 @@ This repository houses conceptual viewpoints, coding practice, assignment/compet
 - After having the `feature-barcode matrices` at hand, we can ...
   - Use Scanpy workflow to perform [quality assurance, cell clustering, marker gene detection for cell identities](SingleCellRNASeq/Scanpy/PBMC), and [trajectory inference](SingleCellRNASeq/Scanpy/Bone_Marrow)
   - Use Seurat workflow to perform quality assurance, cell clustering, and marker gene detection for cell identities [case 1](SingleCellRNASeq/Seurat/scRNAseq_analysis_full.Rmd) | [case 2](SingleCellRNASeq/Seurat/SkinCell.Rmd)
-    - If we observe the factor-specific clustering and want cells of the same cell type cluster together across single/multiple confounding factors, we can use canonical correlation analysis or Harmony to [integrate](SingleCellRNASeq/Seurat/scRNAseq_analysis_full.Rmd) cells
+    - If we observe the factor-specific clustering and want cells of the same cell type cluster together across single/multiple confounding factors, we can use canonical correlation analysis or Harmony (suitable for complicated confounding effects) to [integrate](SingleCellRNASeq/Seurat/scRNAseq_analysis_full.Rmd) cells
     - We can leverage SingleR or ScType to partially or fully automate cell-type identification
+    - Other options of automating cell-type identification by mapping to references and then transfering labels: scArches, Symphony
   - Use Bioconductor packages to [perform single cell RNA-Seq data analysis](SingleCellRNASeq/Bioconductor/BioconductorSkinCell.Rmd)
   - Generate [pseudobulk](SingleCellRNASeq/Scanpy/Pseudobulk.py), which aggregates the gene expression levels specific to each cell type within an individual
   - Perform pseudobulk-based [differentially gene expression analysis](SingleCellRNASeq/Scanpy/scRNAseq_DE_Part1.ipynb)
