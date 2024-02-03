@@ -11,6 +11,8 @@ output:
 ```{r}
 library(Seurat)
 library(ggplot2)
+library(cowplot)
+library(purrr)
 ```
 
 # Load the matrix.mtx, features.tsv, and barcodes.tsv files generated from 10x Genomics 
@@ -151,7 +153,7 @@ save(multi_seurat_obj_filter, file = "~/scRNA_analysis/data/derived/multi_seurat
 # Assess the sources of variations in the gene expression profiles
 ## Log normalize the data
 ```{r}
-multi_seurat_obj_lognorm <- NormalizeData(multi_seurat_obj_filter, normalization.method = "LogNormalize", scale.factor = 10000)
+multi_seurat_obj_lognorm <- NormalizeData(object = multi_seurat_obj_filter, normalization.method = "LogNormalize", scale.factor = 10000)
 # scale.factor: to ensure the uniform UMI counts across all cells, here we multiple each UMI count per cell by a cell-specific factor (initial step of normalization); after this initial step, the log transformation will be applied to each UMI count per gene
 ```
 
@@ -177,7 +179,7 @@ multi_seurat_obj_lognorm <- ScaleData(multi_seurat_obj_lognorm)
 
 # Run and visualize PCA colored by cell cycle phase
 multi_seurat_obj_lognorm <- RunPCA(multi_seurat_obj_lognorm)
-DimPlot(multi_seurat_obj_lognorm, reduction = "pca", group.by = "Phase", split.by = "Phase")
+DimPlot(object = multi_seurat_obj_lognorm, reduction = "pca", group.by = "Phase", split.by = "Phase")
 ```
 
 ## See if the mitochondrial gene expression contributes to the major variations in our dataset
@@ -336,8 +338,62 @@ DimPlot(multi_seurat_obj_harmony, label = TRUE, split.by = "Phase")  + NoLegend(
 
 ## Plot cell clustering by additional metrics
 ```{r}
-FeaturePlot(multi_seurat_obj_harmony, 
+FeaturePlot(object = multi_seurat_obj_harmony, 
             reduction = "umap", 
             features = c("nCount_RNA", "nFeature_RNA", "percent_mt", "S.Score", "G2M.Score"),
             pt.size = 0.7, order = TRUE, min.cutoff = "q10", label = TRUE)
 ```
+
+## Plot cell clustering by the different principal components
+```{r}
+cols <- c(paste0("PC_", 1:10), "ident", "umap_1", "umap_2")
+pc_data <- FetchData(object = multi_seurat_obj_harmony, vars = cols)
+
+umap_cluster_tag <- FetchData(multi_seurat_obj_harmony, vars = cols[-1:-10]) |>
+  group_by(ident) |>
+  summarise(x = mean(umap_1), y = mean(umap_2))
+
+pc_vis_fun <- function(pc_id) {
+  pc_data |> 
+    ggplot(mapping = aes(umap_1, umap_2)) +
+      geom_point(aes_string(color = pc_id), alpha = 0.8) +
+      scale_color_gradient(guide = FALSE, low = "grey80", high = "purple")  +
+      geom_text(data = umap_cluster_tag, mapping = aes(label = ident, x, y)) +
+      labs(title = pc_id)
+}
+  
+map(paste0("PC_", 1:10), pc_vis_fun) |> 
+  plot_grid(plotlist = .)
+
+print(multi_seurat_obj_harmony[["pca"]], dims = 1:10, nfeatures = 6)
+```
+
+# Determine cell identities of each cluster
+## Exploration stage
+```{r}
+DimPlot(object = multi_seurat_obj_harmony, reduction = "umap", label = TRUE) + NoLegend()
+DefaultAssay(multi_seurat_obj_harmony) <- "RNA"
+multi_seurat_obj_harmony <- NormalizeData(object = multi_seurat_obj_harmony, normalization.method = "LogNormalize", scale.factor = 10000, verbose = FALSE)
+
+feature_plot_fun <- function(known_gene_marker) {
+  FeaturePlot(multi_seurat_obj_harmony, 
+              reduction = "umap", 
+              features = known_gene_marker, 
+              order = TRUE,
+              min.cutoff = 'q10', 
+              label = TRUE)
+}
+known_gene_marker_set <- list(c("FCGR3A", "MS4A7"), c("CD79A", "MS4A1"), "CD3D", c("CD3D", "IL7R", "CCR7"), c("CD3D", "CD8A"), 
+                              c("GNLY", "NKG7"), "PPBP", c("HBB", "HBA2"), c("CD14", "LYZ"), c("MARCO", "ITGAM", "ADGRE1"), 
+                              c("FCER1A", "CST3"), c("IL3RA", "GZMB", "SERPINF1", "ITM2C"))
+# Gene marker resources: https://www.10xgenomics.com/analysis-guides/web-resources-for-cell-type-annotation
+
+map(known_gene_marker_set, feature_plot_fun)
+```
+
+## Marker identification stage
+### Identify unknown clusters and increase confidence in hypothesized cell types for a single sample group/condition - `FindAllMarkers()`
+```{r}
+derived_gene_marker <- FindAllMarkers(object = multi_seurat_obj_harmony, only.pos = TRUE, logfc.threshold = 0.25)   
+```
+
