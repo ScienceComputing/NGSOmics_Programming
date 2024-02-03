@@ -10,6 +10,7 @@ output:
 # Attach the libraries
 ```{r}
 library(Seurat)
+# Seurat function manual: https://satijalab.org/seurat/articles/essential_commands.html
 library(ggplot2)
 library(cowplot)
 library(purrr)
