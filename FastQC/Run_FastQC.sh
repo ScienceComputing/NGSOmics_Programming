@@ -1,3 +1,4 @@
+# References:
 # https://www.bioinformatics.babraham.ac.uk/projects/fastqc/INSTALL.txt
 # https://manpages.ubuntu.com/manpages/trusty/man1/fastqc.1.html
 
