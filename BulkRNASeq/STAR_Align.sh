@@ -11,8 +11,10 @@ alias STAR="/Users/your_name/STAR-2.7.11a/bin/MacOSX_x86_64/STAR"
 # source .bashrc
 which STAR
 
+# or STAR=/Users/your_name/STAR-2.7.11a/bin/MacOSX_x86_64/STAR
+
 # Build a reference genome index
-mkdir -p bulk_RNAseq/data/hg38_chr1_index
+mkdir -p /Users/your_name/bulk_RNAseq/data/hg38_chr1_index
 
 STAR --runThreadN 20 \
 --runMode genomeGenerate \ 
@@ -21,10 +23,20 @@ STAR --runThreadN 20 \
 --sjdbGTFfile /Users/your_name/bulk_RNAseq/data/reference/homo_sapiens.GRCh38.92.gtf \
 --sjdbOverhang 99
 
+# Alternatively
+# ${STAR} --runThreadN 20 \
+# --runMode genomeGenerate \ 
+# --genomeDir /Users/your_name/bulk_RNAseq/data/hg38_chr1_index \
+# --genomeFastaFiles /Users/your_name/bulk_RNAseq/data/reference/homo_sapiens.GRCh38.dna.chromosome.1.fa \
+# --sjdbGTFfile /Users/your_name/bulk_RNAseq/data/reference/homo_sapiens.GRCh38.92.gtf \
+# --sjdbOverhang 99
+
 # genomeDir: the path to store the genome indices
 # genomeFastaFiles: the path to one or more reference genomes in FASTA format
 # sjdbGTFfile: the path to the annotations of the reference genome in GTF format
-# sjdbOverhang: the length of the genomic sequence around the annotated junction to be used in constructing the splice junctions database. Ideally, this length should equal to the max(ReadLength)-1, where ReadLength is the length of the reads. e.g., for Illumina 2x100b paired-end reads, the ideal value is 100-1=99. Often, 100 works quite well.
+# sjdbOverhang: the length of the genomic sequence around the annotated junction to be used in constructing the splice junctions database. 
+# Ideally, this length should equal to the max(ReadLength)-1, where ReadLength is the length of the reads. e.g., for Illumina 2x100b paired-end reads, the ideal value is 100-1=99. 
+# Often, 100 works quite well.
 
 # Map reads to the reference genome
 STAR --genomeDir /Users/your_name/bulk_RNAseq/data/hg38_chr1_index \
