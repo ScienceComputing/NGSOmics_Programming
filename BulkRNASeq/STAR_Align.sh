@@ -13,7 +13,7 @@ which STAR
 
 # or STAR=/Users/your_name/STAR-2.7.11a/bin/MacOSX_x86_64/STAR
 
-# Build a reference genome index
+# Step 1: build a reference genome index
 mkdir -p /Users/your_name/bulk_RNAseq/data/hg38_chr1_index
 
 STAR --runThreadN 20 \
@@ -38,7 +38,7 @@ STAR --runThreadN 20 \
 # Ideally, this length should equal to the max(ReadLength)-1, where ReadLength is the length of the reads. e.g., for Illumina 2x100b paired-end reads, the ideal value is 100-1=99. 
 # Often, 100 works quite well.
 
-# Map reads to the reference genome
+# Step 2: map reads to the reference genome
 STAR --genomeDir /Users/your_name/bulk_RNAseq/data/hg38_chr1_index \
 --runThreadN 20 \
 --runMode alignReads
