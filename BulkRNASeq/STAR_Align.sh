@@ -42,7 +42,7 @@ STAR --runThreadN 20 \
 STAR --genomeDir /Users/your_name/bulk_RNAseq/data/hg38_chr1_index \
 --runThreadN 20 \
 --runMode alignReads
---readFilesIn /Users/your_name/bulk_RNAseq/data/fastq/s1read1.fq.gz,s2read1.fq.gz s1read2.fq.gz,s2read2.fq.gz \
+--readFilesIn /Users/your_name/bulk_RNAseq/data/fastq/s1read1.fq.gz,s2read1.fq.gz s1read2.fq.gz,s2read2.fq.gz \ # !
 --readFilesCommand zcat
 --outFileNamePrefix /Users/your_name/bulk_RNAseq/results/STAR/Human_Infectious_Disease_ \
 --outSAMtype BAM SortedByCoordinate \
