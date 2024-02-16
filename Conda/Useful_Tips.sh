@@ -1,3 +1,6 @@
+# Create a conda environment
+conda create --name atac
+
 # Activate and deactivate a conda environment
 conda activate atac
 conda deactivate
