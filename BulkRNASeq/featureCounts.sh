@@ -18,9 +18,10 @@ featureCounts -v 2>> featureCounts_metainfo.txt
 featureCounts -T 20 \
 -p --countReadPairs
 -t exon \
--g gene_id \ # or gene_name
+-g gene_id \ # or gene_name; instruct featureCounts to use the gene_id/gene_name attribute from the GTF file to define features
 -a hs_ch38_annotation.gtf \
 -o featureCounts_output.txt \
 Human_Infectious_Disease_Aligned.sortedByCoord.out.bam # or $HOME/data/BAM/*.sortedByCoord.out.bam
 
 # T: use 20 threads
+# head $HOME/data/reference_genome/hg38.knownGene.gtf -n 6 | tail -n 1
