@@ -1,5 +1,11 @@
 # Create a conda environment
 conda create --name atac
+conda install python=3.8
+python --version
+
+# Alternatively
+conda create --name atac python=3.8
+python --version
 
 # Activate and deactivate a conda environment
 conda activate atac
