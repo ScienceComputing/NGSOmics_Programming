@@ -40,3 +40,11 @@ featureCounts -T 20 \
 -a hs_ch38_annotation.gtf \
 -o featureCounts_output.txt \
 Human_Infectious_Disease_Aligned.sortedByCoord.out.bam
+
+# featureCounts -T 20 \
+# -p --countReadPairs \
+# -t exon \
+# -f exon \
+# -a hs_ch38_annotation.gtf \
+# -o featureCounts_output.txt \
+# Human_Infectious_Disease_Aligned.sortedByCoord.out.bam
