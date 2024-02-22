@@ -1,9 +1,9 @@
 qualimap rnaseq \
--outdir bulk_RNAseq/results/qualimap/Human_Infectious_Disease \
+-outdir /path/bulk_RNAseq/results/qualimap/Human_Infectious_Disease \
 -a proportional \
--bam bulk_RNAseqresults/STAR/Human_Infectious_Disease_Aligned.sortedByCoord.out.bam \
+-bam /path/bulk_RNAseqresults/STAR/Human_Infectious_Disease_Aligned.sortedByCoord.out.bam \
 -p strand-specific-reverse \
--gtf bulk_RNAseq/reference_data/homo_sapiens.GRCh38.92.gtf \
+-gtf /path/bulk_RNAseq/reference_data/homo_sapiens.GRCh38.92.gtf \
 --java-mem-size=20G
 
 # -outdir: provide the output directory for html report
