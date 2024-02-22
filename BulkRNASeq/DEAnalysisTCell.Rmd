@@ -140,7 +140,9 @@ plotDispEsts(dds)
 
 ## Extract the countrast of interest - pairwise comparison
 ```{r}
-myRes <- results(dds, contrast = c("Group", "Act", "Naive")) # Log-fold change will consider the order - Act and Naive; typically put the mutant/treatment as the first and the wildtype/control as the second 
+# Log-fold change will consider the order - Act and Naive
+# ! Typically put the mutant/treatment as the first and the wildtype/control as the second 
+myRes <- results(dds, contrast = c("Group", "Act", "Naive"))
 myRes
 myRes.ordered <- myRes[order(myRes$pvalue), ]
 myRes.ordered[1:3, ]
