@@ -37,7 +37,7 @@ This repository houses conceptual viewpoints, coding practice, assignment/compet
 <hr>
 
 ### Analyze bulk RNA-seq data
-  - Run [FastQC](FastQC/Run_FastQC.sh) or fastp to evaluate sequence quality and content
+  - Run [FastQC](FastQC/Run_FastQC.sh) or [fastp](FastQC/Run_fastp.sh) to evaluate sequence quality and content
   - [Recommend] Use splice-aware genome aligner STAR to [align the reads](BulkRNASeq/STAR_Align.sh)
       - Other splice-aware alignment tool options: Olego, HISAT2, MapSplice, ABMapper, Passion, BLAT, RUM ...
       - Other alignment tools that disregard isoforms: BWA, Bowtie2 ...
