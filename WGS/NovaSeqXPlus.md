@@ -14,3 +14,9 @@
   - run time: 18 hours
   - cells per FC: 400000 cells (25K reads per cell)
 - Accurate (*F1 score*) secondary analysis with [DRAGEN graph](https://support.illumina.com/content/dam/illumina-support/help/Illumina_DRAGEN_Bio_IT_Platform_v3_7_1000000141465/Content/In/Informatics/DRAGEN/GraphMapper_fDG.htm) and machine learning 
+
+```
+total_reads_per_flow_cell = 26000 # in million
+expected_reads_per_sample = 40 # in million
+number_of_samples_per_flow_cell = total_reads_per_flow_cell / expected_reads_per_sample = 26000 / 40 = 650
+```
