@@ -20,6 +20,13 @@ Peidli, S., Green, T.D., Shen, C. et al. scPerturb: harmonized single-cell pertu
 
 <br>
 
+**Single-cell multi-ome regression models identify functional and disease-associated enhancers and enable chromatin potential analysis**
+
+Mitra, S., Malik, R., Wong, W. et al. Single-cell multi-ome regression models identify functional and disease-associated enhancers and enable chromatin potential analysis. Nat Genet (2024). https://doi.org/10.1038/s41588-024-01689-8
+
+<br>
+
+
 ## Methodology progress in 2023
 
 **Multimodal spatiotemporal phenotyping of human retinal organoid development**
