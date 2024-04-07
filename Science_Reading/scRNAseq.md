@@ -1,5 +1,15 @@
 ## Methodology progress in 2024
 
+**Large language model GPT-4 for cell type annotation**
+
+Hou, W., Ji, Z. Assessing GPT-4 for cell type annotation in single-cell RNA-seq analysis. Nat Methods (2024). https://doi.org/10.1038/s41592-024-02235-4
+
+<br>
+
+**A foundation model for single-cell multi-omics using generative AI**
+
+Cui, H., Wang, C., Maan, H. et al. scGPT: toward building a foundation model for single-cell multi-omics using generative AI. Nat Methods (2024). 
+
 **Harmonized single-cell perturbation data**
 
 Peidli, S., Green, T.D., Shen, C. et al. scPerturb: harmonized single-cell perturbation data. Nat Methods (2024). https://doi.org/10.1038/s41592-023-02144-y
