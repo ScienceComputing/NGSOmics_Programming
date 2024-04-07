@@ -8,7 +8,7 @@ Hou, W., Ji, Z. Assessing GPT-4 for cell type annotation in single-cell RNA-seq 
 
 **A foundation model for single-cell multi-omics using generative AI**
 
-Cui, H., Wang, C., Maan, H. et al. scGPT: toward building a foundation model for single-cell multi-omics using generative AI. Nat Methods (2024). 
+Cui, H., Wang, C., Maan, H. et al. scGPT: toward building a foundation model for single-cell multi-omics using generative AI. Nat Methods (2024). https://doi.org/10.1038/s41592-024-02201-0 
 
 <br>
 
