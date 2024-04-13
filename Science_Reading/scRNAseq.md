@@ -1,5 +1,11 @@
 ## Methodology progress in 2024
 
+**Dictionary of immune responses to cytokines at single-cell resolution**
+
+Cui, A., Huang, T., Li, S. et al. Dictionary of immune responses to cytokines at single-cell resolution. Nature 625, 377–384 (2024). https://doi.org/10.1038/s41586-023-06816-9
+
+<br>
+
 **Large language model GPT-4 for cell type annotation**
 
 Hou, W., Ji, Z. Assessing GPT-4 for cell type annotation in single-cell RNA-seq analysis. Nat Methods (2024). https://doi.org/10.1038/s41592-024-02235-4
