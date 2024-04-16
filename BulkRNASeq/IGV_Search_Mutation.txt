@@ -6,7 +6,7 @@ load /Users/your_name/Documents/Project/RNAseq/IGV/IGV_Sample_Attribute.txt,/Use
 
 snapshotDirectory /Users/your_name/Documents/Project/RNAseq/IGV/
 
-# Deletion
+# Inspect the deletion
 goto chrXX:XXXXXXX-XXXXXXX
 expand
 viewaspairs
