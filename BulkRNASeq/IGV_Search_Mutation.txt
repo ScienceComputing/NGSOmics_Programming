@@ -1,6 +1,8 @@
-# # https://github.com/igvteam/igv/wiki/Batch-commands
+# Reference: https://github.com/igvteam/igv/wiki/Batch-commands
 # new
 # setSleepInterval 200
+
+load /Users/your_name/Documents/Project/RNAseq/IGV/IGV_Sample_Attribute.txt,/Users/your_name/Documents/Project/RNAseq/IGV/ZKYI1.immune.12H.bam
 
 snapshotDirectory /Users/your_name/Documents/Project/RNAseq/IGV/
 
@@ -10,6 +12,6 @@ expand
 viewaspairs
 sort INSERSTSIZE
 color INSERT_SIZE PAIR_ORIENTATION
-snapshot HCC1143_exercise6_homDEL_2.png
+snapshot Deletion.png
 
 # exit
