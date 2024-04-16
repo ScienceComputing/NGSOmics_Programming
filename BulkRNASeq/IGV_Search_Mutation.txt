@@ -1,0 +1,15 @@
+# # https://github.com/igvteam/igv/wiki/Batch-commands
+# new
+# setSleepInterval 200
+
+snapshotDirectory /Users/your_name/Documents/Project/RNAseq/IGV/
+
+# Deletion
+goto chrXX:XXXXXXX-XXXXXXX
+expand
+viewaspairs
+sort INSERSTSIZE
+color INSERT_SIZE PAIR_ORIENTATION
+snapshot HCC1143_exercise6_homDEL_2.png
+
+# exit
