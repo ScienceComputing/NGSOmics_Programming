@@ -22,3 +22,8 @@ else
   mkdir -p FASTQ
   ln -s $DATA_DIR/*.fastq.gz FASTQ/ 
 fi
+
+# PROJECT_DIR=$HOME/RNAseq/data/Project_IRF
+# DATA_DIR=$HOME/RNAseq/data/Project_IRF 
+# ANALYSIS_DIR=$HOME/RNAseq/analysis/Project_IRF
+# sbatch $HOME/pipeline_AL/data_set_up_AL.sh $PROJECT_DIR $DATA_DIR $ANALYSIS_DIR
