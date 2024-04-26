@@ -24,3 +24,4 @@ OUT_1=$(sbatch --array=1-$(wc -l < ${ANALYSIS_DIR}/samples_list.txt) -o ${LOG_DI
 OUT_2=$(sbatch --dependency=afterok:${OUT_1##* } ${WORK_DIR}/featureCounts_AL.sh ${ANALYSIS_DIR})
 
 OUT_3=$(sbatch --dependency=afterok:${OUT_2##* } ${WORK_DIR}/multiqc_AL.sh ${ANALYSIS_DIR})
+
