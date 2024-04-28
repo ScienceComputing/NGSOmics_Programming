@@ -62,7 +62,7 @@ multi_seurat_obj@meta.data <- meta_data
 View(seurat_obj@meta.data) # nCount_RNA: number of UMIs per cell; nFeature_RNA: number of genes detected per cell
 seurat_obj$log10_gene_per_UMI <- log10(seurat_obj$nFeature_RNA) / log10(seurat_obj$nCount_RNA)
 seurat_obj$percent_mt <- PercentageFeatureSet(seurat_obj, pattern = "^MT-")
-seurat_obj <- subset(x = seurat_obj, subset = nFeature_RNA >= 200 & nFeature_RNA >= 500 & log10_gene_per_UMI > 0.8 & percent_mt < 5)
+seurat_obj <- subset(x = seurat_obj, subset = nFeature_RNA >= 200 & nCount_RNA >= 500 & log10_gene_per_UMI > 0.8 & percent_mt < 5)
 
 # QC multiple samples
 View(multi_seurat_obj@meta.data)
