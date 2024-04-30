@@ -59,9 +59,38 @@ genome(annotations) <- "hg38" # Set the genome as hg38 for a ChromatinAssay
 Annotation(pbmc_atac) <- annotations # Set the annotation for a ChromatinAssay
 
 # Exclude the first dimension typically linked to sequencing depth
-pbmc_atac <- RunTFIDF(pbmc_atac) # Perform term frequency inverse document frequency (TF-IDF) normalization on a matrix
+pbmc_atac <- RunTFIDF(pbmc_atac) # Run term frequency inverse document frequency (TF-IDF) normalization on a matrix
 pbmc_atac <- FindTopFeatures(pbmc_atac, min.cutoff = "q0") 
-# Find most frequently observed features
+# Find most frequently observed features; 
 # Cutoff for feature to be included in the VariableFeatures for the object. This can be a percentile specified as 'q' followed by the minimum percentile, for example 'q5' to set the top 95% most common features as the VariableFeatures for the object. 
-# "q0" include all features
+# "q0" include all features.
 pbmc_atac <- RunSVD(pbmc_atac)
+pbmc_atac <- RunUMAP(pbmc_atac, 
+                     reduction = "lsi", 
+                     dims = 2:30, 
+                     reduction.name = "umap.atac", 
+                     reduction.key = "atacUMAP_")
+
+# Visualize the results from scRNAseq and scATACseq
+# Predict annotations for the scATAC-seq cells
+pbmc_rna_viz <- DimPlot(pbmc_rna_umap, 
+                        group.by = "seurat_annotations", # seurat_annotations is a column in the meta.data of pbmc_rna dataset
+                        label = TRUE) + 
+  NoLegend() + 
+  ggtitle("RNA")
+# Name of one or more metadata columns to group (color) cells by (for example, orig.ident); pass 'ident' to group by identity class
+
+pbmc_atac_viz <- DimPlot(pbmc_atac, 
+                         group.by = "orig.ident", 
+                         label = FALSE) + 
+  NoLegend() + 
+  ggtitle("ATAC")
+
+pbmc_rna_viz + pbmc_atac_viz
+
+final_plot <- (pbmc_rna_viz + pbmc_atac_viz) & xlab("UMAP 1") & ylab("UMAP 2") & theme(axis.title = element_text(size = 18))
+ggsave(filename = "EDA_scRNAseq_scATACseq.jpg", 
+       height = 8, 
+       width = 11, 
+       plot = final_plot,
+       dpi = 300)
