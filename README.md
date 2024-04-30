@@ -1,4 +1,4 @@
-# Awesome Quantitative biology ✨
+# Awesome Quantitative Biology ✨
 
 This repository houses conceptual viewpoints, coding practice, assignment/competition solutions based on the materials from a variety of computational biology/bioinformatics courses, workshops, technical manuals, academic articles, and others. 
 
