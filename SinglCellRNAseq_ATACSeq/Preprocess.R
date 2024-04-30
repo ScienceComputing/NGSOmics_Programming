@@ -7,6 +7,8 @@ library(SeuratData)
 options(timeout = 1000) # positive integer. The timeout for some Internet operations, in seconds. Default 60 (seconds) but can be set from environment variable R_DEFAULT_INTERNET_TIMEOUT.
 InstallData("pbmcMultiome.SeuratData")
 library(Seurat)
+packageVersion("Seurat")
+# [1] '5.0.3'
 library(Signac) # Analysis of Single-Cell Chromatin Data
 library(biovizBase)
 library(EnsDb.Hsapiens.v86)
@@ -14,6 +16,7 @@ library(EnsDb.Hsapiens.v86)
 # This data package was made from resources at Ensembl on Thu May 18 16:32:27 2017 and based on the 86
 library(ggplot2)
 library(cowplot)
+library(Matrix)
 
 pbmc_rna <- LoadData("pbmcMultiome", "pbmc.rna")
 pbmc_atac <- LoadData("pbmcMultiome", "pbmc.atac")
@@ -54,3 +57,11 @@ annotations@seqnames
 
 genome(annotations) <- "hg38" # Set the genome as hg38 for a ChromatinAssay
 Annotation(pbmc_atac) <- annotations # Set the annotation for a ChromatinAssay
+
+# Exclude the first dimension typically linked to sequencing depth
+pbmc_atac <- RunTFIDF(pbmc_atac) # Perform term frequency inverse document frequency (TF-IDF) normalization on a matrix
+pbmc_atac <- FindTopFeatures(pbmc_atac, min.cutoff = "q0") 
+# Find most frequently observed features
+# Cutoff for feature to be included in the VariableFeatures for the object. This can be a percentile specified as 'q' followed by the minimum percentile, for example 'q5' to set the top 95% most common features as the VariableFeatures for the object. 
+# "q0" include all features
+pbmc_atac <- RunSVD(pbmc_atac)
