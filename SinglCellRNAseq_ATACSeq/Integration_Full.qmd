@@ -1,6 +1,5 @@
 ---
 title: "Integration of scRNAseq and scATACseq datasets"
-author: "Anni Liu"
 format: html
 editor: visual
 execute: 
