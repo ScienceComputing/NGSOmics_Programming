@@ -159,7 +159,7 @@ pbmc_atac <- NormalizeData(pbmc_atac)
 pbmc_atac <- ScaleData(pbmc_atac, features = rownames(pbmc_atac))
 
 # Detect anchors
-transfer_anchors <- FindTransferAnchors(reference = pbmc_rna, 
+transfer_anchors <- FindTransferAnchors(reference = pbmc_rna_umap, 
                                         query = pbmc_atac, 
                                         features = VariableFeatures(object = pbmc_rna),
                                         reference.assay = "RNA", 
@@ -171,9 +171,19 @@ transfer_anchors <- FindTransferAnchors(reference = pbmc_rna,
 
 ```{r}
 celltype_preds <- TransferData(anchorset = transfer_anchors, 
-                               refdata = pbmc_rna$seurat_annotations,
+                               refdata = pbmc_rna_umap$seurat_annotations,
                                weight.reduction = pbmc_atac[["lsi"]], 
                                dims = 2:30)
 
 pbmc_atac <- AddMetaData(pbmc_atac, metadata = celltype_preds)
+
+pbmc_atac$annotation_correct <- pbmc_atac$predicted.id == pbmc_atac$seurat_annotations
+predict_viz <- DimPlot(pbmc_atac, group.by = "predicted.id", label = TRUE) + 
+  NoLegend() + 
+  ggtitle("Predicted annotation")
+truth_viz <- DimPlot(pbmc_atac, group.by = "seurat_annotations", label = TRUE) + 
+  NoLegend() + 
+  ggtitle("Ground-truth annotation")
+
+predict_viz | truth_viz
 ```
