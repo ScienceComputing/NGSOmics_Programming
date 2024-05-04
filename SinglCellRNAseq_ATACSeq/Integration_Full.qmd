@@ -1,0 +1,180 @@
+---
+title: "Integration of scRNAseq and scATACseq datasets"
+author: "Anni Liu"
+format: html
+editor: visual
+execute: 
+  echo: true
+---
+
+# YAML
+
+Spacing and tab are very important and be sure they are formatted correctly.
+
+# Preprocess scRNAseq and scATACseq data
+
+```{r}
+# In the terminal
+# quarto render --help
+
+# Enable the viewer to show the knitted html
+# Tools > Global Options > R Markdown > Show output preview in: Viewer Pane
+```
+
+## Attach the libraries {style="blue"}
+
+```{r}
+#| label: load-packages
+#| message: false
+#| echo: false
+# install.packages('Seurat')
+# devtools::install_github('satijalab/seurat-data')
+# BiocManager::install("EnsDb.Hsapiens.v86")
+# BiocManager::install("biovizBase")
+library(SeuratData)
+options(timeout = 1000) # positive integer. The timeout for some Internet operations, in seconds. Default 60 (seconds) but can be set from environment variable R_DEFAULT_INTERNET_TIMEOUT.
+# InstallData("pbmcMultiome.SeuratData")
+library(Seurat)
+packageVersion("Seurat")
+# [1] '5.0.3'
+library(Signac) # Analysis of Single-Cell Chromatin Data
+library(biovizBase)
+library(EnsDb.Hsapiens.v86)
+# This package loads an SQL connection to a database containing annotations from Ensembl
+# This data package was made from resources at Ensembl on Thu May 18 16:32:27 2017 and based on the 86
+library(ggplot2)
+library(cowplot)
+library(Matrix)
+```
+
+## Load data
+
+```{r}
+pbmc_rna <- LoadData("pbmcMultiome", "pbmc.rna")
+pbmc_atac <- LoadData("pbmcMultiome", "pbmc.atac")
+```
+
+## Convert pbmc_rna\[\["RNA"\]\] into another class type "Assay5"
+
+```{r}
+pbmc_rna[["RNA"]] <- as(pbmc_rna[["RNA"]], Class = "Assay5")
+class(pbmc_rna[["RNA"]])
+```
+
+## Repeat QC steps
+
+```{r}
+pbmc_rna_qc <- subset(pbmc_rna, seurat_annotations != "filtered") # seurat_annotations is a column in the meta.data of pbmc_rna dataset
+pbmc_rna@meta.data[["seurat_annotations"]]
+pbmc_atac_qc <- subset(pbmc_atac, seurat_annotations != "filtered")
+```
+
+## scRNAseq analysis
+
+```{r}
+pbmc_rna_norm <- NormalizeData(pbmc_rna_qc, normalization.method = "LogNormalize")
+pbmc_rna_vf <- FindVariableFeatures(selection.method = "vst", pbmc_rna_norm)
+pbmc_rna_scale <- ScaleData(pbmc_rna_vf)
+pbmc_rna_pca <- RunPCA(pbmc_rna_scale, npcs = 50)
+pbmc_rna_umap <- RunUMAP(pbmc_rna_pca, dims = 1:30)
+```
+
+## scATACseq analysis
+```{r}
+annotations <- GetGRangesFromEnsDb(ensdb = EnsDb.Hsapiens.v86)
+annotations@seqnames
+# factor-Rle of length 3021151 with 25 runs
+# Lengths:  92459  65287 276555 135207 190802 141516 182677 182178 116305 ... 133785  64670 107112   6155  51812 113543  33885     26
+# Values :     X      20     1      6      3      7      12     11     4  ...     5      22     10     Y      18     15     21     MT
+# Levels(25): X 20 1 6 3 7 12 11 4 17 2 16 8 19 9 13 14 5 22 10 Y 18 15 21 MT
+
+seqlevelsStyle(annotations) <- "UCSC" # Rename the seqlevels of an object according to a given style
+annotations@seqnames
+# factor-Rle of length 3021151 with 25 runs
+# Lengths:  92459  65287 276555 135207 190802 141516 182677 182178 116305 ... 133785  64670 107112   6155  51812 113543  33885     26
+# Values :  chrX   chr20  chr1   chr6   chr3   chr7   chr12  chr11  chr4  ...  chr5   chr22  chr10  chrY   chr18  chr15  chr21  chrM 
+# Levels(25): chrX chr20 chr1 chr6 chr3 chr7 chr12 chr11 chr4 chr17 chr2 ... chr9 chr13 chr14 chr5 chr22 chr10 chrY chr18 chr15 chr21 chrM
+
+genome(annotations) <- "hg38" # Set the genome as hg38 for a ChromatinAssay
+Annotation(pbmc_atac) <- annotations # Set the annotation for a ChromatinAssay
+
+# Exclude the first dimension typically linked to sequencing depth
+pbmc_atac <- RunTFIDF(pbmc_atac) # Run term frequency inverse document frequency (TF-IDF) normalization on a matrix
+pbmc_atac <- FindTopFeatures(pbmc_atac, min.cutoff = "q0") 
+
+pbmc_atac <- RunSVD(pbmc_atac)
+pbmc_atac <- RunUMAP(pbmc_atac, 
+                     reduction = "lsi", 
+                     dims = 2:30, 
+                     reduction.name = "umap.atac", 
+                     reduction.key = "atacUMAP_")
+
+```
+
+## Visualize the results from scRNAseq and scATACseq
+
+```{r}
+#| label: fig-bill-dims-species
+#| fig-cap: A side-by-side UMAP plots of scRNAseq (annotated) and scATACseq cells.
+#| fig-width: 11
+#| fig-asp: 0.618
+#| fig-alt: AA side-by-side UMAP plots of scRNAseq (annotated) and scATACseq cells.
+#| warning: false
+#| output-location: column-fragment
+
+# Predict annotations for the scATAC-seq cells
+pbmc_rna_viz <- DimPlot(pbmc_rna_umap, 
+                        group.by = "seurat_annotations", # seurat_annotations is a column in the meta.data of pbmc_rna dataset
+                        label = TRUE) + 
+  NoLegend() + 
+  ggtitle("RNA")
+# Name of one or more metadata columns to group (color) cells by (for example, orig.ident); pass 'ident' to group by identity class
+
+pbmc_atac_viz <- DimPlot(pbmc_atac, 
+                         group.by = "orig.ident", 
+                         label = FALSE) + 
+  NoLegend() + 
+  ggtitle("ATAC")
+
+pbmc_rna_viz + pbmc_atac_viz
+```
+
+![](EDA_scRNAseq_scATACseq.jpg){#fig-integration}
+
+See @fig-integration for an illustration. More info: <https://quarto.org/docs/authoring/cross-references.html>
+
+
+## Identify anchors between scRNA-seq and scATAC-seq data
+
+```{r}
+# Quantify gene activity
+# Estimate the transcriptional activity of each gene by quantifying ATAC-seq counts in the 2 kb-upstream region and gene body
+gene_activities <- GeneActivity(pbmc_atac, features = VariableFeatures(pbmc_rna))
+
+# Allocate gene activities to a new assay
+pbmc_atac[["ACTIVITY"]] <- CreateAssayObject(counts = gene_activities)
+
+# Normalize gene activities
+DefaultAssay(pbmc_atac) <- "ACTIVITY"
+pbmc_atac <- NormalizeData(pbmc_atac)
+pbmc_atac <- ScaleData(pbmc_atac, features = rownames(pbmc_atac))
+
+# Detect anchors
+transfer_anchors <- FindTransferAnchors(reference = pbmc_rna, 
+                                        query = pbmc_atac, 
+                                        features = VariableFeatures(object = pbmc_rna),
+                                        reference.assay = "RNA", 
+                                        query.assay = "ACTIVITY", 
+                                        reduction = "cca")
+```
+
+## Label-transfer the annotations from the scRNA-seq cells to scATAC-seq cells
+
+```{r}
+celltype_preds <- TransferData(anchorset = transfer_anchors, 
+                               refdata = pbmc_rna$seurat_annotations,
+                               weight.reduction = pbmc_atac[["lsi"]], 
+                               dims = 2:30)
+
+pbmc_atac <- AddMetaData(pbmc_atac, metadata = celltype_preds)
+```
