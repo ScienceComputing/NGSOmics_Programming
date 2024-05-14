@@ -297,6 +297,7 @@ elbow_data |>
 ```{r}
 # seurat_obj <- FindNeighbors(seurat_obj, dims = 1:40)
 # seurat_obj <- FindClusters(seurat_obj, resolution = seq(0.2, 1.2, 0.2))
+# resolution: above (below) 1.0 -> get a larger (smaller) number of communities
 
 # If integrate cells using canonical correlation analysis
 multi_seurat_obj_integrate <- FindNeighbors(multi_seurat_obj_integrate, dims = 1:40)
