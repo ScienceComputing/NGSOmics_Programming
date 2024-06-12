@@ -58,7 +58,7 @@ pval_calculator_w_covars <- function(pheno_input, xa_input, xd_input, xz_input){
   x_h0 =  cbind(rep(1, length(xa_input)), xz_input) 
   MLE_h0 = ginv(t(x_h0) %*% x_h0) %*% t(x_h0) %*% pheno_input 
   y_hat_0 = x_h0 %*% MLE_h0 
-  y_hat_1 = X_mx%*% MLE_beta 
+  y_hat_1 = X_mx %*% MLE_beta 
   
   SSE_theta_0 = sum((pheno_input - y_hat_0)^2) 
   SSE_theta_1 = sum((pheno_input - y_hat_1)^2) 
