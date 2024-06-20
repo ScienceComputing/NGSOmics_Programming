@@ -6,20 +6,18 @@ execute:
   echo: true
 ---
 
-# YAML
-
-Spacing and tab are very important and be sure they are formatted correctly.
-
-# Preprocess scRNAseq and scATACseq data
+# Question of interest
+How to annotate cells from an scATAC-seq experiment by leveraging a scRNA-seq dataset with annotated cell types?
 
 ```{r}
-# In the terminal
-# quarto render --help
+# Load image
+load(file = "20240620_scRNA_scATAC_image.RData")
 
-# Enable the viewer to show the knitted html
-# Tools > Global Options > R Markdown > Show output preview in: Viewer Pane
+# Save image
+save.image(file = "20240620_scRNA_scATAC_image.RData")
 ```
 
+# Preprocess scRNAseq and scATACseq data
 ## Attach the libraries {style="blue"}
 
 ```{r}
