@@ -1,5 +1,5 @@
 ---
-title: "Annotate the cell types of human PBMC scATACseq datasets using human PBMC scRNAseq as reference"
+title: "Annotate cell types of human PBMC scATACseq datasets using human PBMC scRNAseq as reference"
 format: html
 editor: visual
 execute: 
