@@ -65,24 +65,29 @@ class(pbmc_rna[["RNA"]])
 ## Repeat QC steps
 
 ```{r}
-pbmc_rna_qc <- subset(pbmc_rna, seurat_annotations != "filtered") # seurat_annotations is a column in the meta.data of pbmc_rna dataset
+pbmc_rna_qc <- subset(pbmc_rna, seurat_annotations != "filtered") 
 pbmc_rna@meta.data[["seurat_annotations"]]
+dim(pbmc_rna[["RNA"]])
+dim(pbmc_rna_qc[["RNA"]]) 
+
 pbmc_atac_qc <- subset(pbmc_atac, seurat_annotations != "filtered")
 ```
 
-## scRNAseq analysis
-
+## Run standard scRNAseq analysis
+Workflow: Normalize data -> Identify highly variable features -> Scale data -> Build PCA -> Build UMAP
 ```{r}
-pbmc_rna_norm <- NormalizeData(pbmc_rna_qc, normalization.method = "LogNormalize")
-pbmc_rna_vf <- FindVariableFeatures(selection.method = "vst", pbmc_rna_norm)
-pbmc_rna_scale <- ScaleData(pbmc_rna_vf)
+pbmc_rna_norm <- NormalizeData(object = pbmc_rna_qc, normalization.method = "LogNormalize", scale.factor = 10000)
+pbmc_rna_vf <- FindVariableFeatures(object = pbmc_rna_norm, selection.method = "vst", clip.max = "auto")
+dim(pbmc_rna_vf)
+
+pbmc_rna_scale <- ScaleData(object = pbmc_rna_vf) 
 pbmc_rna_pca <- RunPCA(pbmc_rna_scale, npcs = 50)
-pbmc_rna_umap <- RunUMAP(pbmc_rna_pca, dims = 1:30)
+pbmc_rna_umap <- RunUMAP(object = pbmc_rna_pca, dims = 1:30, umap.method = "uwot")
 ```
 
-## scATACseq analysis
+## Run standard scATACseq analysis with added gene annotation information
 ```{r}
-annotations <- GetGRangesFromEnsDb(ensdb = EnsDb.Hsapiens.v86)
+annotations <- GetGRangesFromEnsDb(ensdb = EnsDb.Hsapiens.v86, standard.chromosomes = TRUE)
 annotations@seqnames
 # factor-Rle of length 3021151 with 25 runs
 # Lengths:  92459  65287 276555 135207 190802 141516 182677 182178 116305 ... 133785  64670 107112   6155  51812 113543  33885     26
@@ -96,20 +101,22 @@ annotations@seqnames
 # Values :  chrX   chr20  chr1   chr6   chr3   chr7   chr12  chr11  chr4  ...  chr5   chr22  chr10  chrY   chr18  chr15  chr21  chrM 
 # Levels(25): chrX chr20 chr1 chr6 chr3 chr7 chr12 chr11 chr4 chr17 chr2 ... chr9 chr13 chr14 chr5 chr22 chr10 chrY chr18 chr15 chr21 chrM
 
-genome(annotations) <- "hg38" # Set the genome as hg38 for a ChromatinAssay
-Annotation(pbmc_atac) <- annotations # Set the annotation for a ChromatinAssay
+genome(x = annotations) <- "hg38" 
+# Set the genome as hg38 for a ChromatinAssay
 
-# Exclude the first dimension typically linked to sequencing depth
-pbmc_atac <- RunTFIDF(pbmc_atac) # Run term frequency inverse document frequency (TF-IDF) normalization on a matrix
-pbmc_atac <- FindTopFeatures(pbmc_atac, min.cutoff = "q0") 
+Annotation(object = pbmc_atac) <- annotations 
+# Set the annotation as annotations for a ChromatinAssay
 
-pbmc_atac <- RunSVD(pbmc_atac)
-pbmc_atac <- RunUMAP(pbmc_atac, 
-                     reduction = "lsi", 
-                     dims = 2:30, 
-                     reduction.name = "umap.atac", 
-                     reduction.key = "atacUMAP_")
+pbmc_atac <- RunTFIDF(object = pbmc_atac) 
+pbmc_atac <- FindTopFeatures(object = pbmc_atac, min.cutoff = "q0") 
 
+pbmc_atac <- RunSVD(object = pbmc_atac)
+pbmc_atac_umap <- RunUMAP(pbmc_atac, 
+                          reduction = "lsi", 
+                          dims = 2:30, 
+                          reduction.name = "umap_atac", 
+                          reduction.key = "atacUMAP_")
+pbmc_atac_umap@reductions$umap_atac
 ```
 
 ## Visualize the results from scRNAseq and scATACseq
@@ -125,19 +132,21 @@ pbmc_atac <- RunUMAP(pbmc_atac,
 
 # Predict annotations for the scATAC-seq cells
 pbmc_rna_viz <- DimPlot(pbmc_rna_umap, 
-                        group.by = "seurat_annotations", # seurat_annotations is a column in the meta.data of pbmc_rna dataset
+                        group.by = "seurat_annotations", 
                         label = TRUE) + 
-  NoLegend() + 
+  Seurat::NoLegend() + 
   ggtitle("RNA")
-# Name of one or more metadata columns to group (color) cells by (for example, orig.ident); pass 'ident' to group by identity class
 
-pbmc_atac_viz <- DimPlot(pbmc_atac, 
+pbmc_atac_viz <- DimPlot(pbmc_atac_umap, 
                          group.by = "orig.ident", 
                          label = FALSE) + 
   NoLegend() + 
   ggtitle("ATAC")
 
 pbmc_rna_viz + pbmc_atac_viz
+
+combined_viz <- (pbmc_rna_viz + pbmc_atac_viz) & xlab("UMAP 1") & ylab("UMAP 2") & theme(axis.title = element_text(size = 16))
+ggsave(filename = "./EDA_scRNAseq_scATACseq.jpg", height = 7, width = 12, plot = combined_viz, dpi = 300)
 ```
 
 ![](EDA_scRNAseq_scATACseq.jpg){#fig-integration}
@@ -148,22 +157,26 @@ See @fig-integration for an illustration. More info: <https://quarto.org/docs/au
 ## Identify anchors between scRNA-seq and scATAC-seq data
 
 ```{r}
-# Quantify gene activity
 # Estimate the transcriptional activity of each gene by quantifying ATAC-seq counts in the 2 kb-upstream region and gene body
-gene_activities <- GeneActivity(pbmc_atac, features = VariableFeatures(pbmc_rna))
+library(Signac)
+gene_act <- GeneActivity(object = pbmc_atac_umap, features = VariableFeatures(object = pbmc_rna_umap))
+length(VariableFeatures(object = pbmc_rna_umap)) 
+dim(gene_act) 
+View(gene_act)
+gene_act@Dimnames
 
 # Allocate gene activities to a new assay
-pbmc_atac[["ACTIVITY"]] <- CreateAssayObject(counts = gene_activities)
+pbmc_atac_umap[["ACTIVITY"]] <- CreateAssayObject(counts = gene_act)
 
 # Normalize gene activities
-DefaultAssay(pbmc_atac) <- "ACTIVITY"
-pbmc_atac <- NormalizeData(pbmc_atac)
-pbmc_atac <- ScaleData(pbmc_atac, features = rownames(pbmc_atac))
+DefaultAssay(pbmc_atac_umap) <- "ACTIVITY" 
+pbmc_atac_umap <- NormalizeData(object = pbmc_atac_umap, normalization.method = "LogNormalize", scale.factor = 10000)
+pbmc_atac_umap <- ScaleData(object = pbmc_atac_umap, features = rownames(pbmc_atac_umap))
 
 # Detect anchors
 transfer_anchors <- FindTransferAnchors(reference = pbmc_rna_umap, 
-                                        query = pbmc_atac, 
-                                        features = VariableFeatures(object = pbmc_rna),
+                                        query = pbmc_atac_umap, # Use the gene activity 
+                                        features = VariableFeatures(object = pbmc_rna_umap),
                                         reference.assay = "RNA", 
                                         query.assay = "ACTIVITY", 
                                         reduction = "cca")
