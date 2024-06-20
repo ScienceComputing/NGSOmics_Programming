@@ -184,19 +184,76 @@ transfer_anchors <- FindTransferAnchors(reference = pbmc_rna_umap,
 
 ```{r}
 celltype_preds <- TransferData(anchorset = transfer_anchors, 
-                               refdata = pbmc_rna_umap$seurat_annotations,
-                               weight.reduction = pbmc_atac[["lsi"]], 
+                               refdata = pbmc_rna_umap$seurat_annotations, # Transfer cell type from scRNAseq to scATACseq
+                               weight.reduction = pbmc_atac_umap[["lsi"]], 
                                dims = 2:30)
 
-pbmc_atac <- AddMetaData(pbmc_atac, metadata = celltype_preds)
+class(pbmc_atac_umap[["lsi"]])
 
-pbmc_atac$annotation_correct <- pbmc_atac$predicted.id == pbmc_atac$seurat_annotations
-predict_viz <- DimPlot(pbmc_atac, group.by = "predicted.id", label = TRUE) + 
+pbmc_atac_umap <- AddMetaData(pbmc_atac_umap, metadata = celltype_preds)
+
+pbmc_atac_umap$predicted.id |> View() # Predicted cell types
+pbmc_atac_umap$prediction.score.CD4.Naive |> View() # Confidence score of the predicted cell type CD4 Naive for each ATAC-seq cell
+pbmc_atac_umap$prediction.score.max |> View() # Quantify the uncertainty associated with the predicted cell type for each ATAC-seq cell
+```
+
+## Compare predicted cell types and ground-truth in scATACseq data through figures and tables
+```{r}
+pbmc_atac_umap$preds_correct <- pbmc_atac_umap$predicted.id == pbmc_atac$seurat_annotations
+sum(pbmc_atac_umap$predicted.id == pbmc_atac$seurat_annotations)/length(pbmc_atac_umap$predicted.id) # Overall accuracy is 0.780922
+
+predict_viz <- DimPlot(pbmc_atac_umap, group.by = "predicted.id", label = TRUE) + 
   NoLegend() + 
-  ggtitle("Predicted annotation")
-truth_viz <- DimPlot(pbmc_atac, group.by = "seurat_annotations", label = TRUE) + 
+  ggtitle("Predicted cell type")
+
+truth_viz <- DimPlot(pbmc_atac_umap, group.by = "seurat_annotations", label = TRUE) + 
   NoLegend() + 
-  ggtitle("Ground-truth annotation")
+  ggtitle("Actual cell type")
 
 predict_viz | truth_viz
+
+(preds_tab <- table(pbmc_atac$seurat_annotations, pbmc_atac_umap$predicted.id)) # Row names are true cell types
+
+(preds_tab_norm <- preds_tab/rowSums(preds_tab))
+# ! Normalize by the number of cells in each true cell type; each cell means the fraction of cells of each type which are correctly predicted among all cells of each type
+
+(preds_tab_df <- as.data.frame(preds_tab_norm))
+
+(preds_heatmap <- ggplot(preds_tab_df, aes(Var1, Var2, fill = Freq)) + geom_tile() + scale_fill_gradient(name = "Fraction of cells",
+    low = "#ffffc8", high = "#7d0025") + xlab("Ground-truth cell type") + ylab("Predicted cell type") +
+    theme_cowplot() + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)))
+
+preds_metadata <- FetchData(pbmc_atac_umap, vars = c("prediction.score.max", "preds_correct"))
+
+correct_num <- length(which(pbmc_atac$seurat_annotations == pbmc_atac_umap$predicted.id))
+incorrect_num <- length(which(pbmc_atac$seurat_annotations != pbmc_atac_umap$predicted.id))
+
+(preds_density <- ggplot(preds_metadata, aes(prediction.score.max, fill = preds_correct, colour = preds_correct)) + 
+  geom_density(alpha = 0.5) + theme_cowplot() + 
+  scale_fill_discrete(name = "Cell type prediction", labels = c(paste0("FALSE (n = ", incorrect_num, ")"), paste0("TRUE (n = ", correct_num, ")"))) + 
+  scale_color_discrete(name = "Annotation Correct", labels = c(paste0("FALSE (n = ", incorrect_num, ")"), paste0("TRUE (n = ", correct_num, ")"))) + xlab("Prediction Score"))
+
+preds_heatmap + preds_density
+```
+
+## Visualize scRNA-seq and scATAC-seq cells on the same plot
+```{r}
+genes_target <- VariableFeatures(pbmc_rna_umap)
+
+ref_data <- GetAssayData(pbmc_rna_umap, assay = "RNA", slot = "data")[genes_target, ]
+
+impute_atac <- TransferData(anchorset = transfer_anchors, # Repurpose previous calculated transfer_anchors
+                            refdata = ref_data, 
+                            weight.reduction = pbmc_atac_umap[["lsi"]],
+                            dims = 2:30)
+
+pbmc_atac_umap[["RNA"]] <- impute_atac
+
+coembed_obj <- merge(x = pbmc_rna_umap, y = pbmc_atac_umap)
+
+coembed_obj <- ScaleData(coembed_obj, features = genes_target, do.scale = FALSE, do.center = TRUE)
+coembed_obj <- RunPCA(object = coembed_obj, features = genes_target, verbose = FALSE)
+coembed_obj <- RunUMAP(object = coembed_obj, dims = 1:30)
+
+DimPlot(coembed_obj, group.by = c("orig.ident", "seurat_annotations"))
 ```
