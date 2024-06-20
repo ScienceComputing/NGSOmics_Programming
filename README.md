@@ -11,6 +11,35 @@ This repository houses conceptual viewpoints, coding practice, assignment/compet
 * [COVID-19 RNA-seq data resources](https://github.com/ScienceComputing/COVID-19-RNA-Seq-datasets)
 
 ## Technical aspect
+### Analyze ATAC-seq data
+  - [Practical guide](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-1929-3)
+  - Run [ENCODE ATAC-seq pipeline](https://github.com/ScienceComputing/atac-seq-pipeline/blob/master/README.md) to perform alignment, quality assurance, peaking calling, and signal track generation
+  - If we're interested in inspecting every step in each analytical phase, or even leveraging advanced/unique features of other tools that the current pipeline ignores, ...
+    - For alignment and post-alignment phases, we can ...
+      - Use Rsubread or Rbowtie2 to [align the fastq files relative to hg19/hg38/hs1](ATACSeq/AlignFASTQ.Rmd)
+      - Use GenomicAlignments and GenomicRanges to perform post-alignment processing including [reading properly paired reads, estimating MapQ scores/insert sizes, reconstructing the full-length fragment, and others](ATACSeq/PostAlignment.Rmd)
+      - Use ATACseqQC to perform [comprehensive ATAC-seq quality assurance](ATACSeq/ATACseqQC.Rmd)
+    - For TSS analysis phase, we can ...
+      - Use soGGi to [assess the transcriptional start site signal](ATACSeq/EvaluateTSS.Rmd) in the nucleosome-free open region
+    - For peaking calling phase, we can ...
+      - Use MACS2 and ChIPQC to [call peaks in the nucleosome-free open region, and perform quality assurance](ATACSeq/CallPeak.Rmd)
+      - Or use Genrich to call peaks in the nucleosome-free open region
+      - Or use MACS3/MACSr (R wrapper of MACS3) to [call peaks in the nucleosome-free open region](ATACSeq/CallPeak.Rmd)
+      - Use ChIPseeker to [annotate peak regions with genomic features](ATACSeq/CallPeak.Rmd)
+    - For functional analysis phase, we can ...
+      - Use rGREAT to [functionally interpret the peak regions based on the GO database](ATACSeq/FunctionalAnalysis.Rmd) 
+      - Use GenomicRanges and GenomicAlignments to [select and count non-redundant peaks](ATACSeq/DifferentialAnalysis.Rmd)
+      - Use DESeq2/DESeq2-based DiffBind and ChIPseeker to [analyze differences in peaks with gene annotations across conditions](ATACSeq/DifferentialAnalysis.Rmd)
+      - Use clusterProfiler to [perform enrichment analysis of differential peak regions](ATACSeq/DifferentialAnalysis.Rmd)
+      - However, functional insights gained by peak annotations can hardly illustrate what key regulators shape the transcription mechanism. 
+    - So, to further infer transcription factors acting in peak regions, we can ...
+      - Use MotifDb/JASPAR2022 and seqLogo/ [recommend] ggseqlogo to [search and visualize motifs](ATACSeq/Search_Visualize_Motif.Rmd)
+      - Use motifmatchr (R wrapper of MOODS) to [map peaks to motifs](ATACSeq/IdentifyMotif.Rmd), DNA sequences preferred by transcription factors
+      - Use chromVAR to [analyze differences in motifs across conditions](ATACSeq/Detect_Difference_Motif.Rmd)
+      - [Transfer the cell type labels from single-cell RNA-seq data to separately collected single-cell ATAC-seq data](SinglCellRNAseq_ATACSeq/Integration_Full.qmd)
+
+<hr>
+
 ### Analyze single cell RNA-seq data
 - A mini scRNA-seq [pipeline](SingleCellRNASeq/Scanpy/pipeline.py)
 - If given raw `bcl` files, we [convert them to fastq files](FastQC/bcl_to_fastq.sh)
@@ -56,36 +85,6 @@ This repository houses conceptual viewpoints, coding practice, assignment/compet
   - [Perform gene set enrichment analysis](BulkRNASeq/GeneSetTCell.Rmd)
 
 <hr>
-
-### Analyze ATAC-seq data
-  - [Practical guide](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-1929-3)
-  - Run [ENCODE ATAC-seq pipeline](https://github.com/ScienceComputing/atac-seq-pipeline/blob/master/README.md) to perform alignment, quality assurance, peaking calling, and signal track generation
-  - If we're interested in inspecting every step in each analytical phase, or even leveraging advanced/unique features of other tools that the current pipeline ignores, ...
-    - For alignment and post-alignment phases, we can ...
-      - Use Rsubread or Rbowtie2 to [align the fastq files relative to hg19/hg38/hs1](ATACSeq/AlignFASTQ.Rmd)
-      - Use GenomicAlignments and GenomicRanges to perform post-alignment processing including [reading properly paired reads, estimating MapQ scores/insert sizes, reconstructing the full-length fragment, and others](ATACSeq/PostAlignment.Rmd)
-      - Use ATACseqQC to perform [comprehensive ATAC-seq quality assurance](ATACSeq/ATACseqQC.Rmd)
-    - For TSS analysis phase, we can ...
-      - Use soGGi to [assess the transcriptional start site signal](ATACSeq/EvaluateTSS.Rmd) in the nucleosome-free open region
-    - For peaking calling phase, we can ...
-      - Use MACS2 and ChIPQC to [call peaks in the nucleosome-free open region, and perform quality assurance](ATACSeq/CallPeak.Rmd)
-      - Or use Genrich to call peaks in the nucleosome-free open region
-      - Or use MACS3/MACSr (R wrapper of MACS3) to [call peaks in the nucleosome-free open region](ATACSeq/CallPeak.Rmd)
-      - Use ChIPseeker to [annotate peak regions with genomic features](ATACSeq/CallPeak.Rmd)
-    - For functional analysis phase, we can ...
-      - Use rGREAT to [functionally interpret the peak regions based on the GO database](ATACSeq/FunctionalAnalysis.Rmd) 
-      - Use GenomicRanges and GenomicAlignments to [select and count non-redundant peaks](ATACSeq/DifferentialAnalysis.Rmd)
-      - Use DESeq2/DESeq2-based DiffBind and ChIPseeker to [analyze differences in peaks with gene annotations across conditions](ATACSeq/DifferentialAnalysis.Rmd)
-      - Use clusterProfiler to [perform enrichment analysis of differential peak regions](ATACSeq/DifferentialAnalysis.Rmd)
-      - However, functional insights gained by peak annotations can hardly illustrate what key regulators shape the transcription mechanism. 
-    - So, to further infer transcription factors acting in peak regions, we can ...
-      - Use MotifDb/JASPAR2022 and seqLogo/ [recommend] ggseqlogo to [search and visualize motifs](ATACSeq/Search_Visualize_Motif.Rmd)
-      - Use motifmatchr (R wrapper of MOODS) to [map peaks to motifs](ATACSeq/IdentifyMotif.Rmd), DNA sequences preferred by transcription factors
-      - Use chromVAR to [analyze differences in motifs across conditions](ATACSeq/Detect_Difference_Motif.Rmd)
-      - [Transfer the cell type labels from single-cell RNA-seq data to separately collected single-cell ATAC-seq data](SinglCellRNAseq_ATACSeq/Integration_Full.qmd)
-
-<hr>
-
 
 ### Analyze proteomics data
 
