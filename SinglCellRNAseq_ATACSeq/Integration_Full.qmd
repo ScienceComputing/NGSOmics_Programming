@@ -51,6 +51,8 @@ library(Matrix)
 ```{r}
 pbmc_rna <- LoadData("pbmcMultiome", "pbmc.rna")
 pbmc_atac <- LoadData("pbmcMultiome", "pbmc.atac")
+dim(pbmc_atac)
+dim(pbmc_rna)
 ```
 
 ## Convert pbmc_rna\[\["RNA"\]\] into another class type "Assay5"
