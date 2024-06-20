@@ -72,7 +72,9 @@ pbmc_atac_qc <- subset(pbmc_atac, seurat_annotations != "filtered")
 ```
 
 ## Run standard scRNAseq analysis
+
 Workflow: Normalize data -> Identify highly variable features -> Scale data -> Build PCA -> Build UMAP
+
 ```{r}
 pbmc_rna_norm <- NormalizeData(object = pbmc_rna_qc, normalization.method = "LogNormalize", scale.factor = 10000)
 pbmc_rna_vf <- FindVariableFeatures(object = pbmc_rna_norm, selection.method = "vst", clip.max = "auto")
@@ -84,6 +86,9 @@ pbmc_rna_umap <- RunUMAP(object = pbmc_rna_pca, dims = 1:30, umap.method = "uwot
 ```
 
 ## Run standard scATACseq analysis with added gene annotation information
+
+Workflow: Extract genomic ranges from EnsDb object -> Set genome and annotation -> Build TF-IDF normalization -> Find top features -> Build SVD -> Build UMAP
+
 ```{r}
 annotations <- GetGRangesFromEnsDb(ensdb = EnsDb.Hsapiens.v86, standard.chromosomes = TRUE)
 annotations@seqnames
@@ -102,10 +107,10 @@ annotations@seqnames
 genome(x = annotations) <- "hg38" 
 # Set the genome as hg38 for a ChromatinAssay
 
-Annotation(object = pbmc_atac) <- annotations 
+Annotation(object = pbmc_atac_qc) <- annotations 
 # Set the annotation as annotations for a ChromatinAssay
 
-pbmc_atac <- RunTFIDF(object = pbmc_atac) 
+pbmc_atac <- RunTFIDF(object = pbmc_atac_qc) 
 pbmc_atac <- FindTopFeatures(object = pbmc_atac, min.cutoff = "q0") 
 
 pbmc_atac <- RunSVD(object = pbmc_atac)
