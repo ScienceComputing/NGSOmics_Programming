@@ -4,10 +4,11 @@ This repository houses conceptual viewpoints, coding practice, assignment/compet
 
 ## Featured contents
 
+* [ATAC-seq data analysis](#Analyze-ATAC-seq-data)
 * [Single cell RNA-seq data analysis](#Analyze-single-cell-RNA-seq-data)
 * [Bulk RNA-seq data analysis](#Analyze-bulk-RNA-seq-data)
-* [COVID-19 RNA-seq data resources](https://github.com/ScienceComputing/COVID-19-RNA-Seq-datasets)
 * [Multi-omics idea](HighLevelIdea_MultiOmics.md)
+* [COVID-19 RNA-seq data resources](https://github.com/ScienceComputing/COVID-19-RNA-Seq-datasets)
 
 ## Technical aspect
 ### Analyze single cell RNA-seq data
@@ -56,7 +57,6 @@ This repository houses conceptual viewpoints, coding practice, assignment/compet
 
 <hr>
 
-
 ### Analyze ATAC-seq data
   - [Practical guide](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-020-1929-3)
   - Run [ENCODE ATAC-seq pipeline](https://github.com/ScienceComputing/atac-seq-pipeline/blob/master/README.md) to perform alignment, quality assurance, peaking calling, and signal track generation
@@ -82,18 +82,16 @@ This repository houses conceptual viewpoints, coding practice, assignment/compet
       - Use MotifDb/JASPAR2022 and seqLogo/ [recommend] ggseqlogo to [search and visualize motifs](ATACSeq/Search_Visualize_Motif.Rmd)
       - Use motifmatchr (R wrapper of MOODS) to [map peaks to motifs](ATACSeq/IdentifyMotif.Rmd), DNA sequences preferred by transcription factors
       - Use chromVAR to [analyze differences in motifs across conditions](ATACSeq/Detect_Difference_Motif.Rmd)
+      - [Transfer the cell type labels from single-cell RNA-seq data to separately collected single-cell ATAC-seq data](SinglCellRNAseq_ATACSeq/Integration_Full.qmd)
 
 <hr>
 
-### Analyze integrated single cell RNA-seq and ATAC-seq data
-
-*Under Active Construction*
-
-<hr>
 
 ### Analyze proteomics data
 
 - A quick start from [loading an online spectrum, performing peak quality control, annotating peaks, to visualizing the annotated peaks](Proteomics/spectrum_utils/0_Quick_Start.py)
+
+*Under Active Construction*
 
 <hr>
 
