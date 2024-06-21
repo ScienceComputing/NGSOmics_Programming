@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name=RNAseq_SE
-#SBATCH --output=RNAseq_SE.out
+#SBATCH --job-name=RNAseq_PE
+#SBATCH --output=RNAseq_PE.out
 #SBATCH --partition=hpc_1,hpc_2,hpc_3
 
 ANALYSIS_DIR=$1
