@@ -6,7 +6,7 @@ box::use(scuttle[sct_logNormCounts = logNormCounts,
                  sct_addPerFeatureQC = addPerFeatureQC,
                  ...])
 library(scater)
-library(uwot)
+library(uwot) # The Uniform Manifold Approximation and Projection (UMAP) Method for Dimensionality Reduction
 library(rtracklayer)
 box::use(rtracklayer[rt_import = import,...])
 library(BiocFileCache)
