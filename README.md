@@ -36,7 +36,7 @@ This repository houses conceptual viewpoints, coding practice, assignment/compet
       - Use MotifDb/JASPAR2022 and seqLogo/ [recommend] ggseqlogo to [search and visualize motifs](ATACSeq/Search_Visualize_Motif.Rmd)
       - Use motifmatchr (R wrapper of MOODS) to [map peaks to motifs](ATACSeq/IdentifyMotif.Rmd), DNA sequences preferred by transcription factors
       - Use chromVAR to [analyze differences in motifs across conditions](ATACSeq/Detect_Difference_Motif.Rmd)
-  - [Transfer the cell type labels](SinglCellRNAseq_ATACSeq/Integration_Full.qmd) from single-cell RNA-seq data to separately collected single-cell ATAC-seq data
+  - [Transfer the cell type labels](ATACSeq/Integration/SingleCell/Integration_Full.qmd) from single-cell RNA-seq data to separately collected single-cell ATAC-seq data
 
 <hr>
 
