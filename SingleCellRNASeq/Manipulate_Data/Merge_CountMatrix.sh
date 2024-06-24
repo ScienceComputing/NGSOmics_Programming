@@ -17,5 +17,5 @@ aria2c -x 16 -s 16 https://www.ebi.ac.uk/arrayexpress/files/E-MTAB-6108/iPSC_RGC
 aria2c -x 16 -s 16 https://www.ebi.ac.uk/arrayexpress/files/E-MTAB-6108/iPSC_RGCscRNAseq_Sample2_L005_R1.fastq.gz
 aria2c -x 16 -s 16 https://www.ebi.ac.uk/arrayexpress/files/E-MTAB-6108/iPSC_RGCscRNAseq_Sample2_L005_R2.fastq.gz
 
-
+# Quantify the read counts from paired-end FASTQ files
 
