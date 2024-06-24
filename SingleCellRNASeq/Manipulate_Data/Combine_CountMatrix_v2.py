@@ -13,6 +13,7 @@ data_s1.var.head() # Take a look at first few columns
 data_s2.var.head()
 
 data_s12 = ad.concat({"data_s1": data_s1, "data_s2": data_s2}, join='outer', index_unique='-', label="data_origin")
+# Concatenation: stack all sub elements of each object in an ordered way
 # The shared names of obs can be made unique by appending the relevant key using the index_unique argument
 
 data_s12.obs.head()
