@@ -5,3 +5,21 @@ os.environ["PATH"] += os.pathsep + os.pathsep.join(path_list)
 print(os.environ.get("PATH"))
 
 pip install --quiet kb-python
+
+# raise UnsupportedOSError
+# 1. kb might have specific version requirements for Python
+pyenv which python
+pyenv install 3.8
+pyenv local 3.8.18
+pip install --quiet kb-python
+# 2. kb tool is unable to find a compatible kallisto binary on your system
+brew install cmake
+git clone https://github.com/pachterlab/kallisto.git
+cd kallisto
+mkdir build
+cd build
+cmake ..
+make
+./src/kallisto version
+cd ../..
+kb ref -d human -i index.idx -g t2g.txt --verbose --kallisto /your_path/to/kallisto/build/src/kallisto
