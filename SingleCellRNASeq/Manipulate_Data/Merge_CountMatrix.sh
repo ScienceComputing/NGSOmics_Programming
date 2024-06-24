@@ -20,6 +20,19 @@ aria2c -x 16 -s 16 https://www.ebi.ac.uk/arrayexpress/files/E-MTAB-6108/iPSC_RGC
 aria2c -x 16 -s 16 https://www.ebi.ac.uk/arrayexpress/files/E-MTAB-6108/iPSC_RGCscRNAseq_Sample2_L005_R1.fastq.gz
 aria2c -x 16 -s 16 https://www.ebi.ac.uk/arrayexpress/files/E-MTAB-6108/iPSC_RGCscRNAseq_Sample2_L005_R2.fastq.gz
 
+# Set up environments
+pyenv local 3.8.18
+pip install --quiet kb-python
+brew install cmake
+git clone https://github.com/pachterlab/kallisto.git
+cd kallisto
+mkdir build
+cd build
+cmake ..
+make
+./src/kallisto version
+cd ../..
+
 # Quantify the read counts from paired-end FASTQ files
 # Single cell suspensions were loaded onto 10X Genomics Single Cell 3' Chips along with the reverse transcription master mix as per the manufacturer's protocol for the Chromium Single Cell 3' v2 Library (10X Genomics; PN-120233), to generate single cell gel beads in emulsion.
 kb ref -d human -i human_index.idx -g human_t2g.txt --verbose --kallisto /your_path/to/kallisto/build/src/kallisto
