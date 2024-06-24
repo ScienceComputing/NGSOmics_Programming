@@ -1,4 +1,5 @@
 # Reference: https://github.com/ScienceComputing/NGSOmics_Programming/tree/main/SingleCellRNASeq/kb-python
+# https://phoenixnap.com/kb/wget-command-with-examples
 
 vim target_fastq.txt
 # https://www.ebi.ac.uk/arrayexpress/files/E-MTAB-6108/iPSC_RGCscRNAseq_Sample1_L005_R1.fastq.gz
