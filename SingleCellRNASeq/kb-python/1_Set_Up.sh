@@ -23,4 +23,4 @@ cmake ..
 make
 ./src/kallisto version
 cd ../..
-kb ref -d human -i index.idx -g t2g.txt --verbose --kallisto /your_path/to/kallisto/build/src/kallisto
+kb ref -d human -i human_index.idx -g human_t2g.txt --verbose --kallisto /your_path/to/kallisto/build/src/kallisto
