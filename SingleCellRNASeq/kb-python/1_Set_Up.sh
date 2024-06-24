@@ -7,6 +7,7 @@ print(os.environ.get("PATH"))
 pip install --quiet kb-python
 
 # raise UnsupportedOSError
+# Reference: https://github.com/ScienceComputing/Python_Programming/blob/main/Utilities/*Error_Type.md#runtime-errors
 # 1. kb might have specific version requirements for Python
 pyenv which python
 pyenv install 3.8
