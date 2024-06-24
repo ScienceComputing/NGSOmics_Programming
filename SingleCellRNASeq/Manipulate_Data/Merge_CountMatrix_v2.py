@@ -1,4 +1,4 @@
-# Reference: https://anndata.readthedocs.io/en/latest/concatenation.html
+# Reference: https://github.com/ScienceComputing/NGSOmics_Programming/tree/main/SingleCellRNASeq/Anndata/Combine_Data.py
 
 import anndata as ad
 data_s1 = ad.read_h5ad('output_s1/counts_unfiltered/adata.h5ad')
