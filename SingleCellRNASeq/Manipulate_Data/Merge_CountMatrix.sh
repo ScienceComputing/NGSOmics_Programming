@@ -1,5 +1,6 @@
 # Reference: 
 # https://github.com/ScienceComputing/NGSOmics_Programming/tree/main/SingleCellRNASeq/kb-python
+# # https://github.com/ScienceComputing/NGSOmics_Programming/blob/main/Bash/sam2bam.sh
 # https://phoenixnap.com/kb/wget-command-with-examples
 # http://aria2.github.io/manual/en/html/aria2c.html#synopsis
 # https://www.ebi.ac.uk/biostudies/arrayexpress/studies/E-MTAB-6108
@@ -31,5 +32,8 @@ kb count -i human_index.idx -g human_t2g.txt -x 10xv2 -o output_s2 --h5ad -t 8 \
 iPSC_RGCscRNAseq_Sample2_L005_R1.fastq.gz iPSC_RGCscRNAseq_Sample2_L005_R2.fastq.gz
 
 # One-line code
-for sample in 1 2; do kb count -i human_index.idx -g human_t2g.txt -x 10xv2 -o output_s${sample} --h5ad -t 8 iPSC_RGCscRNAseq_Sample${sample}_L005_R1.fastq.gz iPSC_RGCscRNAseq_Sample${sample}_L005_R2.fastq.gz; done
+for sample in 1 2; do 
+  kb count -i human_index.idx -g human_t2g.txt -x 10xv2 -o output_s${sample} --h5ad -t 8 \
+  iPSC_RGCscRNAseq_Sample${sample}_L005_R1.fastq.gz iPSC_RGCscRNAseq_Sample${sample}_L005_R2.fastq.gz; 
+done
 
