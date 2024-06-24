@@ -34,6 +34,7 @@ iPSC_RGCscRNAseq_Sample2_L005_R1.fastq.gz iPSC_RGCscRNAseq_Sample2_L005_R2.fastq
 # Use for loop for a batch of paire-end reads
 for sample in 1 2; do 
   kb count -i human_index.idx -g human_t2g.txt -x 10xv2 -o output_s${sample} --h5ad -t 8 \
-  iPSC_RGCscRNAseq_Sample${sample}_L005_R1.fastq.gz iPSC_RGCscRNAseq_Sample${sample}_L005_R2.fastq.gz; 
+  iPSC_RGCscRNAseq_Sample${sample}_L005_R1.fastq.gz iPSC_RGCscRNAseq_Sample${sample}_L005_R2.fastq.gz \
+  --verbose --kallisto /your_path/to/kallisto/build/src/kallisto; 
 done
 
