@@ -1,4 +1,4 @@
-# Reference: 
+# References: 
 # https://github.com/ScienceComputing/NGSOmics_Programming/tree/main/SingleCellRNASeq/kb-python
 # https://github.com/ScienceComputing/NGSOmics_Programming/blob/main/Bash/sam2bam.sh
 # https://phoenixnap.com/kb/wget-command-with-examples
