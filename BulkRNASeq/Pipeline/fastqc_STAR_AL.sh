@@ -2,7 +2,7 @@
 #SBATCH -N 1
 #SBATCH -n 16
 #SBATCH --job-name=fastqc_STAR
-#SBATCH --partition=hpc_1,hpc_2,hpc_3
+#SBATCH --partition=hpc_1,hpc_2,hpc_3 
 
 ANALYSIS_DIR=$1
 
