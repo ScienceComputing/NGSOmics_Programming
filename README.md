@@ -63,6 +63,7 @@ This repository houses conceptual viewpoints, coding practice, assignment/compet
   - Perform pseudobulk-based differentially gene expression analysis in [edgeR](SingleCellRNASeq/Scanpy/scRNAseq_DE_Part1.ipynb) or [DESeq2](SingleCellRNASeq/Bioconductor/Pseudobulk_DE.Rmd)
   - Use bulk RNAseq-based pathway analysis tools (e.g., clusterProfiler, GSEA, GSVA) or single cell RNAseq-based Pagoda2 to evaluate if a predefined set of genes shows statistically significant and consistent variations between biological conditions
   - Use scGen to model [perturbation responses](SingleCellRNASeq/Perturbation/scGen)  
+- Learn [cutting-edge](Science_Reading/scRNAseq.md) single-cell RNA-seq data analyses
 
 <hr>
 
