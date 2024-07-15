@@ -2,9 +2,9 @@
 
 **The tidyomics ecosystem: enhancing omic data analyses**
 
-> "Bioconductor provides an extensive community-driven biological data analysis platform. Meanwhile, tidy R programming offers a revolutionary data organization and manipulation standard. Here we present the tidyomics software ecosystem, bridging Bioconductor to the tidy R paradigm. This ecosystem aims to streamline omic analysis, ease learning and encourage cross-disciplinary collaborations."
-
 Hutchison, W.J., Keyes, T.J., The tidyomics Consortium. et al. The tidyomics ecosystem: enhancing omic data analyses. Nat Methods 21, 1166–1170 (2024). https://doi.org/10.1038/s41592-024-02299-2
+
+> "Bioconductor provides an extensive community-driven biological data analysis platform. Meanwhile, tidy R programming offers a revolutionary data organization and manipulation standard. Here we present the tidyomics software ecosystem, bridging Bioconductor to the tidy R paradigm. This ecosystem aims to streamline omic analysis, ease learning and encourage cross-disciplinary collaborations."
 
 <br>
 
