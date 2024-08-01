@@ -5,7 +5,7 @@
 # M-values are more appropriate for statistical testing, due to their distributional properties.
 
 #####Load methylation specific packages#####
-library(methylationArrayAnalysis) 
+library(methylationArrayAnalysis)  
 library(minfi)
 library(missMethyl)
 library(minfiData)
