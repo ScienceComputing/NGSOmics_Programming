@@ -2,7 +2,7 @@
 
 This repository houses conceptual viewpoints, coding practice, assignment/competition solutions based on the materials from a variety of computational biology/bioinformatics courses, workshops, technical manuals, academic articles, and others. 
 
-## Featured contents
+## Featured contents 
 
 * [ATAC-seq data analysis](#Analyze-ATAC-seq-data)
 * [Single cell RNA-seq data analysis](#Analyze-single-cell-RNA-seq-data)
