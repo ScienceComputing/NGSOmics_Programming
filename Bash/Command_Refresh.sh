@@ -1,8 +1,11 @@
 ls -FlhatrR # R shows the nested directories
+
 grep # return contents that match the regex pattern
 grep 'lt' file.txt
 cd 1_dir/2_dir/ && cat file.csv | grep 'abc'
 grep '[ltde]' file.txt # [] constitues a matching set - e.g., return anything containing l/t/d/e; ^[] constitutes an inverse set
+
+
 cat # concatenate contents line by line
 tail -n # return only the last -n lines
 head -n # return only the first -n lines
