@@ -1,4 +1,11 @@
-ls -FlhatrR # R shows the nested directories
+ls -FlhatrR 
+# -F adds helpful markers to each item in the list: a “/” after a name indicates it’s a directory, an asterisk “*” shows it’s a program, and if there’s no symbol, it’s a regular text file.
+# -l prints long format information about files including file mode, link count, owner, group, size, date, time, name
+# -h print
+# -a lists all files and directories, including the hidden ones that begin with a dot
+# t sorts the output by modification time, with the most recently modified files appearing first
+# r reverses the sorting order, so the oldest files appear first
+# -R shows the nested directories
 
 grep # return contents that match the regex pattern
 grep 'lt' file.txt
