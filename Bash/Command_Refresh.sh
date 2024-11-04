@@ -1,3 +1,4 @@
+ls -FlhatrR # R shows the nested directories
 grep # return contents that match the regex pattern
 grep 'lt' file.txt
 grep '[ltde]' file.txt # [] constitues a matching set - e.g., return anything containing l/t/d/e; ^[] constitutes an inverse set
