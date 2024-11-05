@@ -90,6 +90,7 @@ table_5_imputed <- table_5 |>
   select(!projid) |> 
   mutate(across(where(is.numeric), ~ ifelse(is.na(.), mean(., na.rm = T), .))) # Alter: use KNN to impute
 # https://www.rdocumentation.org/packages/impute/versions/1.46.0/topics/impute.knn
+# impute.knn uses $k$-nearest neighbors in the space of genes to impute missing expression values
 
 # Build PCA and draw a PCA plot
 pca_data <- prcomp(x = table_5_imputed, center = T, scale. = T) 
