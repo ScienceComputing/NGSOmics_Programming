@@ -88,7 +88,7 @@ any(rownames(table_5) != table_5$projid)
 x <- colSums(is.na(table_5)); x[x!=0] 
 table_5_imputed <- table_5 |> 
   select(!projid) |> 
-  mutate(across(where(is.numeric), ~ ifelse(is.na(.), mean(., na.rm = T), .)))
+  mutate(across(where(is.numeric), ~ ifelse(is.na(.), mean(., na.rm = T), .))) # Alter: use KNN to impute
 
 # Build PCA and draw a PCA plot
 pca_data <- prcomp(x = table_5_imputed, center = T, scale. = T) 
